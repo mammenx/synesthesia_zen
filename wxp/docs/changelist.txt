@@ -1,0 +1,13 @@
+To add:
+  - Windowing in FFT
+  - Beat detection
+  - Graphics
+  - VGA controller
+
+To remove:
+  - Data paths from SD Card to SRAM, wav parser etc. Basically, the
+    only audio comes from the DAC.
+
+To modify:
+  - Remove analog bypass in codec. Audio loopback path to be
+    ADC -> Buffer -> DAC  ??? Perhaps synced with FFT/beat processing.
