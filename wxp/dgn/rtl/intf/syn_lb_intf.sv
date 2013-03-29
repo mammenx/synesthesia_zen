@@ -61,9 +61,9 @@ interface syn_lb_intf  #(parameter  DATA_W  = 32,
                     output  rd_en,
                     output  wr_en,
                     output  addr,
-                    output  wr_valid,
                     output  wr_data,
 
+                    input   wr_valid,
                     input   rd_valid,
                     input   rd_data
                   );
@@ -73,9 +73,9 @@ interface syn_lb_intf  #(parameter  DATA_W  = 32,
                     input   rd_en,
                     input   wr_en,
                     input   addr,
-                    input   wr_valid,
                     input   wr_data,
 
+                    output  wr_valid,
                     output  rd_valid,
                     output  rd_data
                   );

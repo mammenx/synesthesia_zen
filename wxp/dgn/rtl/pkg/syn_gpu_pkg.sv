@@ -45,16 +45,29 @@ package syn_gpu_pkg;
   parameter P_CANVAS_W  = 640;
   parameter P_CANVAS_H  = 480;
   parameter P_X_W       = $clog2(P_CANVAS_W);
-  parameter P_Y_W       = $clog2(P_CANVAS_Y);
+  parameter P_Y_W       = $clog2(P_CANVAS_H);
   parameter P_RGB_RES   = 4;
+  parameter P_LUM_W     = 4;
+  parameter P_CHRM_W    = 2;
+  parameter P_GPU_SRAM_ADDR_W = 19;
+  parameter P_GPU_SRAM_DATA_W = 8;
 
   //RGB pixel stucture
-  typedef struct  {
+  typedef struct  packed  {
     logic [P_RGB_RES-1:0] red;
     logic [P_RGB_RES-1:0] green;
     logic [P_RGB_RES-1:0] blue;
 
-  } pxl_t;
+  } pxl_rgb_t;
+
+  //YCbCr pixel stucture
+  typedef struct  packed  {
+    logic [P_LUM_W-1:0]   y;
+    logic [P_CHRM_W-1:0]  cb;
+    logic [P_CHRM_W-1:0]  cr;
+
+  } pxl_ycbcr_t;
+
 
   //Opcode for shape
   typedef enum  logic [1:0] { LINE    = 2'd0,
@@ -67,16 +80,53 @@ package syn_gpu_pkg;
                             } action_t;
 
 
-  //Structure describing GPU job
-  typedef struct  {
+  //Structure describing GPU draw job
+  typedef struct  packed  {
     shape_t           shape;
+    logic [P_X_W-1:0] x0;
+    logic [P_Y_W-1:0] y0; //Line  ->  Start of line,  Circle  ->  Center
     logic [P_X_W-1:0] x1;
-    logic [P_Y_W-1:0] y1; //Line  ->  Start of line,  Circle  ->  Center
-    logic [P_X_W-1:0] x2;
-    logic [P_Y_W-1:0] y2; //Line  ->  End of line,    Circle  ->  Radius
-    pxl_t             color;
+    logic [P_Y_W-1:0] y1; //Line  ->  End of line,    Circle  ->  Radius
+    pxl_ycbcr_t       color;
     logic [3:0]       width;  //width of shape
 
+  } gpu_draw_job_t;
+
+  parameter P_GPU_DRAW_JOB_BFFR_W = 2 + (2*(P_X_W + P_Y_W)) + (P_LUM_W  + P_CHRM_W  + P_CHRM_W) + 4;
+
+
+  //Structure describing GPU Fill Job
+  typedef struct  packed  {
+    pxl_ycbcr_t       fill_color;   //Color To fill
+    pxl_ycbcr_t       line_color;   //Color of line, to detect boundaries
+    logic [P_X_W-1:0] x0;           //Starting point, X axis
+    logic [P_Y_W-1:0] y0;           //Starting point, Y axis
+
   } gpu_fill_job_t;
+
+  parameter P_GPU_FILL_JOB_BFFR_W = 2*(P_LUM_W  + P_CHRM_W  + P_CHRM_W) + (P_X_W  + P_Y_W);
+
+
+  parameter P_GPU_JOB_BFFR_W  = (P_GPU_DRAW_JOB_BFFR_W  > P_GPU_FILL_JOB_BFFR_W)  ? P_GPU_DRAW_JOB_BFFR_W + 2
+                                                                                  : P_GPU_FILL_JOB_BFFR_W + 2;
+
+
+  //Parameters for Mulberry Bus
+  parameter P_NUM_MASTERS = 3;
+
+  typedef enum  logic [$clog2(P_NUM_MASTERS):0]   { MID_IDLE=0, //used for idle condition
+                                                    MID_GPU_LB,
+                                                    MID_GPU_CORE,
+                                                    MID_ANTI_ALIAS
+                                                  } mid_t;  //Master ID type
+
+  parameter P_NUM_SLAVES  = 3;
+
+  typedef enum  logic [$clog2(P_NUM_SLAVES):0]    { SID_IDLE=0, //used for idle condition
+                                                    SID_RAND,
+                                                    SID_MUL,
+                                                    SID_DIV
+                                                  } sid_t;
+
 
 endpackage  //  syn_gpu_pkg

@@ -2,6 +2,7 @@ To add:
   - Windowing in FFT
   - Beat detection
   - Graphics
+    - Frame buffer scrolling in picasso ?
   - VGA controller
 
 To remove:

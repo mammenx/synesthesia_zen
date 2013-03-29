@@ -22,10 +22,12 @@
 /*
  --------------------------------------------------------------------------
  -- Project Code      : synesthesia
- -- Interface Name    : ff_intf
+ -- Interface Name    : syn_gpu_core_job_intf
  -- Author            : mammenx
- -- Function          : This interface encapsulates generic FIFO signals.
-                        The FIFO data type is also parameterized.
+ -- Function          : This interface encapsulates signals & structures
+                        for triggering GPU jobs to different engines. The
+                        status signals from different engines are also
+                        included.
  --------------------------------------------------------------------------
 */
 
@@ -40,49 +42,32 @@
  --------------------------------------------------------------------------
 */
 
+interface syn_gpu_core_job_intf;
 
-interface ff_intf  #(parameter  DATA_W  = 8);
+  import  syn_gpu_pkg::*;
 
-  //Logic signals
-  logic               ff_full;
-  logic               ff_empty;
-  logic               ff_wr_en;
-  logic [DATA_W-1:0]  ff_wr_data;
-  logic               ff_rd_en;
-  logic [DATA_W-1:0]  ff_rd_data;
+  //Signals & Structures
+  logic           euclid_job_start; //1->Start line draw job in euclid engine
+  gpu_draw_job_t  euclid_job_data;  //Details of job
+  logic           euclid_busy;      //1->Euclid engine is busy
+  logic           euclid_job_done;  //1->Job is done
+
+
 
   //Modports
-  modport rd_only (
-                    input   ff_empty,
-                    output  ff_rd_en,
-                    input   ff_rd_data
+  modport master  (
+                    output  euclid_job_start,
+                    output  euclid_job_data,
+                    input   euclid_busy,
+                    input   euclid_job_done
+                  );
+
+  modport euclid  (
+                    input   euclid_job_start,
+                    input   euclid_job_data,
+                    output  euclid_busy,
+                    output  euclid_job_done
                   );
 
 
-  modport wr_only (
-                    input   ff_full,
-                    output  ff_wr_en,
-                    output  ff_wr_data
-                  );
-
-
-  modport full    (
-                    input   ff_empty,
-                    output  ff_rd_en,
-                    input   ff_rd_data,
-
-                    input   ff_full,
-                    output  ff_wr_en,
-                    output  ff_wr_data
-                  );
-
-  modport ff_slave  (
-                      output  ff_full,
-                      output  ff_empty,
-                      input   ff_wr_en,
-                      input   ff_wr_data,
-                      input   ff_rd_en,
-                      output  ff_rd_data
-                    );
-
-endinterface  //  ff_intf
+endinterface  //  syn_gpu_core_job_intf
