@@ -1,0 +1,3 @@
+[submodule "synesthesia_zen.wiki"]
+	path = synesthesia_zen.wiki
+	url = git://github.com/mammenx/synesthesia_zen.wiki
