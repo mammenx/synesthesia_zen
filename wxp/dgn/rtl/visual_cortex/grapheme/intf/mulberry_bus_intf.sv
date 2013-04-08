@@ -233,7 +233,7 @@ interface mulberry_bus_intf  #(parameter  P_BUS_DATA_W=32)  (input logic  clk_ir
     rsp_master_c  = MID_IDLE;
     rsp_data_c    = {P_BUS_DATA_W{1'b0}};
 
-    unique  case(1'b1)
+    case(1'b1)
 
       rand_rsp_rdy_c  :
       begin
@@ -251,6 +251,12 @@ interface mulberry_bus_intf  #(parameter  P_BUS_DATA_W=32)  (input logic  clk_ir
       begin
         rsp_master_c  = mul_rsp_mid;
         rsp_data_c    = mul_rsp_data;
+      end
+
+      default :
+      begin
+        rsp_master_c  = MID_IDLE;
+        rsp_data_c    = 0;
       end
 
     endcase
@@ -274,7 +280,7 @@ interface mulberry_bus_intf  #(parameter  P_BUS_DATA_W=32)  (input logic  clk_ir
   //Route the responses back to the correct master
   always_ff@(posedge clk_ir, negedge  rst_il)
   begin : fsm_seq_logic
-    if(~cr_intf.rst_sync_l)
+    if(~rst_il)
     begin
       gpu_lb_res_valid        <=  0;
       gpu_core_res_valid      <=  0;

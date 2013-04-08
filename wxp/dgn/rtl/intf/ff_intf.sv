@@ -58,6 +58,13 @@ interface ff_intf  #(parameter  DATA_W  = 8);
                     input   ff_rd_data
                   );
 
+  modport rd_only_slave (
+                          output  ff_empty,
+                          input   ff_rd_en,
+                          output  ff_rd_data
+                        );
+
+
 
   modport wr_only (
                     input   ff_full,

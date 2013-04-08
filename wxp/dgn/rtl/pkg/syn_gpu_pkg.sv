@@ -114,19 +114,19 @@ package syn_gpu_pkg;
   //Parameters for Mulberry Bus
   parameter P_NUM_MASTERS = 3;
 
-  typedef enum  logic [$clog2(P_NUM_MASTERS):0]   { MID_IDLE=0, //used for idle condition
-                                                    MID_GPU_LB,
-                                                    MID_GPU_CORE,
-                                                    MID_ANTI_ALIAS
-                                                  } mid_t;  //Master ID type
+  typedef enum  logic [$clog2(P_NUM_MASTERS+1)-1:0] { MID_IDLE={$clog2(P_NUM_MASTERS+1){1'b0}}, //used for idle condition
+                                                      MID_GPU_LB,
+                                                      MID_GPU_CORE,
+                                                      MID_ANTI_ALIAS
+                                                    } mid_t;  //Master ID type
 
   parameter P_NUM_SLAVES  = 3;
 
-  typedef enum  logic [$clog2(P_NUM_SLAVES):0]    { SID_IDLE=0, //used for idle condition
-                                                    SID_RAND,
-                                                    SID_MUL,
-                                                    SID_DIV
-                                                  } sid_t;
+  typedef enum  logic [$clog2(P_NUM_SLAVES+1)-1:0]  { SID_IDLE={$clog2(P_NUM_SLAVES+1){1'b0}}, //used for idle condition
+                                                      SID_RAND,
+                                                      SID_MUL,
+                                                      SID_DIV
+                                                    } sid_t;
 
 
 endpackage  //  syn_gpu_pkg

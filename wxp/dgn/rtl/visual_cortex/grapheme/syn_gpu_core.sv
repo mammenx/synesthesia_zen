@@ -209,7 +209,7 @@ module syn_gpu_core (
       anti_alias_intf.posy            =  euclid_anti_alias_intf.posy;
       anti_alias_intf.misc_info_dist  =  euclid_anti_alias_intf.misc_info_dist;
       anti_alias_intf.misc_info_norm  =  euclid_anti_alias_intf.misc_info_norm;
-      euclid_anti_alias_intf.ready    =  euclid_anti_alias_intf.ready;
+      euclid_anti_alias_intf.ready    =  anti_alias_intf.ready;
     end
     else
     begin

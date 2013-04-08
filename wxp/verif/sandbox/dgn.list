@@ -5,6 +5,8 @@
 +incdir+../../dgn/rtl/visual_cortex/intf/
 +incdir+../../dgn/rtl/visual_cortex/grapheme/
 +incdir+../../dgn/rtl/visual_cortex/grapheme/intf/
++incdir+../../dgn/rtl/visual_cortex/vga_drvr/
++incdir+../../dgn/rtl/visual_cortex/vga_drvr/intf/
 
 //Compile Altera Components
 ../../dgn/rtl/altera/220model.v
@@ -12,8 +14,11 @@
 ../../dgn/rtl/altera/cycloneii_atoms.v
 ../../dgn/rtl/altera/divider.v
 ../../dgn/rtl/altera/ff_64x128_fwft.v
+../../dgn/rtl/altera/ff_4xM4k_fwft.v
 ../../dgn/rtl/altera/mul_8x8_unsigned.v
 ../../dgn/rtl/altera/mult_16x16_unsigned.v
+../../dgn/rtl/altera/ram_1xM4K_16bW_dualport.v
+../../dgn/rtl/altera/ram_4xM4K_8bW_16bW_dualport.v
 
 //Packages
 ../../dgn/rtl/pkg/syn_global_pkg.sv
@@ -24,12 +29,16 @@
 ../../dgn/rtl/intf/syn_clk_rst_async_intf.sv
 ../../dgn/rtl/intf/syn_clk_rst_sync_intf.sv
 ../../dgn/rtl/intf/syn_lb_intf.sv
+../../dgn/rtl/intf/syn_sram_mem_intf.sv
+../../dgn/rtl/intf/syn_vga_intf.sv
 
 ../../dgn/rtl/visual_cortex/intf/sram_acc_intf.sv
 
 ../../dgn/rtl/visual_cortex/grapheme/intf/mulberry_bus_intf.sv
 ../../dgn/rtl/visual_cortex/grapheme/intf/syn_gpu_core_job_intf.sv
 ../../dgn/rtl/visual_cortex/grapheme/intf/syn_pxl_xfr_intf.sv
+
+../../dgn/rtl/visual_cortex/vga_drvr/intf/syn_vga_drvr_lb_intf.sv
 
 //Vcortex
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu_core_euclid.sv
@@ -40,3 +49,11 @@
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu_mul.sv
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu_rand.sv
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu.sv
+
+../../dgn/rtl/visual_cortex/vga_drvr/syn_vga_fsm.sv
+../../dgn/rtl/visual_cortex/vga_drvr/syn_vga_lb.sv
+../../dgn/rtl/visual_cortex/vga_drvr/syn_vga_line_bffr.sv
+../../dgn/rtl/visual_cortex/vga_drvr/syn_vga_drvr.sv
+
+../../dgn/rtl/visual_cortex/syn_sram_drvr.sv
+../../dgn/rtl/visual_cortex/syn_vcortex.sv

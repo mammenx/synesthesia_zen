@@ -13,3 +13,7 @@ parameter VCORTEX_GPU_JOB_BFFR_4_REG_ADDR   = 8'd6;
 parameter VCORTEX_GPU_JOB_BFFR_5_REG_ADDR   = 8'd7;
 parameter VCORTEX_GPU_JOB_BFFR_6_REG_ADDR   = 8'd8;
 parameter VCORTEX_GPU_JOB_BFFR_7_REG_ADDR   = 8'd9;
+
+//VGA Driver register addresses
+parameter VCORTEX_VGA_CONTROL_REG_ADDR      = 8'd0;
+parameter VCORTEX_VGA_STATUS_REG_ADDR       = 8'd1;
