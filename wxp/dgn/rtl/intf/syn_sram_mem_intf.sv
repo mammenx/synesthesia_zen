@@ -67,5 +67,16 @@ interface syn_sram_mem_intf (input  logic clk_ir, rst_il);
                 inout   SRAM_DQ
               );
 
+  /*  Verif */
+  modport TB  (
+                input   SRAM_ADDR,
+                input   SRAM_LB_N,
+                input   SRAM_UB_N,
+                input   SRAM_CE_N,
+                input   SRAM_OE_N,
+                input   SRAM_WE_N,
+
+                inout   SRAM_DQ
+              );
 
 endinterface  //  syn_sram_mem_intf
