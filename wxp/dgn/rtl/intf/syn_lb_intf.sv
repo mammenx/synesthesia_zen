@@ -82,5 +82,37 @@ interface syn_lb_intf  #(parameter  DATA_W  = 32,
                     output  rd_data
                   );
 
+  /*  Verif */
+  clocking  cb_drvr@(posedge  clk_ir);
+    default input #2ns output #2ns;
+
+    output  rd_en;
+    output  wr_en;
+    output  addr;
+    output  wr_data;
+
+    input   wr_valid;
+    input   rd_valid;
+    input   rd_data;
+
+  endclocking : cb_drvr
+
+  modport TB_DRVR (clocking cb_drvr, input clk_ir, rst_il);
+
+
+  clocking  cb_mon@(posedge  clk_ir);
+    default input #2ns output #2ns;
+
+    input   rd_en;
+    input   wr_en;
+    input   addr;
+    input   wr_data;
+    input   wr_valid;
+    input   rd_valid;
+    input   rd_data;
+
+  endclocking : cb_mon
+
+  modport TB_MON  (clocking cb_mon, input clk_ir, rst_il);
 
 endinterface  //  syn_lb_intf
