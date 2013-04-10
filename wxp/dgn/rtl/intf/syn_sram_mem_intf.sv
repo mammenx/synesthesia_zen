@@ -40,7 +40,7 @@
  --------------------------------------------------------------------------
 */
 
-interface syn_sram_mem_intf;
+interface syn_sram_mem_intf (input  logic clk_ir, rst_il);
 
   //Logic signals
   logic [17:0]  SRAM_ADDR;  // SRAM Address bus 18 Bits

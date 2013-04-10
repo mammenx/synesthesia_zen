@@ -97,8 +97,8 @@ module syn_gpu_core (
 
 
 //----------------------- Internal Interface Declarations -----------------
-  syn_gpu_core_job_intf       gpu_job_intf();
-  syn_pxl_xfr_intf            euclid_anti_alias_intf();
+  syn_gpu_core_job_intf       gpu_job_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
+  syn_pxl_xfr_intf            euclid_anti_alias_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
 
 //----------------------- Start of Code -----------------------------------
 

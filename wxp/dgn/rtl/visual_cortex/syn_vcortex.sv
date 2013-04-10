@@ -88,8 +88,8 @@ module syn_vcortex (
 
 //----------------------- Internal Interface Declarations -----------------
   sram_acc_intf               sram_bus_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
-  syn_lb_intf                 gpu_lb_intf();
-  syn_lb_intf                 vga_lb_intf();
+  syn_lb_intf                 gpu_lb_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
+  syn_lb_intf                 vga_lb_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
 
 
 

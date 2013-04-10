@@ -43,7 +43,9 @@
 interface syn_pxl_xfr_intf  #(
                               parameter       WIDTHX= syn_gpu_pkg::P_X_W,
                               parameter       WIDTHY= syn_gpu_pkg::P_Y_W
-                            );
+                            )
+
+                            (input  logic clk_ir, rst_il);
 
 
   import  syn_global_pkg::P_16B_W;

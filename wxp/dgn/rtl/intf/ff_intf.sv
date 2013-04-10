@@ -41,7 +41,7 @@
 */
 
 
-interface ff_intf  #(parameter  DATA_W  = 8);
+interface ff_intf  #(parameter  DATA_W  = 8)  (input  logic clk_ir, rst_il);
 
   //Logic signals
   logic               ff_full;

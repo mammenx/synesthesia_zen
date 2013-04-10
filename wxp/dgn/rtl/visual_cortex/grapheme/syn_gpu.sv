@@ -79,10 +79,10 @@ module syn_gpu (
 
 //----------------------- Internal Interface Declarations -----------------
   mulberry_bus_intf               mul_bus_intf(cr_intf.clk_ir,  cr_intf.rst_sync_l);
-  syn_pxl_xfr_intf                core2anti_alias_intf();
-  syn_pxl_xfr_intf                core2pxl_gw_intf();
-  syn_pxl_xfr_intf                anti_alias2pxl_gw_intf();
-  syn_pxl_xfr_intf                pxl_gw2core_intf();
+  syn_pxl_xfr_intf                core2anti_alias_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
+  syn_pxl_xfr_intf                core2pxl_gw_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
+  syn_pxl_xfr_intf                anti_alias2pxl_gw_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
+  syn_pxl_xfr_intf                pxl_gw2core_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
 
 
 

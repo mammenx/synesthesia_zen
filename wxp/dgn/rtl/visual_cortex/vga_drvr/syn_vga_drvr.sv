@@ -82,8 +82,8 @@ module syn_vga_drvr (
 
 
 //----------------------- Internal Interface Declarations -----------------
-  syn_vga_drvr_lb_intf        vga_lb_intf();
-  ff_intf#(P_8B_W)            lbffr2fsm_intf();
+  syn_vga_drvr_lb_intf        vga_lb_intf(cr_intf.clk_ir, cr_intf.rst_sync_il);
+  ff_intf#(P_8B_W)            lbffr2fsm_intf(cr_intf.clk_ir, cr_intf.rst_sync_il);
 
 
 

@@ -42,7 +42,7 @@
  --------------------------------------------------------------------------
 */
 
-interface syn_gpu_core_job_intf;
+interface syn_gpu_core_job_intf (input logic clk_ir, rst_il);
 
   import  syn_gpu_pkg::*;
 

@@ -39,7 +39,7 @@
  --------------------------------------------------------------------------
 */
 
-interface syn_vga_drvr_lb_intf;
+interface syn_vga_drvr_lb_intf  (input logic clk_ir, rst_il);
 
   //Logic signals
   logic   vga_drvr_en;

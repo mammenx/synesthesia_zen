@@ -44,7 +44,9 @@
 
 interface syn_lb_intf  #(parameter  DATA_W  = 32,
                          parameter  ADDR_W  = 8
-                        );
+                        )
+
+                        (input logic clk_ir, rst_il);
 
   //Read-Write signals
   logic                 rd_en;
