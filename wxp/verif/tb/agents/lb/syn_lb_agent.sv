@@ -45,8 +45,7 @@
  class syn_lb_agent #(parameter DATA_W      = 32,
                       parameter ADDR_W      = 16
                       type  PKT_TYPE        = syn_lb_seq_item,
-                      type  DRVR_INTF_TYPE  = virtual syn_lb_intf.TB_DRVR
-                      type  MON_INTF_TYPE   = virtual syn_lb_intf.TB_DRVR
+                      type  INTF_TYPE       = virtual syn_lb_intf
                     ) extends ovm_component;
 
 
@@ -55,9 +54,9 @@
 
 
     //Declare Seqr, Drvr, Mon, Sb objects
-    syn_lb_mon#(DATA_W,ADDR_W,PKT_TYPE,MON_INTF_TYPE)     mon;
-    syn_lb_drvr#(DATA_W,ADDR_W,PKT_TYPE,DRVR_INTF_TYPE)   drvr;
-    syn_lb_seqr#(PKT_TYPE)                                seqr;
+    syn_lb_mon#(DATA_W,ADDR_W,PKT_TYPE,INTF_TYPE.TB_MON)    mon;
+    syn_lb_drvr#(DATA_W,ADDR_W,PKT_TYPE,INTF_TYPE.TB_DRVR)  drvr;
+    syn_lb_seqr#(PKT_TYPE)                                  seqr;
 
 
     OVM_FILE  f;
