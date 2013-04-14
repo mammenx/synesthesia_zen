@@ -81,6 +81,28 @@
                                   solve addr    before  data;
                                 }
 
+    /*  Function to check a pkt of same type */
+    function  bit check (input  syn_lb_seq_item item);
+
+      if(this.addr.size !=  item.addr.size) return  0;
+
+      if(this.data.size !=  item.data.size) return  0;
+
+      if(this.lb_xtn  !=  item.lb_xtn)      return  0;
+
+      foreach(this.addr[i])
+      begin
+        if(this.addr[i] !=  item.addr[i])   return  0;
+      end
+
+      foreach(this.data[i])
+      begin
+        if(this.data[i] !=  item.data[i])   return  0;
+      end
+
+      return  1;
+
+    endfunction : check
 
 
   endclass  : syn_lb_seq_item
