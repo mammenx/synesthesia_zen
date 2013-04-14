@@ -43,6 +43,9 @@
 
 class syn_vcortex_base_test extends ovm_test;
 
+    parameter LB_DATA_W = 32;
+    parameter LB_ADDR_W = 12;
+
     `ovm_component_utils(syn_vcortex_base_test)
 
     //Declare environment

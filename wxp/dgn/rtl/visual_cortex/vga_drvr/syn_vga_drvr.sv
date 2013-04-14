@@ -50,7 +50,7 @@ module syn_vga_drvr (
 
   sram_acc_intf               sram_intf,
 
-  syn_lb_intf                 gpu_lb_intf,  //DATA_W=32,  ADDR_W=8
+  syn_lb_intf                 lb_intf,      //DATA_W=32,  ADDR_W=8
 
   syn_vga_intf                vga_intf
 
@@ -82,8 +82,8 @@ module syn_vga_drvr (
 
 
 //----------------------- Internal Interface Declarations -----------------
-  syn_vga_drvr_lb_intf        vga_lb_intf(cr_intf.clk_ir, cr_intf.rst_sync_il);
-  ff_intf#(P_8B_W)            lbffr2fsm_intf(cr_intf.clk_ir, cr_intf.rst_sync_il);
+  syn_vga_drvr_lb_intf        vga_lb_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
+  ff_intf#(P_8B_W)            lbffr2fsm_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
 
 
 
@@ -96,7 +96,7 @@ module syn_vga_drvr (
 
     .cr_intf      (cr_intf),
 
-    .gpu_lb_intf  (gpu_lb_intf),
+    .lb_intf      (lb_intf),
 
     .vga_lb_intf  (vga_lb_intf.lb)
 

@@ -43,9 +43,10 @@
 `define __SYN_LB_AGENT
 
  class syn_lb_agent #(parameter DATA_W      = 32,
-                      parameter ADDR_W      = 16
+                      parameter ADDR_W      = 16,
                       type  PKT_TYPE        = syn_lb_seq_item,
-                      type  INTF_TYPE       = virtual syn_lb_intf
+                      type  DRVR_INTF_TYPE  = virtual syn_lb_intf.TB_DRVR,
+                      type  MON_INTF_TYPE   = virtual syn_lb_intf.TB_MON
                     ) extends ovm_component;
 
 
@@ -54,8 +55,8 @@
 
 
     //Declare Seqr, Drvr, Mon, Sb objects
-    syn_lb_mon#(DATA_W,ADDR_W,PKT_TYPE,INTF_TYPE.TB_MON)    mon;
-    syn_lb_drvr#(DATA_W,ADDR_W,PKT_TYPE,INTF_TYPE.TB_DRVR)  drvr;
+    syn_lb_mon#(DATA_W,ADDR_W,PKT_TYPE,MON_INTF_TYPE)       mon;
+    syn_lb_drvr#(DATA_W,ADDR_W,PKT_TYPE,DRVR_INTF_TYPE)     drvr;
     syn_lb_seqr#(PKT_TYPE)                                  seqr;
 
 
@@ -109,7 +110,6 @@
 
       mon.enable  = 0;
       drvr.enable = 0;
-      seqr.enable = 0;
 
       ovm_report_info(get_name(),"Disabled myself & kids ...",OVM_LOW);
     endfunction : disable_agent

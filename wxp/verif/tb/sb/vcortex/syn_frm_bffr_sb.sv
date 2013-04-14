@@ -51,11 +51,12 @@
 `ovm_analysis_imp_decl(_rcvd_pkt)
 `ovm_analysis_imp_decl(_sent_pkt)
 
+  import  syn_gpu_pkg::*;
+
   class syn_frm_bffr_sb #(type  SENT_PKT_TYPE = syn_lb_seq_item,
                           type  RCVD_PKT_TYPE = syn_lb_seq_item
                         ) extends ovm_scoreboard;
 
-    import  syn_gpu_pkg::*;
     `include  "syn_vcortex_reg_map.sv"
 
     /*  Register with Factory */
@@ -132,7 +133,7 @@
         begin
           gpu_reg_set.set_reg(pkt.addr[i], pkt.data[i]);
 
-          if((pkt.addr[i] ==  VCORTEX_GPU_JOB_BFFR_0_REG_ADDR)  &&  (gpu_reg_set.get_field(gpu_en)  ==  1))
+          if((pkt.addr[i] ==  VCORTEX_GPU_JOB_BFFR_0_REG_ADDR)  &&  (gpu_reg_set.get_field("gpu_en")  ==  1))
           begin
             extract_gpu_job();
           end
@@ -207,16 +208,16 @@
           if(v1 > e2)
           begin
             job.color.y = ((v1-e2)/dx)*job.color.y;
-            putPixel(x0,y0,job.color);
+            putPixel(job.x0,job.y0,job.color);
             job.color.y = 15  - job.color.y;
-            putPixel(x0,y0+1,job.color);
+            putPixel(job.x0,job.y0+1,job.color);
           end
           else
           begin
             job.color.y = ((e2-v1)/dx)*job.color.y;
-            putPixel(x0,y0,job.color);
+            putPixel(job.x0,job.y0,job.color);
             job.color.y = 15  - job.color.y;
-            putPixel(x0,y0-1,job.color);
+            putPixel(job.x0,job.y0-1,job.color);
           end
         end
         else
@@ -224,16 +225,16 @@
           if(v1 < e2)
           begin
             job.color.y = ((e2-v1)/dx)*job.color.y;
-            putPixel(x0,y0,job.color);
+            putPixel(job.x0,job.y0,job.color);
             job.color.y = 15  - job.color.y;
-            putPixel(x0+1,y0,job.color);
+            putPixel(job.x0+1,job.y0,job.color);
           end
           else
           begin
             job.color.y = ((v1-e2)/dx)*job.color.y;
-            putPixel(x0,y0,job.color);
+            putPixel(job.x0,job.y0,job.color);
             job.color.y = 15  - job.color.y;
-            putPixel(x0-1,y0,job.color);
+            putPixel(job.x0-1,job.y0,job.color);
           end
         end
 
@@ -258,7 +259,7 @@
     endfunction : process_draw_job
 
     //Function to convert pixel coordinates to frame buffer address & push into queue
-    function  putPixel(int x, int y, pxl_ycbcr_t pxl);
+    function  void  putPixel(int x, int y, pxl_ycbcr_t pxl);
       RCVD_PKT_TYPE pkt = new();
       pkt.addr  = new[1];
       pkt.data  = new[1];
@@ -268,13 +269,15 @@
 
       if(x  % 2)
       begin
-        pkt.data[7:0]   = pxl[7:0];
-        pkt.data[15:8]  = 'dx;
+        //$cast(pkt.data,{8'dx,pxl});
+        pkt.data[0][7:0]  = pxl;
+        pkt.data[0][15:0] = 'dx;
       end
       else
       begin
-        pkt.data[7:0]   = 'dx;
-        pkt.data[15:8]  = pxl[7:0];
+        //$cast(pkt.data,{pxl,8'dx});
+        pkt.data[0][7:0]  = 'dx;
+        pkt.data[0][15:0] = pxl;
       end
 
       frm_bffr_pending_xtns.push_back(pkt);
@@ -307,7 +310,7 @@
         if(!frm_bffr_pending_xtns.size())
         begin
           actual_pkt  = sram_wr_xtns.pop_front();
-          ovm_report_error{get_name(),"[run]"},$psprintf("frm_bffr_pending_xtns queue is empty. Unexpected SRAM write \n%s",actual_pkt.sprint()),OVM_LOW);
+          ovm_report_error({get_name(),"[run]"},$psprintf("frm_bffr_pending_xtns queue is empty. Unexpected SRAM write \n%s",actual_pkt.sprint()),OVM_LOW);
         end
         else
         begin

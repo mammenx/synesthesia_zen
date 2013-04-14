@@ -100,14 +100,14 @@
       bit [DATA_W-1:0]  data[$];
 
       /*  Check if the parameters are in sync!  */
-      if(intf.addr.size !=  ADDR_W)
-         ovm_report_fatal({get_name(),"[run]"},$psprintf("Intf addr_w(%d) does not match ADDR_W(%d) !!!",intf.addr.size,ADDR_W),OVM_LOW);
+      //  if(intf.addr.size !=  ADDR_W)
+      //     ovm_report_fatal({get_name(),"[run]"},$psprintf("Intf addr_w(%d) does not match ADDR_W(%d) !!!",intf.addr.size,ADDR_W),OVM_LOW);
 
-      if(intf.wr_data.size !=  DATA_W)
-         ovm_report_fatal({get_name(),"[run]"},$psprintf("Intf wr_data_w(%d) does not match DATA_W(%d) !!!",intf.wr_data.size,DATA_W),OVM_LOW);
+      //  if(intf.wr_data.size !=  DATA_W)
+      //     ovm_report_fatal({get_name(),"[run]"},$psprintf("Intf wr_data_w(%d) does not match DATA_W(%d) !!!",intf.wr_data.size,DATA_W),OVM_LOW);
 
-      if(intf.rd_data.size !=  DATA_W)
-         ovm_report_fatal({get_name(),"[run]"},$psprintf("Intf rd_data_w(%d) does not match DATA_W(%d) !!!",intf.rd_data.size,DATA_W),OVM_LOW);
+      //  if(intf.rd_data.size !=  DATA_W)
+      //     ovm_report_fatal({get_name(),"[run]"},$psprintf("Intf rd_data_w(%d) does not match DATA_W(%d) !!!",intf.rd_data.size,DATA_W),OVM_LOW);
 
 
       ovm_report_info({get_name(),"[run]"},"Start of run ",OVM_LOW);

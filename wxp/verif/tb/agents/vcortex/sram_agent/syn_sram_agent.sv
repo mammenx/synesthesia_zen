@@ -109,7 +109,6 @@
 
       mon.enable  = 0;
       drvr.enable = 0;
-      seqr.enable = 0;
 
       ovm_report_info(get_name(),"Disabled myself & kids ...",OVM_LOW);
     endfunction : disable_agent

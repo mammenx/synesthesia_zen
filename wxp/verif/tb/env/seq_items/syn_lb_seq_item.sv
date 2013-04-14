@@ -70,7 +70,7 @@
 
     /*  Constraint  Block */
     constraint  c_burst_len_lim {
-                                  if((av_xtn  ==  READ) ||  (av_xtn ==  WRITE)) {
+                                  if((lb_xtn  ==  READ) ||  (lb_xtn ==  WRITE)) {
                                     addr.size ==  1;
                                     data.size ==  1;
                                   }

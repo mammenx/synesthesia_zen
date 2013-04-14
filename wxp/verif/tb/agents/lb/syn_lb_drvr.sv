@@ -94,14 +94,14 @@
       PKT_TYPE  pkt_rsp;
 
       /*  Check if the parameters are in sync!  */
-      if(intf.addr.size !=  ADDR_W)
-         ovm_report_fatal({get_name(),"[run]"},$psprintf("Intf addr_w(%d) does not match ADDR_W(%d) !!!",intf.addr.size,ADDR_W),OVM_LOW);
+      //  if(intf.addr.size !=  ADDR_W)
+      //     ovm_report_fatal({get_name(),"[run]"},$psprintf("Intf addr_w(%d) does not match ADDR_W(%d) !!!",intf.addr.size,ADDR_W),OVM_LOW);
 
-      if(intf.wr_data.size !=  DATA_W)
-         ovm_report_fatal({get_name(),"[run]"},$psprintf("Intf wr_data_w(%d) does not match DATA_W(%d) !!!",intf.wr_data.size,DATA_W),OVM_LOW);
+      //  if(intf.wr_data.size !=  DATA_W)
+      //     ovm_report_fatal({get_name(),"[run]"},$psprintf("Intf wr_data_w(%d) does not match DATA_W(%d) !!!",intf.wr_data.size,DATA_W),OVM_LOW);
 
-      if(intf.rd_data.size !=  DATA_W)
-         ovm_report_fatal({get_name(),"[run]"},$psprintf("Intf rd_data_w(%d) does not match DATA_W(%d) !!!",intf.rd_data.size,DATA_W),OVM_LOW);
+      //  if(intf.rd_data.size !=  DATA_W)
+      //     ovm_report_fatal({get_name(),"[run]"},$psprintf("Intf rd_data_w(%d) does not match DATA_W(%d) !!!",intf.rd_data.size,DATA_W),OVM_LOW);
 
 
       ovm_report_info({get_name(),"[run]"},"Start of run ",OVM_LOW);
@@ -124,7 +124,7 @@
           drive(pkt);
 
           //Send back response
-          if((pkt.av_xtn  ==  READ) ||  (pkt.av_xtn ==  BURST_READ))
+          if((pkt.lb_xtn  ==  READ) ||  (pkt.lb_xtn ==  BURST_READ))
           begin
             pkt_rsp = new();
 
@@ -174,16 +174,16 @@
         begin
           foreach(pkt.addr[i])
           begin
-            intf.cb_drvr.rd_en          <=  read_n_write  ? 1 : 0;
-            intf.cb_drvr.wr_en          <=  read_n_write  ? 0 : 1;
-            intf.cb_drvr.addr           <=  pkt.addr[i]  & 'hffff;
-            intf.cb_drvr.wr_data        <=  pkt.data[i];
+            intf.rd_en          <=  read_n_write  ? 1 : 0;
+            intf.wr_en          <=  read_n_write  ? 0 : 1;
+            intf.addr           <=  pkt.addr[i]  & 'hffff;
+            intf.wr_data        <=  pkt.data[i];
 
             @(posedge intf.clk_ir);
           end
 
-          intf.cb_drvr.wr_en     <=  0;
-          intf.cb_drvr.rd_en     <=  0;
+          intf.wr_en     <=  0;
+          intf.rd_en     <=  0;
 
           @(posedge intf.clk_ir);
         end
@@ -193,9 +193,9 @@
           begin
             foreach(pkt.addr[i])
             begin
-              @(posedge intf.clk_ir iff intf.cb_drvr.rd_valid  ==  1); //wait for valid to be asserted
+              @(posedge intf.clk_ir iff intf.rd_valid  ==  1); //wait for valid to be asserted
 
-              pkt.data[i]          =  intf.cb_drvr.rd_data;  //sample data
+              pkt.data[i]          =  intf.rd_data;  //sample data
             end
           end
           else
@@ -215,10 +215,10 @@
     task  drive_rst;
       ovm_report_info({get_name(),"[drive_rst]"},"Start of drive_rst",OVM_LOW);
 
-        intf.cb_drvr.rd_en    <= 0;
-        intf.cb_drvr.wr_en    <= 0;
-        intf.cb_drvr.addr     <= 0;
-        intf.cb_drvr.wr_data  <= 0;
+        intf.rd_en    <= 0;
+        intf.wr_en    <= 0;
+        intf.addr     <= 0;
+        intf.wr_data  <= 0;
 
 
       ovm_report_info({get_name(),"[drive_rst]"},"End of drive_rst",OVM_LOW);

@@ -49,7 +49,7 @@ module syn_vga_lb (
   //--------------------- Interfaces --------------------
   syn_clk_rst_sync_intf       cr_intf,      //Clock Reset Interface
 
-  syn_lb_intf                 gpu_lb_intf,  //DATA_W=32,  ADDR_W=8
+  syn_lb_intf                 lb_intf,      //DATA_W=32,  ADDR_W=8
 
   syn_vga_drvr_lb_intf        vga_lb_intf   //Interface to local signals
 

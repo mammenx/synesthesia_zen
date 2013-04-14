@@ -50,7 +50,8 @@
     parameter       LB_DATA_W   = 32;
     parameter       LB_ADDR_W   = 12;
     parameter type  LB_PKT_T    = syn_lb_seq_item;
-    parameter type  LB_INTF_T   = virtual syn_lb_intf;
+    parameter type  LB_DRVR_INTF_T  = virtual syn_lb_intf#(LB_DATA_W,LB_ADDR_W);
+    parameter type  LB_MON_INTF_T   = virtual syn_lb_intf#(LB_DATA_W,LB_ADDR_W);
 
     parameter       SRAM_DATA_W = 16;
     parameter       SRAM_ADDR_W = 18;
@@ -63,7 +64,7 @@
 
 
     //Declare agents, scoreboards
-    syn_lb_agent#(LB_DATA_W,LB_ADDR_W,LB_PKT_T,LB_INTF_T)             lb_agent;
+    syn_lb_agent#(LB_DATA_W,LB_ADDR_W,LB_PKT_T,LB_DRVR_INTF_T,LB_MON_INTF_T)  lb_agent;
     syn_sram_agent#(SRAM_DATA_W,SRAM_ADDR_W,SRAM_PKT_T,SRAM_INTF_T)   sram_agent;
     syn_frm_bffr_sb#(LB_PKT_T,SRAM_PKT_T)                             frm_bffr_sb;
 
@@ -90,7 +91,7 @@
 
       ovm_report_info(get_name(),"Start of build ",OVM_LOW);
 
-      lb_agent    = syn_lb_agent#(LB_DATA_W,LB_ADDR_W,LB_PKT_T,LB_INTF_T)::type_id::create("lb_agent",  this);
+      lb_agent    = syn_lb_agent#(LB_DATA_W,LB_ADDR_W,LB_PKT_T,LB_DRVR_INTF_T,LB_MON_INTF_T)::type_id::create("lb_agent",  this);
       sram_agent  = syn_sram_agent#(SRAM_DATA_W,SRAM_ADDR_W,SRAM_PKT_T,SRAM_INTF_T)::type_id::create("sram_agent",  this);
       frm_bffr_sb = syn_frm_bffr_sb#(LB_PKT_T,SRAM_PKT_T)::type_id::create("frm_bffr_sb", this);
 

@@ -42,11 +42,10 @@
 */
 
 
-interface syn_lb_intf  #(parameter  DATA_W  = 32,
-                         parameter  ADDR_W  = 8
-                        )
+interface syn_lb_intf #(DATA_W  = 32, ADDR_W  = 12) (input logic  clk_ir, rst_il);
 
-                        (input logic clk_ir, rst_il);
+  //parameter DATA_W  = 32;
+  //parameter ADDR_W  = 8;
 
   //Read-Write signals
   logic                 rd_en;
@@ -56,7 +55,6 @@ interface syn_lb_intf  #(parameter  DATA_W  = 32,
   logic [DATA_W-1:0]    wr_data;
   logic                 rd_valid;
   logic [DATA_W-1:0]    rd_data;
-
 
   //Modports
   modport master  (
@@ -83,23 +81,6 @@ interface syn_lb_intf  #(parameter  DATA_W  = 32,
                   );
 
   /*  Verif */
-  clocking  cb_drvr@(posedge  clk_ir);
-    default input #2ns output #2ns;
-
-    output  rd_en;
-    output  wr_en;
-    output  addr;
-    output  wr_data;
-
-    input   wr_valid;
-    input   rd_valid;
-    input   rd_data;
-
-  endclocking : cb_drvr
-
-  modport TB_DRVR (clocking cb_drvr, input clk_ir, rst_il);
-
-
   clocking  cb_mon@(posedge  clk_ir);
     default input #2ns output #2ns;
 
@@ -112,6 +93,8 @@ interface syn_lb_intf  #(parameter  DATA_W  = 32,
     input   rd_data;
 
   endclocking : cb_mon
+
+
 
   modport TB_MON  (clocking cb_mon, input clk_ir, rst_il);
 

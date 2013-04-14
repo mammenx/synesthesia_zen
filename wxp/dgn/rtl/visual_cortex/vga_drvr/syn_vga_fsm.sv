@@ -317,7 +317,7 @@ vga_fsm_t   vfsm_pstate,  vfsm_nstate;
 
 
   /*  LBFFR Interface logic */
-  assign  lb_intf.ff_rd_en    =   ~lbffr_intf.ff_empty  & vga_tck_gen_f & valid_pxl_range_c;
+  assign  lbffr_intf.ff_rd_en =   ~lbffr_intf.ff_empty  & vga_tck_gen_f & valid_pxl_range_c;
 
 
   /*  Internal pipeline logic */

@@ -134,7 +134,7 @@ module syn_vcortex (
 
     .sram_intf    (sram_bus_intf.vga),
 
-    .gpu_lb_intf  (vga_lb_intf.slave),
+    .lb_intf      (vga_lb_intf.slave),
 
     .vga_intf     (vga_intf)
 

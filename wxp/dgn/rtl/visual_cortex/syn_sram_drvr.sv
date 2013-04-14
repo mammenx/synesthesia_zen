@@ -115,6 +115,6 @@ module syn_sram_drvr (
   end
 
   //SRAM_DQ Tristate logic
-  assign sram_mem_intf.SRAM_DQ  = ((~sram_mem_intf.SRAM_WE_N) ? writedata_reg : 16'hzzzz);
+  assign sram_mem_intf.SRAM_DQ  = (~sram_mem_intf.SRAM_WE_N) ? writedata_reg : 16'hzzzz;
 
 endmodule // syn_sram_drvr

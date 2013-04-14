@@ -98,11 +98,11 @@
     /*  Run */
     task run();
       /*  Check if the parameters are in sync!  */
-      if(intf.SRAM_ADDR.size  !=  ADDR_W)
-         ovm_report_fatal({get_name(),"[run]"},$psprintf("sram_addr_w(%d) does not match ADDR_W(%d) !!!",intf.SRAM_ADDR.size,ADDR_W),OVM_LOW);
+      //  if(intf.SRAM_ADDR.size  !=  ADDR_W)
+      //     ovm_report_fatal({get_name(),"[run]"},$psprintf("sram_addr_w(%d) does not match ADDR_W(%d) !!!",intf.SRAM_ADDR.size,ADDR_W),OVM_LOW);
 
-      if(intf.SRAM_DQ.size !=  DATA_W)
-         ovm_report_fatal({get_name(),"[run]"},$psprintf("sram_data_w(%d) does not match DATA_W(%d) !!!",intf.SRAM_DQ.size,DATA_W),OVM_LOW);
+      //  if(intf.SRAM_DQ.size !=  DATA_W)
+      //     ovm_report_fatal({get_name(),"[run]"},$psprintf("sram_data_w(%d) does not match DATA_W(%d) !!!",intf.SRAM_DQ.size,DATA_W),OVM_LOW);
 
 
       ovm_report_info({get_name(),"[run]"},"Start of run ",OVM_LOW);

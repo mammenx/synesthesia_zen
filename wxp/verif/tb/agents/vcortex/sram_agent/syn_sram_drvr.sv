@@ -96,15 +96,12 @@
 
     /*  Run */
     task run();
-      PKT_TYPE  pkt = new();
-      PKT_TYPE  pkt_rsp;
-
       /*  Check if the parameters are in sync!  */
-      if(intf.SRAM_ADDR.size  !=  ADDR_W)
-         ovm_report_fatal({get_name(),"[run]"},$psprintf("sram_addr_w(%d) does not match ADDR_W(%d) !!!",intf.SRAM_ADDR.size,ADDR_W),OVM_LOW);
+      //  if(intf.SRAM_ADDR.size  !=  ADDR_W)
+      //     ovm_report_fatal({get_name(),"[run]"},$psprintf("sram_addr_w(%d) does not match ADDR_W(%d) !!!",intf.SRAM_ADDR.size,ADDR_W),OVM_LOW);
 
-      if(intf.SRAM_DQ.size !=  DATA_W)
-         ovm_report_fatal({get_name(),"[run]"},$psprintf("sram_data_w(%d) does not match DATA_W(%d) !!!",intf.SRAM_DQ.size,DATA_W),OVM_LOW);
+      //  if(intf.SRAM_DQ.size !=  DATA_W)
+      //     ovm_report_fatal({get_name(),"[run]"},$psprintf("sram_data_w(%d) does not match DATA_W(%d) !!!",intf.SRAM_DQ.size,DATA_W),OVM_LOW);
 
 
       ovm_report_info({get_name(),"[run]"},"Start of run ",OVM_LOW);
@@ -131,6 +128,9 @@
 
     /*  Taks to accept sequence items & update memory */
     task  process_seq_item();
+      PKT_TYPE  pkt = new();
+      PKT_TYPE  pkt_rsp;
+
       forever
       begin
         ovm_report_info({get_name(),"[process_seq_item]"},"Waiting for seq_item",OVM_LOW);
@@ -142,7 +142,7 @@
         begin
           foreach(pkt.addr[i])
           begin
-            frm_bffr[addr[i]] = pkt.data[i];
+            frm_bffr[pkt.addr[i]] = pkt.data[i];
           end
 
           ovm_report_info({get_name(),"[process_seq_item]"},$psprintf("Updated frm_bffr"),OVM_LOW);
@@ -175,30 +175,31 @@
     task  talk_to_dut();
       forever
       begin
-        @(intf.SRAM_DQ, intf.SRAM_ADDR, intf.SRAM_LB_N, intf.SRAM_UB_N, intf.SRAM_CE_N, intf.SRAM_OE_N, intf.SRAM_WE_N);
+        @(intf.SRAM_ADDR, intf.SRAM_LB_N, intf.SRAM_UB_N, intf.SRAM_CE_N, intf.SRAM_OE_N, intf.SRAM_WE_N);
 
         #2ns;
 
         if(!intf.SRAM_OE_N  &&  !intf.SRAM_CE_N) //read command
         begin
-          intf.SRAM_DQ    = frm_bffr[intf.SRAM_ADDR];  //drive data to bus
+          intf.tb_dq      = frm_bffr[intf.SRAM_ADDR];  //drive data to bus
+          intf.tb_dq_sel  = 1;
           //  ovm_report_info({get_name(),"[talk_to_dut]"},$psprintf("READ - addr : 0x%x\tdata : 0x%x",intf.SRAM_ADDR,mem[intf.SRAM_ADDR]),OVM_LOW);
         end
         else
         begin
-          intf.SRAM_DQ    = 'dz;  //release bus
+          intf.tb_dq_sel  = 0;  //release bus
         end
 
         if(!intf.SRAM_WE_N  &&  !intf.SRAM_CE_N)  //write command
         begin
           if(~intf.SRAM_LB_N)
           begin
-            frm_bffr[intf.SRAM_ADDR][(DATA_W/2)-1:0]  = intf.SRAM_DQ[(DATA_W/2)-1:0]];  //sample low data from bus
+            frm_bffr[intf.SRAM_ADDR][(DATA_W/2)-1:0]  = intf.SRAM_DQ[(DATA_W/2)-1:0];  //sample low data from bus
           end
 
           if(~intf.SRAM_UB_N)
           begin
-            frm_bffr[intf.SRAM_ADDR][DATA_W-1:(DATA_W/2)] = intf.SRAM_DQ[DATA_W-1:(DATA_W/2)]]; //sample high data from bus
+            frm_bffr[intf.SRAM_ADDR][DATA_W-1:(DATA_W/2)] = intf.SRAM_DQ[DATA_W-1:(DATA_W/2)]; //sample high data from bus
           end
 
           //  ovm_report_info({get_name(),"[talk_to_dut]"},$psprintf("WRITE - addr : 0x%x\tmdata : 0x%x\tidata : 0x%x",intf.SRAM_ADDR,mem[intf.SRAM_ADDR],intf.SRAM_DQ),OVM_LOW);

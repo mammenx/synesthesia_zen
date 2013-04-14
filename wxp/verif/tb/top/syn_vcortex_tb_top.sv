@@ -70,9 +70,17 @@
 
     //Interfaces
     syn_clk_rst_sync_intf             cr_intf(sys_clk_50,sys_rst);
+
     syn_lb_intf#(LB_DATA_W,LB_ADDR_W) lb_intf(sys_clk_50,sys_rst);
+    //syn_lb_intf                       lb_intf(sys_clk_50,sys_rst);
+    //defparam  lb_intf.DATA_W  = LB_DATA_W;
+    //defparam  lb_intf.ADDR_W  = LB_ADDR_W;
+
     syn_sram_mem_intf                 sram_mem_intf(sys_clk_50,sys_rst);
+
     syn_vga_intf#(VGA_RES_W)          vga_intf(sys_clk_50,sys_rst);
+    //syn_vga_intf                      vga_intf(sys_clk_50,sys_rst);
+    //defparam  vga_intf.WIDTH  = VGA_RES_W;
 
 
     /////////////////////////////////////////////////////
