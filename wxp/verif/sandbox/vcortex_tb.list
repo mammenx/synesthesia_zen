@@ -1,0 +1,28 @@
+//Sequence items
+`include  "syn_lb_seq_item.sv"
+
+//RAL
+`include  "syn_reg_map.sv"
+
+//Agents
+`include  "syn_lb_drvr.sv"
+`include  "syn_lb_mon.sv"
+`include  "syn_lb_seqr.sv"
+`include  "syn_lb_agent.sv"
+
+`include  "syn_sram_drvr.sv"
+`include  "syn_sram_mon.sv"
+`include  "syn_sram_seqr.sv"
+`include  "syn_sram_agent.sv"
+
+//Scoreboards
+`include  "syn_frm_bffr_sb.sv"
+
+//Environments
+`include  "syn_vcortex_env.sv"
+
+
+//Sequences
+
+//Tests
+`include  "syn_vcortex_base_test.sv"

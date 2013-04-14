@@ -1,0 +1,25 @@
++incdir+../../verif/tb/agents/
++incdir+../../verif/tb/agents/lb/
++incdir+../../verif/tb/agents/vcortex/
++incdir+../../verif/tb/agents/vcortex/sram_agent/
++incdir+../../verif/tb/env/
++incdir+../../verif/tb/env/seq_items/
++incdir+../../verif/tb/sb/
++incdir+../../verif/tb/sb/vcortex/
++incdir+../../verif/tb/seq/
++incdir+../../verif/tb/seq/vcortex/
++incdir+../../verif/tb/tests/
++incdir+../../verif/tb/tests/vcortex/
++incdir+../../dgn/rtl/visual_cortex/
+
+//OVM
++incdir+../ovm-2.1.2/src/
+../ovm-2.1.2/src/ovm_pkg.sv
+
+//Packages
+
+//System Verilog DPI
+//-dpiheader dpiheader.h
+
+//TB TOP
+../../verif/tb/top/syn_vcortex_tb_top.sv
