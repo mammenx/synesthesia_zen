@@ -48,7 +48,7 @@
                      ) extends ovm_sequence  #(PKT_TYPE);
 
     /*  Adding the parameterized sequence to the registery  */
-    typedef <seq_name>#(PKT_TYPE) this_type;
+    typedef <seq_name>#(PKT_TYPE,SEQR_TYPE) this_type;
     typedef ovm_object_registry#(this_type)type_id;
 
     /*  Linking with p_sequencer  */
