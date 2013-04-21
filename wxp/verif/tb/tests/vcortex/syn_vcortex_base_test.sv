@@ -45,6 +45,8 @@ class syn_vcortex_base_test extends ovm_test;
 
     parameter LB_DATA_W = 32;
     parameter LB_ADDR_W = 12;
+    parameter type  LB_SEQ_ITEM_T = syn_lb_seq_item#(LB_DATA_W,LB_ADDR_W);
+    parameter type  LB_SEQR_T     = syn_lb_seqr#(LB_SEQ_ITEM_T);
 
     `ovm_component_utils(syn_vcortex_base_test)
 
@@ -97,8 +99,10 @@ class syn_vcortex_base_test extends ovm_test;
       ovm_report_info(get_full_name(),"Start of connect",OVM_LOW);
 
       //Make connections from DUT to TB components
-      this.env.lb_agent.drvr.intf   = $root.syn_vcortex_tb_top.lb_intf;
-      this.env.lb_agent.mon.intf    = $root.syn_vcortex_tb_top.lb_intf;
+      //this.env.lb_agent.drvr.intf   = $root.syn_vcortex_tb_top.lb_intf;
+      //this.env.lb_agent.mon.intf    = $root.syn_vcortex_tb_top.lb_intf;
+      this.env.lb_agent.drvr.intf   = $root.syn_vcortex_tb_top.lb_tb_intf;
+      this.env.lb_agent.mon.intf    = $root.syn_vcortex_tb_top.lb_tb_intf;
 
       this.env.sram_agent.drvr.intf = $root.syn_vcortex_tb_top.sram_mem_intf;
       this.env.sram_agent.mon.intf  = $root.syn_vcortex_tb_top.sram_mem_intf;
