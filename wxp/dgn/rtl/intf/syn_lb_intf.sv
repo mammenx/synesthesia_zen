@@ -80,22 +80,29 @@ interface syn_lb_intf #(DATA_W  = 32, ADDR_W  = 12) (input logic  clk_ir, rst_il
                     output  rd_data
                   );
 
-  /*  Verif */
-  clocking  cb_mon@(posedge  clk_ir);
-    default input #2ns output #2ns;
 
-    input   rd_en;
-    input   wr_en;
-    input   addr;
-    input   wr_data;
-    input   wr_valid;
-    input   rd_valid;
-    input   rd_data;
+  //synthesis translate_off
 
-  endclocking : cb_mon
+  //  /*  Verif */
+  //  clocking  cb@(posedge  clk_ir);
+  //    default input #2ns output #2ns;
+
+  //    inout   rd_en;
+  //    inout   wr_en;
+  //    inout   addr;
+  //    inout   wr_data;
+
+  //    input   wr_valid;
+  //    input   rd_valid;
+  //    input   rd_data;
+
+  //  endclocking : cb
 
 
 
-  modport TB_MON  (clocking cb_mon, input clk_ir, rst_il);
+  //  modport TB  (clocking cb, input clk_ir, rst_il);
+
+  //synthesis translate_on
+
 
 endinterface  //  syn_lb_intf
