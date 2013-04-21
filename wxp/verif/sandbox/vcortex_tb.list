@@ -23,6 +23,11 @@
 
 
 //Sequences
+`include  "syn_gpu_draw_job_config_seq.sv"
+`include  "syn_gpu_enable_seq.sv"
+`include  "syn_poll_gpu_status_seq.sv"
+
 
 //Tests
 `include  "syn_vcortex_base_test.sv"
+`include  "syn_vcortex_gpu_draw_line_test.sv"

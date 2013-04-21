@@ -114,6 +114,21 @@ module syn_vcortex (
   assign  lb_intf.rd_valid    = gpu_lb_intf.rd_valid  | vga_lb_intf.rd_valid;
   assign  lb_intf.rd_data     = gpu_lb_intf.rd_valid  ? gpu_lb_intf.rd_data : vga_lb_intf.rd_data;
 
+  //always_ff@(posedge cr_intf.clk_ir, negedge cr_intf.rst_sync_l)
+  //begin : seq_logic
+  // if(~cr_intf.rst_sync_l)
+  // begin
+  //   lb_intf.wr_valid         <=  0;
+  //   lb_intf.rd_valid         <=  0;
+  //   lb_intf.rd_data          <=  0;
+  // end
+  // else
+  // begin
+  //   lb_intf.wr_valid         <=  gpu_lb_intf.wr_valid  | vga_lb_intf.wr_valid;
+  //   lb_intf.rd_valid         <=  gpu_lb_intf.rd_valid  | vga_lb_intf.rd_valid;
+  //   lb_intf.rd_data          <=  gpu_lb_intf.rd_valid  ? gpu_lb_intf.rd_data : vga_lb_intf.rd_data;
+  // end
+  //end
 
   //Instantiating modules
   syn_gpu   syn_gpu_inst

@@ -63,11 +63,28 @@
     static int FAIL_REG_N_EXIST    = -2; //register does not exist
     static int FAIL_OUT_OF_BOUNDS  = -3; //index out of bounds?
 
+    OVM_FILE  f;
+
     /*  Constructor */
     function  new(string name = "syn_reg_map",  ovm_component parent);
       super.new(name, parent);
     endfunction : new
 
+
+    /*  Build */
+    function void build();
+      super.build();
+
+      f = $fopen({"./logs/",get_full_name(),".log"},  "w");
+
+      set_report_default_file(f);
+      set_report_severity_action(OVM_INFO,  OVM_DISPLAY | OVM_LOG);
+      set_report_severity_action(OVM_WARNING, OVM_DISPLAY | OVM_LOG);
+      set_report_severity_action(OVM_ERROR,  OVM_COUNT | OVM_DISPLAY | OVM_LOG);
+      set_report_severity_action(OVM_FATAL,  OVM_EXIT | OVM_DISPLAY | OVM_LOG);
+
+      ovm_report_info(get_name(),"End of build ",OVM_LOW);
+    endfunction : build
 
     function void create_field(string name, int addr, int b_start, int b_end);
       if(!reg_arry.exists(addr))  reg_arry[addr]  = 'd0;
@@ -151,7 +168,7 @@
 
         //  $cast(val, temp[bit_end_arry[name]:bit_start_arry[name]]);
 
-        //ovm_report_info({get_name(),"[get_field]"},$psprintf("Field - %s [start : 0x%x, end : 0x%x] is 0x%x, temp = 0x%x",name,bit_start_arry[name],bit_end_arry[name],val,temp),OVM_LOW);
+        ovm_report_info({get_name(),"[get_field]"},$psprintf("Field - %s [start : 0x%x, end : 0x%x] is 0x%x, temp = 0x%x",name,bit_start_arry[name],bit_end_arry[name],val,temp),OVM_LOW);
 
         return  val;
       end
@@ -169,6 +186,7 @@
       else
       begin
         reg_arry[addr]  = data;
+        ovm_report_info({get_name(),"[set_reg]"},$psprintf("Reg[0x%x] set to 0x%x",addr,reg_arry[addr]),OVM_LOW);
         return  SUCCESS;
       end
     endfunction : set_reg

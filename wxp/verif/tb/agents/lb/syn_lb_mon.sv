@@ -45,7 +45,7 @@
  class syn_lb_mon   #(parameter DATA_W  = 32,
                       parameter ADDR_W  = 16,
                       type  PKT_TYPE    = syn_lb_seq_item,
-                      type  INTF_TYPE   = virtual syn_lb_intf.TB_MON
+                      type  INTF_TYPE   = virtual syn_lb_intf
                     ) extends ovm_component;
 
     INTF_TYPE intf;
@@ -120,20 +120,20 @@
         forever
         begin
           //Monitor logic
-          @(posedge intf.clk_ir iff (intf.cb_mon.rd_en | intf.cb_mon.wr_en) ==  1); //wait for enable to be asserted
+          @(posedge intf.clk_ir iff (intf.cb.rd_en | intf.cb.wr_en) ==  1); //wait for enable to be asserted
 
           addr  = {}; //clear queues
           data  = {};
 
           pkt = new();
-          pkt.lb_xtn  = intf.cb_mon.wr_en ? WRITE : READ;
+          pkt.lb_xtn  = intf.cb.wr_en ? WRITE : READ;
 
           fork
             //capture address
             begin
-              while(intf.cb_mon.wr_en ||  intf.cb_mon.rd_en);
+              while(intf.cb.wr_en ||  intf.cb.rd_en)
               begin
-                addr.push_back(intf.cb_mon.addr);
+                addr.push_back(intf.cb.addr);
                 @(posedge intf.clk_ir);
               end
             end
@@ -142,17 +142,17 @@
             begin
               if(pkt.lb_xtn ==  WRITE)
               begin
-                while(intf.cb_mon.wr_en)
+                while(intf.cb.wr_en)
                 begin
-                  data.push_back(intf.cb_mon.wr_data);
+                  data.push_back(intf.cb.wr_data);
                   @(posedge intf.clk_ir);
                 end
               end
               else  //READ
               begin
-                while(intf.cb_mon.rd_valid)
+                while(intf.cb.rd_valid)
                 begin
-                  data.push_back(intf.cb_mon.rd_data);
+                  data.push_back(intf.cb.rd_data);
                   @(posedge intf.clk_ir);
                 end
               end

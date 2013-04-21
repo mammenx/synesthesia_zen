@@ -45,7 +45,7 @@
   class syn_lb_drvr #(parameter DATA_W  = 32,
                       parameter ADDR_W  = 16,
                       type  PKT_TYPE    = syn_lb_seq_item,
-                      type  INTF_TYPE   = virtual syn_lb_intf.TB_DRVR
+                      type  INTF_TYPE   = virtual syn_lb_intf
                     ) extends ovm_driver  #(PKT_TYPE,PKT_TYPE); //request, response
 
     INTF_TYPE intf;
@@ -112,7 +112,8 @@
         drive_rst();
 
         @(posedge intf.rst_il); //wait for reset to be lifted
-        repeat  (10)  @(posedge intf.clk_ir);
+
+        repeat(10)  @(intf.cb); //wait for 10 clocks
 
         forever
         begin
@@ -156,6 +157,7 @@
     /*  Drive */
     task  drive(PKT_TYPE  pkt);
       bit read_n_write;
+      int num = 0;
 
       ovm_report_info({get_name(),"[drive]"},"Start of drive ",OVM_LOW);
 
@@ -168,23 +170,28 @@
         read_n_write  = 0;
       end
 
-      @(posedge intf.clk_ir);
+      @(intf.cb);
 
       fork
         begin
           foreach(pkt.addr[i])
           begin
-            intf.rd_en          <=  read_n_write  ? 1 : 0;
-            intf.wr_en          <=  read_n_write  ? 0 : 1;
-            intf.addr           <=  pkt.addr[i]  & 'hffff;
-            intf.wr_data        <=  pkt.data[i];
+            intf.cb.rd_en          <=  read_n_write  ? 1 : 0;
+            intf.cb.wr_en          <=  read_n_write  ? 0 : 1;
+            intf.cb.addr           <=  pkt.addr[i]  & 'hffff;
+            intf.cb.wr_data        <=  pkt.data[i];
 
+            //ovm_report_info({get_name(),"[drive]"},$psprintf("Driving read_n_write[%1d] addr[%1d]",read_n_write,num),OVM_LOW);
+            //num++;
+
+            //@(intf.cb);
             @(posedge intf.clk_ir);
           end
 
-          intf.wr_en     <=  0;
-          intf.rd_en     <=  0;
+          intf.cb.wr_en     <=  0;
+          intf.cb.rd_en     <=  0;
 
+          //@(intf.cb);
           @(posedge intf.clk_ir);
         end
 
@@ -193,9 +200,9 @@
           begin
             foreach(pkt.addr[i])
             begin
-              @(posedge intf.clk_ir iff intf.rd_valid  ==  1); //wait for valid to be asserted
+              @(posedge intf.clk_ir iff intf.cb.rd_valid  ==  1); //wait for valid to be asserted
 
-              pkt.data[i]          =  intf.rd_data;  //sample data
+              pkt.data[i]          =  intf.cb.rd_data;  //sample data
             end
           end
           else
@@ -206,6 +213,7 @@
 
       join  //join_all
 
+      //@(intf.cb);
       @(posedge intf.clk_ir);
 
       ovm_report_info({get_name(),"[drive]"},"End of drive ",OVM_LOW);
@@ -215,10 +223,10 @@
     task  drive_rst;
       ovm_report_info({get_name(),"[drive_rst]"},"Start of drive_rst",OVM_LOW);
 
-        intf.rd_en    <= 0;
-        intf.wr_en    <= 0;
-        intf.addr     <= 0;
-        intf.wr_data  <= 0;
+        intf.cb.rd_en    <= 0;
+        intf.cb.wr_en    <= 0;
+        intf.cb.addr     <= 0;
+        intf.cb.wr_data  <= 0;
 
 
       ovm_report_info({get_name(),"[drive_rst]"},"End of drive_rst",OVM_LOW);

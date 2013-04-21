@@ -161,7 +161,7 @@ enum  logic [1:0] { IDLE_S,
   begin : fsm_nxt_state_logic
     next_state                =   fsm_pstate;
 
-    unique  case(fsm_pstate)
+    case(fsm_pstate)
 
       IDLE_S  :
       begin
@@ -209,7 +209,7 @@ enum  logic [1:0] { IDLE_S,
     end
     else
     begin
-      unique  case(fsm_pstate)
+      case(fsm_pstate)
 
         IDLE_S  :
         begin
@@ -271,7 +271,7 @@ enum  logic [1:0] { IDLE_S,
       pxl_egr_intf.pxl.cb         <=  ingr_pxl_w.cb;
       pxl_egr_intf.pxl.cr         <=  ingr_pxl_w.cr;
 
-      unique  case(fsm_pstate)
+      case(fsm_pstate)
 
         DIV_RES_NORM_S  :
         begin

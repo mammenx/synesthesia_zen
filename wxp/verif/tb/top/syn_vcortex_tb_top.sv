@@ -76,11 +76,20 @@
     //defparam  lb_intf.DATA_W  = LB_DATA_W;
     //defparam  lb_intf.ADDR_W  = LB_ADDR_W;
 
+    syn_lb_tb_intf#(LB_DATA_W,LB_ADDR_W) lb_tb_intf(sys_clk_50,sys_rst, lb_intf.wr_valid, lb_intf.rd_valid, lb_intf.rd_data);
+
     syn_sram_mem_intf                 sram_mem_intf(sys_clk_50,sys_rst);
 
     syn_vga_intf#(VGA_RES_W)          vga_intf(sys_clk_50,sys_rst);
     //syn_vga_intf                      vga_intf(sys_clk_50,sys_rst);
     //defparam  vga_intf.WIDTH  = VGA_RES_W;
+
+    
+    //Assigning LB signals from TB to DUT
+    assign  lb_intf.rd_en     = lb_tb_intf.rd_en;
+    assign  lb_intf.wr_en     = lb_tb_intf.wr_en;
+    assign  lb_intf.wr_data   = lb_tb_intf.wr_data;
+    assign  lb_intf.addr      = lb_tb_intf.addr;
 
 
     /////////////////////////////////////////////////////

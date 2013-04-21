@@ -218,7 +218,7 @@ enum  logic [1:0] { IDLE_S,
     end
     else
     begin
-      sy_f                    <=  sx_c;
+      sx_f                    <=  sx_c;
       sy_f                    <=  sy_c;
 
       dx_f                    <=  dx_c;
@@ -337,7 +337,7 @@ enum  logic [1:0] { IDLE_S,
 
         DRAW_LINE_S :
         begin
-          pxl_out_valid_f     <=  ~line_drw_ovr_c;
+          pxl_out_valid_f     <=  ~line_drw_ovr_c & pipe_rdy_c;
 
           if(pipe_rdy_c)
           begin

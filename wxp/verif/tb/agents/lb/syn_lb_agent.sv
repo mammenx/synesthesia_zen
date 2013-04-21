@@ -45,8 +45,8 @@
  class syn_lb_agent #(parameter DATA_W      = 32,
                       parameter ADDR_W      = 16,
                       type  PKT_TYPE        = syn_lb_seq_item,
-                      type  DRVR_INTF_TYPE  = virtual syn_lb_intf.TB_DRVR,
-                      type  MON_INTF_TYPE   = virtual syn_lb_intf.TB_MON
+                      type  DRVR_INTF_TYPE  = virtual syn_lb_intf,
+                      type  MON_INTF_TYPE   = virtual syn_lb_intf
                     ) extends ovm_component;
 
 

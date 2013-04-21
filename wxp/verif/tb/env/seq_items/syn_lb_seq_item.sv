@@ -82,7 +82,7 @@
                                 }
 
     /*  Function to check a pkt of same type */
-    function  bit check (input  syn_lb_seq_item item);
+    function  bit check (input  syn_lb_seq_item#(DATA_W,ADDR_W) item);
 
       if(this.addr.size !=  item.addr.size) return  0;
 

@@ -64,8 +64,8 @@
 
 
     //Ports
-    ovm_analysis_imp_sent_pkt #(SENT_PKT_TYPE,syn_frm_bffr_sb)  Mon_sent_2Sb_port;
-    ovm_analysis_imp_rcvd_pkt #(RCVD_PKT_TYPE,syn_frm_bffr_sb)  Mon_rcvd_2Sb_port;
+    ovm_analysis_imp_sent_pkt #(SENT_PKT_TYPE,syn_frm_bffr_sb#(SENT_PKT_TYPE,RCVD_PKT_TYPE))  Mon_sent_2Sb_port;
+    ovm_analysis_imp_rcvd_pkt #(RCVD_PKT_TYPE,syn_frm_bffr_sb#(SENT_PKT_TYPE,RCVD_PKT_TYPE))  Mon_rcvd_2Sb_port;
 
     OVM_FILE  f;
 
@@ -102,16 +102,17 @@
       Mon_sent_2Sb_port = new("Mon_sent_2Sb_port", this);
       Mon_rcvd_2Sb_port = new("Mon_rcvd_2Sb_port", this);
 
-      gpu_reg_set  = new("gpu_reg_set", this);
+      //gpu_reg_set  = new("gpu_reg_set", this);
+      gpu_reg_set = syn_reg_map#(32)::type_id::create("gpu_reg_set",  this);
       gpu_reg_set.create_field("gpu_en",VCORTEX_GPU_CONTROL_REG_ADDR,0,0);
-      gpu_reg_set.create_field("gpu_job_bffr_0",VCORTEX_GPU_JOB_BFFR_0_REG_ADDR,31,0);
-      gpu_reg_set.create_field("gpu_job_bffr_1",VCORTEX_GPU_JOB_BFFR_1_REG_ADDR,31,0);
-      gpu_reg_set.create_field("gpu_job_bffr_2",VCORTEX_GPU_JOB_BFFR_2_REG_ADDR,31,0);
-      gpu_reg_set.create_field("gpu_job_bffr_3",VCORTEX_GPU_JOB_BFFR_3_REG_ADDR,31,0);
-      gpu_reg_set.create_field("gpu_job_bffr_4",VCORTEX_GPU_JOB_BFFR_4_REG_ADDR,31,0);
-      gpu_reg_set.create_field("gpu_job_bffr_5",VCORTEX_GPU_JOB_BFFR_5_REG_ADDR,31,0);
-      gpu_reg_set.create_field("gpu_job_bffr_6",VCORTEX_GPU_JOB_BFFR_6_REG_ADDR,31,0);
-      gpu_reg_set.create_field("gpu_job_bffr_7",VCORTEX_GPU_JOB_BFFR_7_REG_ADDR,31,0);
+      gpu_reg_set.create_field("gpu_job_bffr_0",VCORTEX_GPU_JOB_BFFR_0_REG_ADDR,0,31);
+      gpu_reg_set.create_field("gpu_job_bffr_1",VCORTEX_GPU_JOB_BFFR_1_REG_ADDR,0,31);
+      gpu_reg_set.create_field("gpu_job_bffr_2",VCORTEX_GPU_JOB_BFFR_2_REG_ADDR,0,31);
+      gpu_reg_set.create_field("gpu_job_bffr_3",VCORTEX_GPU_JOB_BFFR_3_REG_ADDR,0,31);
+      gpu_reg_set.create_field("gpu_job_bffr_4",VCORTEX_GPU_JOB_BFFR_4_REG_ADDR,0,31);
+      gpu_reg_set.create_field("gpu_job_bffr_5",VCORTEX_GPU_JOB_BFFR_5_REG_ADDR,0,31);
+      gpu_reg_set.create_field("gpu_job_bffr_6",VCORTEX_GPU_JOB_BFFR_6_REG_ADDR,0,31);
+      gpu_reg_set.create_field("gpu_job_bffr_7",VCORTEX_GPU_JOB_BFFR_7_REG_ADDR,0,31);
 
       frm_bffr_pending_xtns = '{};  //clear the queue
 
@@ -142,6 +143,22 @@
 
     endfunction : write_sent_pkt
 
+    function  string  sprint_gpu_draw_job(gpu_draw_job_t job);
+      string  res = "gpu_draw_job :\n";
+
+      if(job.shape  ==  LINE)         res = {res,"Shape : LINE\n"};
+      else if(job.shape  ==  CIRCLE)  res = {res,"Shape : CIRCLE\n"};
+
+      res = {res,$psprintf("X0 : %1d\n",job.x0)};
+      res = {res,$psprintf("Y0 : %1d\n",job.y0)};
+      res = {res,$psprintf("X1 : %1d\n",job.x1)};
+      res = {res,$psprintf("Y1 : %1d\n",job.y1)};
+      res = {res,$psprintf("Color : 0x%1x\n",job.color)};
+      res = {res,$psprintf("Width : %d\n",job.width)};
+
+      return  res;
+    endfunction : sprint_gpu_draw_job
+
     /*  Function  to extract GPU job contents from shadow register set  */
     function  void  extract_gpu_job();
       bit [31:0]  tmp_reg;
@@ -149,25 +166,47 @@
       gpu_draw_job_t  draw_job;
       gpu_fill_job_t  fill_job;
 
+
       $cast(action, gpu_reg_set.get_field("gpu_job_bffr_0"));
 
       if(action ==  DRAW)
       begin
-        $cast(draw_job.shape, gpu_reg_set.get_field("gpu_job_bffr_1"));
-        $cast(draw_job.x0,    gpu_reg_set.get_field("gpu_job_bffr_2"));
-        $cast(draw_job.y0,    gpu_reg_set.get_field("gpu_job_bffr_3"));
-        $cast(draw_job.x1,    gpu_reg_set.get_field("gpu_job_bffr_4"));
-        $cast(draw_job.y1,    gpu_reg_set.get_field("gpu_job_bffr_5"));
-        $cast(draw_job.color, gpu_reg_set.get_field("gpu_job_bffr_6"));
-        $cast(draw_job.width, gpu_reg_set.get_field("gpu_job_bffr_7"));
+        //$cast(draw_job.shape, gpu_reg_set.get_field("gpu_job_bffr_1"));
+        //$cast(draw_job.x0,    gpu_reg_set.get_field("gpu_job_bffr_2"));
+        //$cast(draw_job.y0,    gpu_reg_set.get_field("gpu_job_bffr_3"));
+        //$cast(draw_job.x1,    gpu_reg_set.get_field("gpu_job_bffr_4"));
+        //$cast(draw_job.y1,    gpu_reg_set.get_field("gpu_job_bffr_5"));
+        //$cast(draw_job.color, gpu_reg_set.get_field("gpu_job_bffr_6"));
+        //$cast(draw_job.width, gpu_reg_set.get_field("gpu_job_bffr_7"));
+        draw_job.shape    = shape_t'(gpu_reg_set.get_field("gpu_job_bffr_1") & 2'b11);
+        draw_job.x0       = gpu_reg_set.get_field("gpu_job_bffr_2") & {P_X_W{1'b1}};
+        draw_job.y0       = gpu_reg_set.get_field("gpu_job_bffr_3") & {P_Y_W{1'b1}};
+        draw_job.x1       = gpu_reg_set.get_field("gpu_job_bffr_4") & {P_X_W{1'b1}};
+        draw_job.y1       = gpu_reg_set.get_field("gpu_job_bffr_5") & {P_Y_W{1'b1}};
+        draw_job.color    = gpu_reg_set.get_field("gpu_job_bffr_6");
+        draw_job.width    = gpu_reg_set.get_field("gpu_job_bffr_7");
+
+
+        ovm_report_info({get_name(),"[extract_gpu_job]"},$psprintf("Start of extract_gpu_job : \n%s",  sprint_gpu_draw_job(draw_job)),OVM_LOW);
 
         process_draw_job(draw_job);
+
+        ovm_report_info({get_name(),"[extract_gpu_job]"},$psprintf("Contents of frm_bffr_pending_xtns ...\n%s",sprint_frm_bffr_pending_xtns()),OVM_LOW);
       end
       else
       begin
         ovm_report_warning({get_name(),"[extract_gpu_job]"},$psprintf("Unidentified GPU action %s",action.name()),OVM_LOW);
       end
     endfunction : extract_gpu_job
+
+    function  string  sprint_frm_bffr_pending_xtns();
+      string  res = "";
+
+      foreach(frm_bffr_pending_xtns[i])
+        res = {res,$psprintf("[%1d] ----->\n%s\n",i,frm_bffr_pending_xtns[i].sprint())};
+
+        return  res;
+    endfunction : sprint_frm_bffr_pending_xtns
 
 
     /*  Function to process a draw job & derive the set of pixel writes */

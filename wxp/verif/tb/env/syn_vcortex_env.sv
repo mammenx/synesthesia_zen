@@ -49,13 +49,15 @@
     //Parameters
     parameter       LB_DATA_W   = 32;
     parameter       LB_ADDR_W   = 12;
-    parameter type  LB_PKT_T    = syn_lb_seq_item;
-    parameter type  LB_DRVR_INTF_T  = virtual syn_lb_intf#(LB_DATA_W,LB_ADDR_W);
-    parameter type  LB_MON_INTF_T   = virtual syn_lb_intf#(LB_DATA_W,LB_ADDR_W);
+    parameter type  LB_PKT_T    = syn_lb_seq_item#(LB_DATA_W,LB_ADDR_W);
+    //parameter type  LB_DRVR_INTF_T  = virtual syn_lb_intf#(LB_DATA_W,LB_ADDR_W);
+    //parameter type  LB_MON_INTF_T   = virtual syn_lb_intf#(LB_DATA_W,LB_ADDR_W);
+    parameter type  LB_DRVR_INTF_T  = virtual syn_lb_tb_intf#(LB_DATA_W,LB_ADDR_W);
+    parameter type  LB_MON_INTF_T   = virtual syn_lb_tb_intf#(LB_DATA_W,LB_ADDR_W);
 
     parameter       SRAM_DATA_W = 16;
     parameter       SRAM_ADDR_W = 18;
-    parameter type  SRAM_PKT_T  = syn_lb_seq_item;
+    parameter type  SRAM_PKT_T  = syn_lb_seq_item#(SRAM_DATA_W,SRAM_ADDR_W);
     parameter type  SRAM_INTF_T = virtual syn_sram_mem_intf.TB;
 
 

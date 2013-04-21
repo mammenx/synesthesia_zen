@@ -1,6 +1,7 @@
 +incdir+../../dgn/rtl/altera/
 +incdir+../../dgn/rtl/intf/
 +incdir+../../dgn/rtl/pkg/
++incdir+../../dgn/rtl/cortex_top/
 +incdir+../../dgn/rtl/visual_cortex/
 +incdir+../../dgn/rtl/visual_cortex/intf/
 +incdir+../../dgn/rtl/visual_cortex/grapheme/

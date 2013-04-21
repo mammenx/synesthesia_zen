@@ -11,10 +11,14 @@
 +incdir+../../verif/tb/tests/
 +incdir+../../verif/tb/tests/vcortex/
 +incdir+../../dgn/rtl/visual_cortex/
++incdir+../../dgn/rtl/cortex_top/
 
 //OVM
 +incdir+../ovm-2.1.2/src/
 ../ovm-2.1.2/src/ovm_pkg.sv
+
+//Interfaces
+../../verif/tb/env/interfaces/syn_lb_tb_intf.sv
 
 //Packages
 
