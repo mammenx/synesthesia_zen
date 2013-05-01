@@ -28,7 +28,7 @@ set TEST_NAME=syn_vcortex_gpu_draw_line_test
 
 set TB_TOP=syn_vcortex_tb_top
 
-set MSIM_DIR=C:\altera\10.0sp1\modelsim_ase
+set MSIM_DIR=C:\altera\11.1sp2\modelsim_ase
 set MSIM_INC_DIR=%MSIM_DIR%\include
 set MSIM_WIN32_DIR=%MSIM_DIR%\win32aloem
 

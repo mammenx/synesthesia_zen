@@ -15,6 +15,9 @@ del /f /q *.ini
 del /f /q transcript*
 del /f /q *.wlf
 del /f /q *.obj
+del /f /q *.h
+del /f /q *.dll
+
 
 mkdir logs
 
