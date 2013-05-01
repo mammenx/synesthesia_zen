@@ -56,7 +56,7 @@ int dump_ppm  (const char *fname, int width, int depth, unsigned char *red_arry,
   //strcat(fname, ext);
 
   /*  Open new ppm file */
-  fp  = fopen(fname, "w+");
+  if(!fp  = fopen(fname, "w+")) return 0;
 
 
   /*  Build PPM Header  */
@@ -85,6 +85,6 @@ int dump_ppm  (const char *fname, int width, int depth, unsigned char *red_arry,
   /*  Close File  */
   fclose(fp);
 
-  return 0;
+  return 1;
 }
 
