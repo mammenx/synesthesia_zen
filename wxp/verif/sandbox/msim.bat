@@ -17,22 +17,44 @@ del /f /q transcript*
 del /f /q *.wlf
 del /f /q *.obj
 del /f /q *.log
+del /f /q *.h
+del /f /q *.obj
+del /f /q *.dll
 
 mkdir logs
 
 rem set TEST_NAME=syn_vcortex_base_test
 set TEST_NAME=syn_vcortex_gpu_draw_line_test
 
+set TB_TOP=syn_vcortex_tb_top
+
+set MSIM_DIR=C:\altera\10.0sp1\modelsim_ase
+set MSIM_INC_DIR=%MSIM_DIR%\include
+set MSIM_WIN32_DIR=%MSIM_DIR%\win32aloem
+
+echo  MSIM_DIR : %MSIM_DIR%
+echo  MSIM_INC_DIR : %MSIM_INC_DIR%
+echo  MSIM_WIN32_DIR : %MSIM_WIN32_DIR%
 
 vlib work
 vmap work work
+
+rem pause
 
 echo  Compiling Design
 vlog -incr -f dgn.list +define+SIMULATION -sv -incr -timescale "1ns / 10ps"  -l  compile.dgn.log
 echo  Compiling TB
 vlog -f verif.list +define+SIMULATION -sv -incr -timescale "1ns / 10ps"  -l  compile.verif.log
+
+echo  Compiling DPI-C files
+gcc -c -g ../tb/dpi/ppm.c -o ppm.obj
+gcc -c -g ../tb/dpi/syn_dpi.c -o syn_dpi.obj -I%MSIM_INC_DIR%
+
+echo  Building DLLs
+gcc -shared -g -Bsymbolic -lmtipli -I. -I%MSIM_INC_DIR% -L.  -L../tb/dpi -L%MSIM_WIN32_DIR% -o syn_dpi_lib.dll syn_dpi.obj ppm.obj
+
 echo  Running test : %TEST_NAME%
-vsim -c -novopt +OVM_TESTNAME=%TEST_NAME%  syn_vcortex_tb_top +define+SIMULATION -l transcript.txt -permit_unmatched_virtual_intf -do "add wave -r /*;run -all"
+vsim -c -novopt +OVM_TESTNAME=%TEST_NAME% -sv_lib syn_dpi_lib %TB_TOP% +define+SIMULATION -l transcript.txt -permit_unmatched_virtual_intf -do "add wave -r /*;run -all"
 
 
 pause

@@ -22,10 +22,10 @@
 /*
  --------------------------------------------------------------------------
  -- Project Code      : synesthesia
- -- File Name         : ppm.h
+ -- File Name         : syn_dpi.c
  -- Author            : mammenx
- -- Function          : Header file for ppm.c. Contains function prototypes
-                        to create raw PPM image from RGB data.
+ -- Function          : This is the gateway to access all the C functions
+                        used in synesthesia via SV DPI.
  --------------------------------------------------------------------------
 */
 
@@ -40,9 +40,49 @@
  --------------------------------------------------------------------------
 */
 
-#ifndef PPM_H_
-#define PPM_H_
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+#include "svdpi.h"
+#include "syn_dpi.h"
+#include "ppm.h"
 
-int dump_ppm  (const char *fname, int width, int depth, unsigned char *red_arry, unsigned char *green_arry, unsigned char *blue_arry);
 
-#endif /* PPM_H_ */
+//dump_ppm wrapper
+int syn_dump_ppm(
+    const char* fname,
+    int width,
+    int depth,
+    const svOpenArrayHandle red,
+    const svOpenArrayHandle green,
+    const svOpenArrayHandle blue)
+{
+
+  int i;
+  unsigned  char  *red_arry_ptr;
+  unsigned  char  *green_arry_ptr;
+  unsigned  char  *blue_arry_ptr;
+
+  //Convert from svOpenArrayHandle type to unsigned char type
+  for (i= svLeft(red,1); i <= svRight(red,1); i++) {
+      red_arry_ptr[i] = *(unsigned char*)svGetArrElemPtr1(red, i);
+  }
+  
+  for (i= svLeft(green,1); i <= svRight(green,1); i++) {
+      green_arry_ptr[i] = *(unsigned char*)svGetArrElemPtr1(green, i);
+  }
+
+  for (i= svLeft(blue,1); i <= svRight(blue,1); i++) {
+      blue_arry_ptr[i] = *(unsigned char*)svGetArrElemPtr1(blue, i);
+  }
+
+
+  return  dump_ppm(
+                    fname,
+                    width,
+                    depth,
+                    red_arry_ptr,
+                    green_arry_ptr,
+                    blue_arry_ptr
+                  );
+}

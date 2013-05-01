@@ -22,10 +22,10 @@
 /*
  --------------------------------------------------------------------------
  -- Project Code      : synesthesia
- -- File Name         : ppm.h
+ -- Package Name      : syn_image_pkg
  -- Author            : mammenx
- -- Function          : Header file for ppm.c. Contains function prototypes
-                        to create raw PPM image from RGB data.
+ -- Description       : This package contains DPI functions related to image
+                        processing tasks.
  --------------------------------------------------------------------------
 */
 
@@ -40,9 +40,16 @@
  --------------------------------------------------------------------------
 */
 
-#ifndef PPM_H_
-#define PPM_H_
+package syn_image_pkg;
 
-int dump_ppm  (const char *fname, int width, int depth, unsigned char *red_arry, unsigned char *green_arry, unsigned char *blue_arry);
+  //This function creates a .ppm image file with the RGB values
+  import "DPI-C" pure function int  syn_dump_ppm(
+                                                  input string fname,
+                                                  input int width,
+                                                  input int depth,
+                                                  input byte unsigned red[],
+                                                  input byte unsigned green[],
+                                                  input byte unsigned blue[]
+                                                );
 
-#endif /* PPM_H_ */
+endpackage  //  syn_image_pkg

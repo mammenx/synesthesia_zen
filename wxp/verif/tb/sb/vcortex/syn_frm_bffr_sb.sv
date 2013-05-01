@@ -52,6 +52,7 @@
 `ovm_analysis_imp_decl(_sent_pkt)
 
   import  syn_gpu_pkg::*;
+  import  syn_image_pkg::*;
 
   class syn_frm_bffr_sb #(type  SENT_PKT_TYPE = syn_lb_seq_item,
                           type  RCVD_PKT_TYPE = syn_lb_seq_item

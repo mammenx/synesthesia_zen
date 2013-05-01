@@ -46,7 +46,7 @@
 
 #include	"ppm.h"
 
-int dump_ppm  (char *fname, int width, int depth, unsigned char *red_arry, unsigned char *green_arry, unsigned char *blue_arry)
+int dump_ppm  (const char *fname, int width, int depth, unsigned char *red_arry, unsigned char *green_arry, unsigned char *blue_arry)
 {
   FILE  *fp;
   int   i;

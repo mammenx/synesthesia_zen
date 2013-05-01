@@ -13,6 +13,9 @@
 +incdir+../../dgn/rtl/visual_cortex/
 +incdir+../../dgn/rtl/cortex_top/
 
+//System Verilog DPI
+-dpiheader syn_dpi.h
+
 //OVM
 +incdir+../ovm-2.1.2/src/
 ../ovm-2.1.2/src/ovm_pkg.sv
@@ -21,9 +24,8 @@
 ../../verif/tb/env/interfaces/syn_lb_tb_intf.sv
 
 //Packages
+../../verif/tb/env/syn_image_pkg.sv
 
-//System Verilog DPI
-//-dpiheader dpiheader.h
 
 //TB TOP
 ../../verif/tb/top/syn_vcortex_tb_top.sv
