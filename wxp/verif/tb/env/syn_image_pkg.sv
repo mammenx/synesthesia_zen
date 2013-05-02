@@ -52,4 +52,14 @@ package syn_image_pkg;
                                                   input byte unsigned blue[]
                                                 );
 
+  //This function creates a .raw image file with the RGB values
+  import "DPI-C" pure function int  syn_dump_raw(
+                                                  input string fname,
+                                                  input int width,
+                                                  input int depth,
+                                                  input byte unsigned red[],
+                                                  input byte unsigned green[],
+                                                  input byte unsigned blue[]
+                                                );
+
 endpackage  //  syn_image_pkg

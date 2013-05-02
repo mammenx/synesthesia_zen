@@ -48,10 +48,11 @@ vlog -f verif.list +define+SIMULATION -sv -incr -timescale "1ns / 10ps"  -l  com
 
 echo  Compiling DPI-C files
 gcc -c -g ../tb/dpi/ppm.c -o ppm.obj
+gcc -c -g ../tb/dpi/raw.c -o raw.obj
 gcc -c -g ../tb/dpi/syn_dpi.c -o syn_dpi.obj -I%MSIM_INC_DIR%
 
 echo  Building DLLs
-gcc -shared -g -Bsymbolic -I. -I%MSIM_INC_DIR% -L.  -L../tb/dpi -L%MSIM_WIN32_DIR% -o syn_dpi_lib.dll syn_dpi.obj ppm.obj -lmtipli
+gcc -shared -g -Bsymbolic -I. -I%MSIM_INC_DIR% -L.  -L../tb/dpi -L%MSIM_WIN32_DIR% -o syn_dpi_lib.dll syn_dpi.obj ppm.obj raw.obj -lmtipli
 
 echo  Running test : %TEST_NAME%
 vsim -c -novopt +OVM_TESTNAME=%TEST_NAME% -sv_lib syn_dpi_lib %TB_TOP% +define+SIMULATION -l transcript.txt -permit_unmatched_virtual_intf -do "add wave -r /*;run -all"

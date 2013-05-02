@@ -46,6 +46,7 @@
 #include "svdpi.h"
 #include "syn_dpi.h"
 #include "ppm.h"
+#include "raw.h"
 
 
 //dump_ppm wrapper
@@ -85,4 +86,44 @@ int syn_dump_ppm(
                     green_arry_ptr,
                     blue_arry_ptr
                   );
+}
+
+//dump_raw wrapper
+int syn_dump_raw(
+    const char* fname,
+    int width,
+    int depth,
+    const svOpenArrayHandle red,
+    const svOpenArrayHandle green,
+    const svOpenArrayHandle blue)
+{
+
+  int i;
+  unsigned  char  *red_arry_ptr;
+  unsigned  char  *green_arry_ptr;
+  unsigned  char  *blue_arry_ptr;
+
+  //Convert from svOpenArrayHandle type to unsigned char type
+  for (i= svLeft(red,1); i <= svRight(red,1); i++) {
+      red_arry_ptr[i] = *(unsigned char*)svGetArrElemPtr1(red, i);
+  }
+  
+  for (i= svLeft(green,1); i <= svRight(green,1); i++) {
+      green_arry_ptr[i] = *(unsigned char*)svGetArrElemPtr1(green, i);
+  }
+
+  for (i= svLeft(blue,1); i <= svRight(blue,1); i++) {
+      blue_arry_ptr[i] = *(unsigned char*)svGetArrElemPtr1(blue, i);
+  }
+
+
+  return  dump_raw(
+                    fname,
+                    width,
+                    depth,
+                    red_arry_ptr,
+                    green_arry_ptr,
+                    blue_arry_ptr
+                  );
+
 }
