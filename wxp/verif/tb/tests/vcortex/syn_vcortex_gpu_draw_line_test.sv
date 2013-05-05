@@ -116,8 +116,10 @@ class syn_vcortex_gpu_draw_line_test extends syn_vcortex_base_test;
       gpu_draw_job_seq.job.shape  = LINE;
       gpu_draw_job_seq.job.x0     = 0;
       gpu_draw_job_seq.job.y0     = 0;
-      gpu_draw_job_seq.job.x1     = P_CANVAS_W-1;
-      gpu_draw_job_seq.job.y1     = P_CANVAS_H-1;
+      //gpu_draw_job_seq.job.x1     = P_CANVAS_W-1;
+      //gpu_draw_job_seq.job.y1     = P_CANVAS_H-1;
+      gpu_draw_job_seq.job.x1     = 10;
+      gpu_draw_job_seq.job.y1     = 10;
       $cast(gpu_draw_job_seq.job.color, $random);
       $cast(gpu_draw_job_seq.job.width, $random);
 
