@@ -41,6 +41,11 @@
 */
 
 package syn_image_pkg;
+  import  syn_gpu_pkg::P_RGB_RES;
+  import  syn_gpu_pkg::P_LUM_W;
+  import  syn_gpu_pkg::P_CHRM_W;
+  import  syn_gpu_pkg::pxl_rgb_t;
+  import  syn_gpu_pkg::pxl_ycbcr_t;
 
   //This function creates a .ppm image file with the RGB values
   import "DPI-C" pure function int  syn_dump_ppm(
@@ -61,5 +66,42 @@ package syn_image_pkg;
                                                   input byte unsigned green[],
                                                   input byte unsigned blue[]
                                                 );
+
+  //Function to convert from YCbCr->RGB
+  function  pxl_rgb_t convert_ycbcr2rgb(input pxl_ycbcr_t pxl_in);
+    pxl_rgb_t pxl_out;
+    real      y1,cb1,cr1;
+    real      r,g,b;
+
+    //apply ycbcr normalisation
+    y1  = 16  + (pxl_in.y   * 14.6);
+    cb1 = 16  + (pxl_in.cb  * 74.66667);
+    cr1 = 16  + (pxl_in.cr  * 74.66667);
+
+    //apply ITU-R BT.709 conversion matrix
+    r = (1.164*(y1-16)) + (1.793*(cr1-128));
+    g = (1.164*(y1-16)) - (0.213*(cb1-128)) - (0.533*(cr1-128));
+    b = (1.164*(y1-16)) + (2.112*(cb1-128));
+
+    //apply RGB normalization
+    r = r/16;
+    g = g/16;
+    b = b/16;
+
+    //limit values between 0:15
+    if(r>15)  r = 15; else if(r<0)  r = 0;
+    if(g>15)  g = 15; else if(g<0)  g = 0;
+    if(b>15)  b = 15; else if(b<0)  b = 0;
+
+
+    //pack into rgb pxl struct
+    $cast(pxl_out.red,    r);
+    $cast(pxl_out.green,  g);
+    $cast(pxl_out.blue,   b);
+
+    return  pxl_out;
+
+  endfunction : convert_ycbcr2rgb
+
 
 endpackage  //  syn_image_pkg
