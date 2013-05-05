@@ -82,6 +82,7 @@ module syn_gpu_core_euclid (
   logic                       pxl_pair_f; //0-> current bressenham pxl, 1->next pair
   logic [P_X_W-1:0]           pxl_out_final_posx_f;
   logic [P_Y_W-1:0]           pxl_out_final_posy_f;
+  logic                       pxl_out_final_valid_f;
 
   logic [P_IDX_W-1:0]         norm_factor_f;
 
@@ -274,7 +275,7 @@ enum  logic [1:0] { IDLE_S,
 
 
   //Generate combined signal to halt pipeline on BP
-  assign  pipe_rdy_c          =   alias_intf.ready  & ~pxl_pair_f;
+  assign  pipe_rdy_c          =   alias_intf.ready  & pxl_pair_f  & pxl_out_valid_f;
 
   //Calculate if the slope is >1 or not
   assign  steep_c             =   dx_minus_dy_f[P_IDX_W];
@@ -294,17 +295,16 @@ enum  logic [1:0] { IDLE_S,
       pxl_pair_f              <=  0;
       pxl_out_final_posx_f    <=  0;
       pxl_out_final_posy_f    <=  0;
+      pxl_out_final_valid_f   <=  0;
       dx_minus_dy_f           <=  0;
 
       norm_factor_f           <=  0;
-
-      alias_intf.pxl_wr_valid <=  0;
     end
     else
     begin
       pxl_pair_f              <=  pxl_pair_f  ^ (pxl_out_valid_f  & alias_intf.ready);
 
-      alias_intf.pxl_wr_valid <=  pxl_out_valid_f;
+      pxl_out_final_valid_f   <=  pxl_out_valid_f;
 
       norm_factor_f           <=  steep_c ? dy_f  : dx_f;
 
@@ -337,7 +337,7 @@ enum  logic [1:0] { IDLE_S,
 
         DRAW_LINE_S :
         begin
-          pxl_out_valid_f     <=  ~line_drw_ovr_c & pipe_rdy_c;
+          pxl_out_valid_f     <=  ~line_drw_ovr_c & alias_intf.ready;
 
           if(pipe_rdy_c)
           begin
@@ -369,26 +369,26 @@ enum  logic [1:0] { IDLE_S,
 
               2'b00 : //dx>dy &&  v1>e2
               begin
-                pxl_out_final_posx_f      <=  pxl_out_posx_f;
-                pxl_out_final_posy_f      <=  pxl_out_posy_f  + 1'b1;
+                pxl_out_final_posx_f      <=  pxl_out_final_posx_f;
+                pxl_out_final_posy_f      <=  pxl_out_final_posy_f  + 1'b1;
               end
 
               2'b01 : //dx>dy &&  v1<e2
               begin
-                pxl_out_final_posx_f      <=  pxl_out_posx_f;
-                pxl_out_final_posy_f      <=  pxl_out_posy_f  - 1'b1;
+                pxl_out_final_posx_f      <=  pxl_out_final_posx_f;
+                pxl_out_final_posy_f      <=  pxl_out_final_posy_f  - 1'b1;
               end
 
               2'b11 : //dx<dy &&  v1<e2
               begin
-                pxl_out_final_posx_f      <=  pxl_out_posx_f  + 1'b1;
-                pxl_out_final_posy_f      <=  pxl_out_posy_f;
+                pxl_out_final_posx_f      <=  pxl_out_final_posx_f  + 1'b1;
+                pxl_out_final_posy_f      <=  pxl_out_final_posy_f;
               end
 
               2'b10 : //dx<dy &&  v1>e2
               begin
-                pxl_out_final_posx_f      <=  pxl_out_posx_f  - 1'b1;
-                pxl_out_final_posy_f      <=  pxl_out_posy_f;
+                pxl_out_final_posx_f      <=  pxl_out_final_posx_f  - 1'b1;
+                pxl_out_final_posy_f      <=  pxl_out_final_posy_f;
               end
 
             endcase
@@ -408,6 +408,7 @@ enum  logic [1:0] { IDLE_S,
   assign  alias_intf.pxl_rd_valid   = 1'b0;
   assign  alias_intf.posx           = pxl_out_final_posx_f;
   assign  alias_intf.posy           = pxl_out_final_posy_f;
+  assign  alias_intf.pxl_wr_valid   = pxl_out_final_valid_f;
   assign  alias_intf.misc_info_dist = {{P_16B_W-P_IDX_W-1{1'b0}}, dist_factor_c};
   assign  alias_intf.misc_info_norm = {pxl_pair_f,  {P_16B_W-P_IDX_W-1{1'b0}},   norm_factor_f};
 

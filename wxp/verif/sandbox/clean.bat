@@ -17,6 +17,8 @@ del /f /q *.wlf
 del /f /q *.obj
 del /f /q *.h
 del /f /q *.dll
+del /f /q *.raw
+del /f /q *.ppm
 
 
 mkdir logs

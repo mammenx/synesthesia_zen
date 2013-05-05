@@ -64,6 +64,10 @@ int syn_dump_ppm(
   unsigned  char  *green_arry_ptr;
   unsigned  char  *blue_arry_ptr;
 
+  red_arry_ptr    = malloc((width*depth)*sizeof(unsigned char));
+  green_arry_ptr  = malloc((width*depth)*sizeof(unsigned char));
+  blue_arry_ptr   = malloc((width*depth)*sizeof(unsigned char));
+
   //Convert from svOpenArrayHandle type to unsigned char type
   for (i= svLeft(red,1); i <= svRight(red,1); i++) {
       red_arry_ptr[i] = *(unsigned char*)svGetArrElemPtr1(red, i);
@@ -102,6 +106,12 @@ int syn_dump_raw(
   unsigned  char  *red_arry_ptr;
   unsigned  char  *green_arry_ptr;
   unsigned  char  *blue_arry_ptr;
+
+  printf("[syn_dump_raw] fname : %s\twidth : %1d\tdepth : %1d\n",fname,width,depth);
+
+  red_arry_ptr    = malloc((width*depth)*sizeof(unsigned char));
+  green_arry_ptr  = malloc((width*depth)*sizeof(unsigned char));
+  blue_arry_ptr   = malloc((width*depth)*sizeof(unsigned char));
 
   //Convert from svOpenArrayHandle type to unsigned char type
   for (i= svLeft(red,1); i <= svRight(red,1); i++) {

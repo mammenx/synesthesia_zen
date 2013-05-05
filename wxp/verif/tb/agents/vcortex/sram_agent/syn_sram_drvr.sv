@@ -77,7 +77,8 @@
       super.new( name , parent );
 
       enable    = 1;  //by default enabled; disable from test case
-      img_ext   = ".raw";
+      //img_ext   = ".raw";
+      img_ext   = ".ppm";
     endfunction : new
 
 
@@ -146,11 +147,17 @@
 
         ovm_report_info({get_name(),"[process_seq_item]"},$psprintf("Got seq_item - \n%s",pkt.sprint()),OVM_LOW);
 
+        ovm_report_info({get_name(),"[process_seq_item]"},$psprintf("pkt.addr.size = %1d, pkt.data.size = %1d",pkt.addr.size,pkt.data.size),OVM_LOW);
+        ovm_report_info({get_name(),"[process_seq_item]"},$psprintf("pkt.addr[0] = %1d, pkt.data[0] = %1d",pkt.addr[0],pkt.data[0]),OVM_LOW);
+
+
         if((pkt.lb_xtn  ==  WRITE)  ||  (pkt.lb_xtn ==  BURST_WRITE))
         begin
-          foreach(pkt.addr[i])
+          //foreach(pkt.addr[i])
+          for(int i=0; i<pkt.addr.size; i++)
           begin
             frm_bffr[pkt.addr[i]] = pkt.data[i];
+            //ovm_report_info({get_name(),"[process_seq_item]"},$psprintf("Updated frm_bffr[%1d]",pkt.addr[i]),OVM_LOW);
           end
 
           ovm_report_info({get_name(),"[process_seq_item]"},$psprintf("Updated frm_bffr"),OVM_LOW);
@@ -242,14 +249,15 @@
       begin
         ovm_report_info({get_name(),"[extract]"},"Dumping ppm file ...",OVM_LOW);
 
-        if(syn_dump_ppm(
-                        {"frm_bffr",$psprintf("_%t_",$time),img_ext},
-                        P_CANVAS_W,
-                        P_CANVAS_H,
-                        red,
-                        green,
-                        blue
-                      )
+        if(!syn_dump_ppm(
+                          //{"frm_bffr",$psprintf("_%t_",$time),img_ext},
+                          {"frm_bffr",$psprintf("_%1t_",$time),img_ext},
+                          P_CANVAS_W,
+                          P_CANVAS_H,
+                          red,
+                          green,
+                          blue
+                        )
           )
         begin
           ovm_report_fatal({get_name(),"[extract]"},"ppm file dump failed !",OVM_LOW);
@@ -259,14 +267,15 @@
       begin
         ovm_report_info({get_name(),"[extract]"},"Dumping raw file ...",OVM_LOW);
 
-        if(syn_dump_raw(
-                        {"frm_bffr",$psprintf("_%t_",$time),img_ext},
-                        P_CANVAS_W,
-                        P_CANVAS_H,
-                        red,
-                        green,
-                        blue
-                      )
+        if(!syn_dump_raw(
+                          //{"frm_bffr",$psprintf("_%t_",$time),img_ext},
+                          {"frm_bffr",$psprintf("_%1t_",$time),img_ext},
+                          P_CANVAS_W,
+                          P_CANVAS_H,
+                          red,
+                          green,
+                          blue
+                        )
           )
         begin
           ovm_report_fatal({get_name(),"[extract]"},"raw file dump failed !",OVM_LOW);

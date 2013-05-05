@@ -104,4 +104,35 @@ package syn_image_pkg;
   endfunction : convert_ycbcr2rgb
 
 
+  //Function to convert from RGB->YCbCr
+  function  pxl_ycbcr_t convert_rgb2ycbcr(input pxl_rgb_t pxl_in);
+    pxl_ycbcr_t pxl_out;
+    real    r1,g1,b1;
+    real    y,cb,cr;
+
+    //normalise rgb
+    r1  = pxl_in.red    * 16;
+    g1  = pxl_in.green  * 16;
+    b1  = pxl_in.blue   * 16;
+
+    //apply ITU-R BT.709 matrix
+    y   = 16  + (0.183*r1   + 0.614*g1  + 0.062*b1);
+    cb  = 128 + (-0.101*r1  - 0.339*g1  + 0.439*b1);
+    cr  = 128 + (0.439*r1   - 0.399*g1  - 0.040*b1);
+
+    //normalise ycbcr
+    y   = (y-16)/14.6;
+    cb  = (cb-16)/74.66667;
+    cr  = (cr-16)/74.66667;
+
+    //pack into ycbcr pxl struct
+    $cast(pxl_out.y,    y);
+    $cast(pxl_out.cb,   cb);
+    $cast(pxl_out.cr,   cr);
+
+    return  pxl_out;
+
+  endfunction : convert_rgb2ycbcr
+
+
 endpackage  //  syn_image_pkg

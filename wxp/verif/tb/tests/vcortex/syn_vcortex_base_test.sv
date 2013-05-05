@@ -47,6 +47,10 @@ class syn_vcortex_base_test extends ovm_test;
     parameter LB_ADDR_W = 12;
     parameter type  LB_SEQ_ITEM_T = syn_lb_seq_item#(LB_DATA_W,LB_ADDR_W);
     parameter type  LB_SEQR_T     = syn_lb_seqr#(LB_SEQ_ITEM_T);
+    parameter SRAM_DATA_W = 16;
+    parameter SRAM_ADDR_W = 18;
+    parameter type  SRAM_SEQ_ITEM_T = syn_lb_seq_item#(SRAM_DATA_W,SRAM_ADDR_W);
+    parameter type  SRAM_SEQR_T     = syn_sram_seqr#(SRAM_SEQ_ITEM_T);
 
     `ovm_component_utils(syn_vcortex_base_test)
 
@@ -56,6 +60,8 @@ class syn_vcortex_base_test extends ovm_test;
 
     OVM_FILE  f;
     ovm_table_printer printer;
+
+    syn_fb_init_seq#(SRAM_SEQ_ITEM_T,SRAM_SEQR_T)   fb_init_seq;
 
 
     /*  Constructor */
@@ -87,6 +93,9 @@ class syn_vcortex_base_test extends ovm_test;
       printer.knobs.size_width  = 5;  //width of Size collumn
       printer.knobs.value_width = 30; //width of Value collumn
       printer.knobs.depth = -1;       //print all levels
+
+
+      fb_init_seq = syn_fb_init_seq#(SRAM_SEQ_ITEM_T,SRAM_SEQR_T)::type_id::create("fb_init_seq");
 
       ovm_report_info(get_full_name(),"End of build",OVM_LOW);
     endfunction : build
@@ -133,5 +142,13 @@ class syn_vcortex_base_test extends ovm_test;
 
       ovm_report_info(get_full_name(),"End of run",OVM_LOW);
     endtask : run 
+
+    virtual task  init_fb();
+      ovm_report_info({get_full_name(),"[init_fb]"},"Start of init_fb",OVM_LOW);
+
+      fb_init_seq.start(this.env.sram_agent.seqr);
+
+      ovm_report_info({get_full_name(),"[init_fb]"},"End of init_fb",OVM_LOW);
+    endtask : init_fb
 
 endclass : syn_vcortex_base_test

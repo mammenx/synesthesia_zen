@@ -20,6 +20,8 @@ del /f /q *.log
 del /f /q *.h
 del /f /q *.obj
 del /f /q *.dll
+del /f /q *.ppm
+del /f /q *.raw
 
 mkdir logs
 
