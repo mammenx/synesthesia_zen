@@ -104,7 +104,7 @@ module syn_gpu_core (
 
   /*  Local Bus logic */
   always_ff@(posedge cr_intf.clk_ir, negedge cr_intf.rst_sync_l)
-  begin : fsm_seq_logic
+  begin : lb_logic
     if(~cr_intf.rst_sync_l)
     begin
       gpu_en_f                <=  0;
