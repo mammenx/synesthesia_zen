@@ -43,6 +43,10 @@
 `ifndef __SYN_SRAM_DRVR
 `define __SYN_SRAM_DRVR
 
+
+  import  syn_gpu_pkg::*;
+  import  syn_image_pkg::*;
+
   class syn_sram_drvr #(parameter DATA_W  = 16,
                         parameter ADDR_W  = 18,
                         type  PKT_TYPE    = syn_lb_seq_item,
@@ -58,10 +62,13 @@
     /*  Frame Buffer  */
     bit [DATA_W-1:0]  frm_bffr[];
 
+    /*  Image extension */
+    string  img_ext;
 
     /*  Register with factory */
     `ovm_component_param_utils_begin(syn_sram_drvr#(DATA_W,ADDR_W,PKT_TYPE, INTF_TYPE))
       `ovm_field_int(enable,  OVM_ALL_ON);
+      `ovm_field_string(img_ext,  OVM_ALL_ON);
     `ovm_component_utils_end
 
 
@@ -70,6 +77,7 @@
       super.new( name , parent );
 
       enable    = 1;  //by default enabled; disable from test case
+      img_ext   = ".raw";
     endfunction : new
 
 
@@ -206,6 +214,70 @@
         end
       end
     endtask : talk_to_dut
+
+    /*  Overriding extract function to dump the frame buffer contents as a image file */
+    virtual function void extract();
+      byte  unsigned  red[],green[],blue[];
+      const int num_pxls  = P_CANVAS_W  * P_CANVAS_H;
+      pxl_ycbcr_t pxl_ycbcr;
+      pxl_rgb_t   pxl_rgb;
+
+      ovm_report_info({get_name(),"[extract]"},"Start of extract ...",OVM_LOW);
+
+      red   = new[num_pxls];
+      green = new[num_pxls];
+      blue  = new[num_pxls];
+
+      /*  Extract RGB information from frm_bffr */
+      for(int i=0; i<num_pxls; i++)
+      begin
+        pxl_ycbcr = frm_bffr[i/2][((i%2)*(DATA_W/2))  +:  (P_LUM_W+P_CHRM_W+P_CHRM_W)];
+        pxl_rgb   = convert_ycbcr2rgb(pxl_ycbcr);
+        $cast(red[i],   (pxl_rgb.red * 16));
+        $cast(green[i], (pxl_rgb.green * 16));
+        $cast(blue[i],  (pxl_rgb.blue * 16));
+      end
+
+      if(img_ext  ==  ".ppm")
+      begin
+        ovm_report_info({get_name(),"[extract]"},"Dumping ppm file ...",OVM_LOW);
+
+        if(syn_dump_ppm(
+                        {"frm_bffr",$psprintf("_%t_",$time),img_ext},
+                        P_CANVAS_W,
+                        P_CANVAS_H,
+                        red,
+                        green,
+                        blue
+                      )
+          )
+        begin
+          ovm_report_fatal({get_name(),"[extract]"},"ppm file dump failed !",OVM_LOW);
+        end
+      end
+      else if(img_ext  ==  ".raw")
+      begin
+        ovm_report_info({get_name(),"[extract]"},"Dumping raw file ...",OVM_LOW);
+
+        if(syn_dump_raw(
+                        {"frm_bffr",$psprintf("_%t_",$time),img_ext},
+                        P_CANVAS_W,
+                        P_CANVAS_H,
+                        red,
+                        green,
+                        blue
+                      )
+          )
+        begin
+          ovm_report_fatal({get_name(),"[extract]"},"raw file dump failed !",OVM_LOW);
+        end
+      end
+      else
+      begin
+        ovm_report_fatal({get_name(),"[extract]"},{"Unsupported file extension <",img_ext,">"},OVM_LOW);
+      end
+
+    endfunction : extract
 
   endclass  : syn_sram_drvr
 
