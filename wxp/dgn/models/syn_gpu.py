@@ -2,6 +2,7 @@ from graphics import *
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
+import math
 
 
 "	Global variables	"
@@ -151,6 +152,71 @@ def	plot_ycbcr_cube():
 	plt.show()
 
 
+def plot_hsi_cube():
+	pi = 3.142
+	fig = plt.figure()
+	ax = fig.add_subplot(111, projection='3d')
+	
+	for h in range (0, 8):
+		for s in range (0, 4):
+			for i in range (0, 8):
+				h1 = (h * pi)/4
+				s1 = s/4
+				i1 = i/8
+				
+				if(h1 < (2*pi/3)):
+					h2 = h1
+				elif(h1 < (4*pi/3)):
+					h2 = h1 - (2*pi/3)
+				elif(h1 < (2*pi)):
+					h2 = h1 - (4*pi/3)
+				
+				x  = i1*(1-s1)
+				y  = i1*(1 + (s1*math.cos(h2))/math.cos((pi/3) - h2) )
+				z  = 3*i1 - (x + y)
+				
+				if(h1 < (2*pi/3)):
+					r = y
+					g = z
+					b = x
+				elif(h1 < (4*pi/3)):
+					r = x
+					g = y
+					b = z
+				elif(h1 < (2*pi)):
+					r = z
+					g = x
+					b = y
+				
+				r = r * 255
+				g = g * 255
+				b = b * 255
+				
+				if(r<0):
+					r = 0
+				elif(r > 255):
+					r = 255
+				
+				if(g<0):
+					g = 0
+				elif(g > 255):
+					g = 255
+				
+				if(b<0):
+					b = 0
+				elif(b > 255):
+					b = 255
+				
+				ax.scatter(h,s,i, c=color_rgb(r,g,b), marker='o', s=200)
+	
+	ax.set_xlabel('H')
+	ax.set_ylabel('S')
+	ax.set_zlabel('I')
+	
+	plt.show()
+
+
+
 "	Work Area	-	Write code to test models here ..."
 "win = GraphWin('syn_canvas ' + str(canvas_w) + 'x' + str(canvas_h),canvas_w,canvas_h)"
 ""
@@ -166,7 +232,8 @@ def	plot_ycbcr_cube():
 "draw_line_anti(0,0,400,400,win)"
 
 
-plot_ycbcr_cube()
+" plot_ycbcr_cube()"
+plot_hsi_cube()
 
 
 input("waiting ...")
