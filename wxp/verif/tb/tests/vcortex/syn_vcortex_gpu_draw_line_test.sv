@@ -118,10 +118,10 @@ class syn_vcortex_gpu_draw_line_test extends syn_vcortex_base_test;
       gpu_draw_job_seq.job.shape  = LINE;
       gpu_draw_job_seq.job.x0     = 0;
       gpu_draw_job_seq.job.y0     = 0;
-      gpu_draw_job_seq.job.x1     = P_CANVAS_W-1;
-      gpu_draw_job_seq.job.y1     = P_CANVAS_H-1;
-      //gpu_draw_job_seq.job.x1     = 10;
-      //gpu_draw_job_seq.job.y1     = 10;
+      //gpu_draw_job_seq.job.x1     = P_CANVAS_W-1;
+      //gpu_draw_job_seq.job.y1     = P_CANVAS_H-1;
+      gpu_draw_job_seq.job.x1     = 10;
+      gpu_draw_job_seq.job.y1     = 10;
       //$cast(gpu_draw_job_seq.job.color, $random);
       gpu_draw_job_seq.job.color.h  = 0;
       gpu_draw_job_seq.job.color.s  = 3;
@@ -130,6 +130,17 @@ class syn_vcortex_gpu_draw_line_test extends syn_vcortex_base_test;
 
       gpu_draw_job_seq.start(super.env.lb_agent.seqr);
 
+      gpu_status_poll_seq.start(super.env.lb_agent.seqr);
+
+      #1us;
+
+      gpu_draw_job_seq.job.color.h  = 1;
+      gpu_draw_job_seq.job.color.s  = 3;
+      gpu_draw_job_seq.job.color.i  = 15;
+      gpu_draw_job_seq.job.x1       = P_CANVAS_W-1;
+      gpu_draw_job_seq.job.y1       = 150;
+
+      gpu_draw_job_seq.start(super.env.lb_agent.seqr);
 
       gpu_status_poll_seq.start(super.env.lb_agent.seqr);
 
