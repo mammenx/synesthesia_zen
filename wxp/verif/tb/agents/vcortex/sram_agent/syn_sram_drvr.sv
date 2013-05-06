@@ -226,7 +226,8 @@
     virtual function void extract();
       byte  unsigned  red[],green[],blue[];
       const int num_pxls  = P_CANVAS_W  * P_CANVAS_H;
-      pxl_ycbcr_t pxl_ycbcr;
+      //pxl_ycbcr_t pxl_ycbcr;
+      pxl_hsi_t   pxl_hsi;
       pxl_rgb_t   pxl_rgb;
 
       ovm_report_info({get_name(),"[extract]"},"Start of extract ...",OVM_LOW);
@@ -238,8 +239,10 @@
       /*  Extract RGB information from frm_bffr */
       for(int i=0; i<num_pxls; i++)
       begin
-        pxl_ycbcr = frm_bffr[i/2][((i%2)*(DATA_W/2))  +:  (P_LUM_W+P_CHRM_W+P_CHRM_W)];
-        pxl_rgb   = convert_ycbcr2rgb(pxl_ycbcr);
+        //pxl_ycbcr = frm_bffr[i/2][((i%2)*(DATA_W/2))  +:  (P_LUM_W+P_CHRM_W+P_CHRM_W)];
+        pxl_hsi   = frm_bffr[i/2][((i%2)*(DATA_W/2))  +:  (P_LUM_W+P_CHRM_W+P_CHRM_W)];
+        //pxl_rgb   = convert_ycbcr2rgb(pxl_ycbcr);
+        pxl_rgb   = convert_hsi2rgb(pxl_hsi);
         $cast(red[i],   (pxl_rgb.red * 16));
         $cast(green[i], (pxl_rgb.green * 16));
         $cast(blue[i],  (pxl_rgb.blue * 16));

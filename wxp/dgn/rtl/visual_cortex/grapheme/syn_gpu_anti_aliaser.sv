@@ -89,7 +89,8 @@ module syn_gpu_anti_aliaser (
   logic [P_64B_W-1:0]         ingr_bffr_rd_data_w;
   logic [P_INGR_BFFR_USED_W-1:0]  ingr_bffr_used_w;
 
-  pxl_ycbcr_t                 ingr_pxl_w;
+  //pxl_ycbcr_t                 ingr_pxl_w;
+  pxl_hsi_t                   ingr_pxl_w;
   logic [P_X_W-1:0]           ingr_posx_w;
   logic [P_Y_W-1:0]           ingr_posy_w;
   logic [P_16B_W-1:0]         ingr_dist_w;
@@ -97,7 +98,7 @@ module syn_gpu_anti_aliaser (
   logic                       ingr_data_rdy_n_w;
   logic                       ingr_bffr_rd_ack_c;
 
-  logic [P_LUM_W-1:0]         norm_y_w;
+  logic [P_LUM_W-1:0]         norm_i_w;
 
 //----------------------- FSM Declarations --------------------------------
 enum  logic [1:0] { IDLE_S,
@@ -218,7 +219,8 @@ enum  logic [1:0] { IDLE_S,
             mul_bus_intf.anti_alias_sid                         <=  SID_MUL;
             mul_bus_intf.anti_alias_req_data[P_16B_W-1:0]       <=  ingr_dist_w;
             mul_bus_intf.anti_alias_req_data[P_32B_W-1:P_16B_W] <=  { {P_16B_W-P_LUM_W{1'b0}},
-                                                                      ingr_pxl_w.y
+                                                                      //ingr_pxl_w.y
+                                                                      ingr_pxl_w.i
                                                                     };
           end
         end
@@ -252,7 +254,7 @@ enum  logic [1:0] { IDLE_S,
 
 
   //Extract the normalised Luma value
-  assign  norm_y_w            = mul_bus_intf.anti_alias_res[P_LUM_W-1:0];
+  assign  norm_i_w            = mul_bus_intf.anti_alias_res[P_LUM_W-1:0];
 
   /*  Pixel GW interface logic  */
   always_ff@(posedge cr_intf.clk_ir, negedge cr_intf.rst_sync_l)
@@ -268,8 +270,10 @@ enum  logic [1:0] { IDLE_S,
     begin
       pxl_egr_intf.posx           <=  ingr_posx_w;
       pxl_egr_intf.posy           <=  ingr_posy_w;
-      pxl_egr_intf.pxl.cb         <=  ingr_pxl_w.cb;
-      pxl_egr_intf.pxl.cr         <=  ingr_pxl_w.cr;
+      //pxl_egr_intf.pxl.cb         <=  ingr_pxl_w.cb;
+      //pxl_egr_intf.pxl.cr         <=  ingr_pxl_w.cr;
+      pxl_egr_intf.pxl.h          <=  ingr_pxl_w.h;
+      pxl_egr_intf.pxl.s          <=  ingr_pxl_w.s;
 
       case(fsm_pstate)
 
@@ -277,8 +281,8 @@ enum  logic [1:0] { IDLE_S,
         begin
           if(mul_bus_intf.anti_alias_res_valid)
           begin
-            pxl_egr_intf.pxl.y    <=  ingr_norm_w[P_16B_W-1]  ? {P_LUM_W{1'b1}} - norm_y_w
-                                                              : norm_y_w  ;
+            pxl_egr_intf.pxl.i    <=  ingr_norm_w[P_16B_W-1]  ? {P_LUM_W{1'b1}} - norm_i_w
+                                                              : norm_i_w  ;
 
             pxl_egr_intf.pxl_wr_valid <=  1'b1;
           end

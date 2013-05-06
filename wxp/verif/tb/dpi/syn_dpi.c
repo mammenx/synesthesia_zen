@@ -48,6 +48,84 @@
 #include "ppm.h"
 #include "raw.h"
 
+double
+syn_cos(
+    double rTheta){
+  return  cos(rTheta);
+}
+
+double
+syn_log(
+    double rVal){
+  return  log(rVal);
+}
+
+double
+syn_log10(
+    double rVal){
+  return  log10(rVal);
+}
+
+double
+syn_sin(
+    double rTheta){
+  return  sin(rTheta);
+}
+
+double
+syn_tan(
+    double rTheta){
+  return  tan(rTheta);
+}
+
+double
+syn_acos(
+    double rTheta){
+  return  acos(rTheta);
+}
+
+double
+syn_asin(
+    double rTheta){
+  return  asin(rTheta);
+}
+
+double
+syn_atan(
+    double rTheta){
+  return  atan(rTheta);
+}
+
+double
+syn_sqrt(
+    double rVal){
+  return  sqrt(rVal);
+}
+
+/*  Complex data type  */
+typedef struct {double re; double im;} complex_t;
+
+//function for calculating absaloute value of a complex array
+void  syn_calc_abs(int size, const svOpenArrayHandle complex_arry_real, const svOpenArrayHandle complex_arry_im)
+{
+  int i;
+  double  * c_arry_re_ptr;
+  double  * c_arry_im_ptr;
+
+  c_arry_re_ptr  = (double  *)svGetArrayPtr(complex_arry_real);
+  c_arry_im_ptr  = (double  *)svGetArrayPtr(complex_arry_im);
+
+  for(i=0;i<size;i++) {
+    //  printf("[syn_calc_abs - C] i : %d\tre : %f\t",i,c_arry_re_ptr[i]);
+
+    //abs vaure is stored in real part
+    c_arry_re_ptr[i] = sqrt((c_arry_re_ptr[i] * c_arry_re_ptr[i]) + (c_arry_im_ptr[i] * c_arry_im_ptr[i]));
+
+    //  printf("im : %f\t abs : %f\n",c_arry_im_ptr[i],c_arry_re_ptr[i]);
+  }
+
+  return;
+}
 
 //dump_ppm wrapper
 int syn_dump_ppm(

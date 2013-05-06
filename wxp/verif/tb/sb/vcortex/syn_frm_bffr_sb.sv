@@ -246,16 +246,16 @@
         begin
           if(v1 > e2)
           begin
-            job.color.y = ((v1-e2)/dx)*job.color.y;
+            job.color.i = ((v1-e2)/dx)*job.color.i;
             putPixel(job.x0,job.y0,job.color);
-            job.color.y = 15  - job.color.y;
+            job.color.i = 15  - job.color.i;
             putPixel(job.x0,job.y0+1,job.color);
           end
           else
           begin
-            job.color.y = ((e2-v1)/dx)*job.color.y;
+            job.color.i = ((e2-v1)/dx)*job.color.i;
             putPixel(job.x0,job.y0,job.color);
-            job.color.y = 15  - job.color.y;
+            job.color.i = 15  - job.color.i;
             putPixel(job.x0,job.y0-1,job.color);
           end
         end
@@ -263,16 +263,16 @@
         begin
           if(v1 < e2)
           begin
-            job.color.y = ((e2-v1)/dx)*job.color.y;
+            job.color.i = ((e2-v1)/dx)*job.color.i;
             putPixel(job.x0,job.y0,job.color);
-            job.color.y = 15  - job.color.y;
+            job.color.i = 15  - job.color.i;
             putPixel(job.x0+1,job.y0,job.color);
           end
           else
           begin
-            job.color.y = ((v1-e2)/dx)*job.color.y;
+            job.color.i = ((v1-e2)/dx)*job.color.i;
             putPixel(job.x0,job.y0,job.color);
-            job.color.y = 15  - job.color.y;
+            job.color.i = 15  - job.color.i;
             putPixel(job.x0-1,job.y0,job.color);
           end
         end

@@ -49,6 +49,9 @@ package syn_gpu_pkg;
   parameter P_RGB_RES   = 4;
   parameter P_LUM_W     = 4;
   parameter P_CHRM_W    = 2;
+  parameter P_HUE_W     = 3;
+  parameter P_SATURATION_W  = 2;
+  parameter P_INTENSITY_W   = 3;
   parameter P_GPU_SRAM_ADDR_W = 19;
   parameter P_GPU_SRAM_DATA_W = 8;
 
@@ -67,6 +70,13 @@ package syn_gpu_pkg;
     logic [P_CHRM_W-1:0]  cr;
 
   } pxl_ycbcr_t;
+
+  //HSI pixel structure
+  typedef struct  packed  {
+    logic [P_HUE_W-1:0]         h;
+    logic [P_SATURATION_W-1:0]  s;
+    logic [P_INTENSITY_W-1:0]   i;
+  } pxl_hsi_t;
 
 
   //Opcode for shape
@@ -87,7 +97,8 @@ package syn_gpu_pkg;
     logic [P_Y_W-1:0] y0; //Line  ->  Start of line,  Circle  ->  Center
     logic [P_X_W-1:0] x1;
     logic [P_Y_W-1:0] y1; //Line  ->  End of line,    Circle  ->  Radius
-    pxl_ycbcr_t       color;
+    //pxl_ycbcr_t       color;
+    pxl_hsi_t         color;
     logic [3:0]       width;  //width of shape
 
   } gpu_draw_job_t;
@@ -97,8 +108,10 @@ package syn_gpu_pkg;
 
   //Structure describing GPU Fill Job
   typedef struct  packed  {
-    pxl_ycbcr_t       fill_color;   //Color To fill
-    pxl_ycbcr_t       line_color;   //Color of line, to detect boundaries
+    //pxl_ycbcr_t       fill_color;   //Color To fill
+    //pxl_ycbcr_t       line_color;   //Color of line, to detect boundaries
+    pxl_hsi_t         fill_color;   //Color To fill
+    pxl_hsi_t         line_color;   //Color of line, to detect boundaries
     logic [P_X_W-1:0] x0;           //Starting point, X axis
     logic [P_Y_W-1:0] y0;           //Starting point, Y axis
 

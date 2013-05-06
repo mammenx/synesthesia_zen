@@ -77,7 +77,8 @@ module syn_gpu_core_euclid (
   logic                       pxl_out_valid_f;
   logic [P_X_W-1:0]           pxl_out_posx_f;
   logic [P_Y_W-1:0]           pxl_out_posy_f;
-  pxl_ycbcr_t                 pxl_out_color_f;
+  //pxl_ycbcr_t                 pxl_out_color_f;
+  pxl_hsi_t                   pxl_out_color_f;
 
   logic                       pxl_pair_f; //0-> current bressenham pxl, 1->next pair
   logic [P_X_W-1:0]           pxl_out_final_posx_f;

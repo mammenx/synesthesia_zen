@@ -50,9 +50,11 @@ interface syn_pxl_xfr_intf  #(
 
   import  syn_global_pkg::P_16B_W;
   import  syn_gpu_pkg::pxl_ycbcr_t;
+  import  syn_gpu_pkg::pxl_hsi_t;
 
   //Logic signals
-  pxl_ycbcr_t         pxl;  //structure containing pixel data
+  //pxl_ycbcr_t         pxl;  //structure containing pixel data
+  pxl_hsi_t           pxl;  //structure containing pixel data
   logic               pxl_wr_valid;   //1->pixel data is valid for write
   logic               pxl_rd_valid;   //1->pixel data is valid for read
   logic               ready;          //1->Slave is ready to accept pixel data

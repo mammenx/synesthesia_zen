@@ -45,7 +45,9 @@
 
   import  syn_gpu_pkg::pxl_rgb_t;
   import  syn_gpu_pkg::pxl_ycbcr_t;
+  import  syn_gpu_pkg::pxl_hsi_t;
   import  syn_image_pkg::convert_rgb2ycbcr;
+  import  syn_image_pkg::convert_rgb2hsi;
 
   class syn_fb_init_seq  #(
                                type  PKT_TYPE  =  syn_lb_seq_item#(16,18),
@@ -74,7 +76,8 @@
     /*  Body of sequence  */
     task  body();
       PKT_TYPE  pkt = new();
-      pxl_ycbcr_t pxl_tmp;
+      //pxl_ycbcr_t pxl_tmp;
+      pxl_hsi_t pxl_tmp;
 
       p_sequencer.ovm_report_info(get_name(),"Start of syn_fb_init_seq",OVM_LOW);
 
@@ -87,8 +90,10 @@
       pkt.lb_xtn= WRITE;
 
       //test case can set the default value before executing this sequence
-      pxl_tmp = convert_rgb2ycbcr(pxl);
-      p_sequencer.ovm_report_info(get_name(),$psprintf("pxl_rgb : [0x%x:0x%x:0x%x], pxl_ycbcr : [0x%x:0x%x:0x%x]", pxl.red,pxl.green,pxl.blue, pxl_tmp.y,pxl_tmp.cb,pxl_tmp.cr),OVM_LOW);
+      //pxl_tmp = convert_rgb2ycbcr(pxl);
+      pxl_tmp = convert_rgb2hsi(pxl);
+      //p_sequencer.ovm_report_info(get_name(),$psprintf("pxl_rgb : [0x%x:0x%x:0x%x], pxl_ycbcr : [0x%x:0x%x:0x%x]", pxl.red,pxl.green,pxl.blue, pxl_tmp.y,pxl_tmp.cb,pxl_tmp.cr),OVM_LOW);
+      p_sequencer.ovm_report_info(get_name(),$psprintf("pxl_rgb : [0x%x:0x%x:0x%x], pxl_hsi : [0x%x:0x%x:0x%x]", pxl.red,pxl.green,pxl.blue, pxl_tmp.h,pxl_tmp.s,pxl_tmp.i),OVM_LOW);
 
       for(int i=0; i<(2**18); i++)
       begin
