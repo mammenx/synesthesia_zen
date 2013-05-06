@@ -83,7 +83,7 @@ module syn_gpu (
   syn_pxl_xfr_intf                core2pxl_gw_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
   syn_pxl_xfr_intf                anti_alias2pxl_gw_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
   syn_pxl_xfr_intf                pxl_gw2core_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
-
+  syn_anti_alias_status_intf      anti_alias_stat_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
 
 
 
@@ -103,7 +103,9 @@ module syn_gpu (
 
     .pxl_gw_tx_intf         (core2pxl_gw_intf.master),
 
-    .pxl_gw_rx_intf         (pxl_gw2core_intf.slave)
+    .pxl_gw_rx_intf         (pxl_gw2core_intf.slave),
+
+    .anti_alias_stat_intf   (anti_alias_stat_intf.lb_mp)
 
   );
 
@@ -116,7 +118,9 @@ module syn_gpu (
 
     .pxl_egr_intf           (anti_alias2pxl_gw_intf.master),
 
-    .mul_bus_intf           (mul_bus_intf.anti_alias_mp)
+    .mul_bus_intf           (mul_bus_intf.anti_alias_mp),
+
+    .lb_stat_intf           (anti_alias_stat_intf.anti_alias_mp)
 
   );
 

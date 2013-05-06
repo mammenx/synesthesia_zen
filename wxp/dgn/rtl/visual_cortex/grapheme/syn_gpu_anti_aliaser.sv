@@ -48,13 +48,15 @@
 module syn_gpu_anti_aliaser (
 
   //--------------------- Interfaces --------------------
-  syn_clk_rst_sync_intf           cr_intf,      //Clock Reset Interface
+  syn_clk_rst_sync_intf       cr_intf,      //Clock Reset Interface
 
   syn_pxl_xfr_intf            pxl_ingr_intf,  //Interface from GPU Core
 
   syn_pxl_xfr_intf            pxl_egr_intf,   //Interface to Pixel GW
 
-  mulberry_bus_intf                 mul_bus_intf  //Interface to mulberry bus peripherals
+  mulberry_bus_intf           mul_bus_intf,  //Interface to mulberry bus peripherals
+
+  syn_anti_alias_status_intf  lb_stat_intf   //LB Status interface
 
   //--------------------- Misc Ports (Logic)  -----------
 
@@ -218,7 +220,7 @@ enum  logic [1:0] { IDLE_S,
           begin
             mul_bus_intf.anti_alias_sid                         <=  SID_MUL;
             mul_bus_intf.anti_alias_req_data[P_16B_W-1:0]       <=  ingr_dist_w;
-            mul_bus_intf.anti_alias_req_data[P_32B_W-1:P_16B_W] <=  { {P_16B_W-P_LUM_W{1'b0}},
+            mul_bus_intf.anti_alias_req_data[P_32B_W-1:P_16B_W] <=  { {P_16B_W-P_INTENSITY_W{1'b0}},
                                                                       //ingr_pxl_w.y
                                                                       ingr_pxl_w.i
                                                                     };
@@ -303,5 +305,8 @@ enum  logic [1:0] { IDLE_S,
 
   //Pop this entry from Ingress buffer
   assign  ingr_bffr_rd_ack_c  = pxl_egr_intf.pxl_wr_valid & pxl_egr_intf.ready;
+
+  //Bring out misc status signals to LB
+  assign  lb_stat_intf.job_que_empty  = ingr_data_rdy_n_w;
 
 endmodule // syn_gpu_anti_aliaser

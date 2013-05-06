@@ -56,7 +56,9 @@ module syn_gpu_core (
 
   syn_pxl_xfr_intf                pxl_gw_tx_intf,
 
-  syn_pxl_xfr_intf                pxl_gw_rx_intf
+  syn_pxl_xfr_intf                pxl_gw_rx_intf,
+
+  syn_anti_alias_status_intf      anti_alias_stat_intf
 
   //--------------------- Misc Ports (Logic)  -----------
 
@@ -154,7 +156,10 @@ module syn_gpu_core (
         case(lb_intf.addr)
 
           VCORTEX_GPU_CONTROL_REG_ADDR    : lb_intf.rd_data <=  {{P_32B_W-1{1'b0}},gpu_en_f};
-          VCORTEX_GPU_STATUS_REG_ADDR     : lb_intf.rd_data <=  {{P_32B_W-1{1'b0}},gpu_job_intf.euclid_busy};
+          VCORTEX_GPU_STATUS_REG_ADDR     : lb_intf.rd_data <=  { {P_32B_W-2{1'b0}},
+                                                                  anti_alias_stat_intf.job_que_empty,
+                                                                  gpu_job_intf.euclid_busy
+                                                                };
           VCORTEX_GPU_JOB_BFFR_0_REG_ADDR : lb_intf.rd_data <=  {{P_32B_W-2{1'b0}},gpu_job_action_f};
           VCORTEX_GPU_JOB_BFFR_1_REG_ADDR : lb_intf.rd_data <=  {{P_16B_W{1'b0}},gpu_job_bffr_1_f};
           VCORTEX_GPU_JOB_BFFR_2_REG_ADDR : lb_intf.rd_data <=  {{P_16B_W{1'b0}},gpu_job_bffr_2_f};
