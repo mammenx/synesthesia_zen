@@ -263,9 +263,9 @@ interface mulberry_bus_intf  #(parameter  P_BUS_DATA_W=32)  (input logic  clk_ir
   end
 
   //Give slave busy feedback to current master
-  assign  gpu_lb_req_rdy      = (curr_master_c  ==  MID_GPU_LB)     ? target_slave_busy_c : 1'b0;
-  assign  gpu_core_req_rdy    = (curr_master_c  ==  MID_GPU_CORE)   ? target_slave_busy_c : 1'b0;
-  assign  anti_alias_req_rdy  = (curr_master_c  ==  MID_ANTI_ALIAS) ? target_slave_busy_c : 1'b0;
+  assign  gpu_lb_req_rdy      = (curr_master_c  ==  MID_GPU_LB)     ? ~target_slave_busy_c  : 1'b0;
+  assign  gpu_core_req_rdy    = (curr_master_c  ==  MID_GPU_CORE)   ? ~target_slave_busy_c  : 1'b0;
+  assign  anti_alias_req_rdy  = (curr_master_c  ==  MID_ANTI_ALIAS) ? ~target_slave_busy_c  : 1'b0;
 
   //Assign MID & request data to slaves
   assign  rand_req_data = target_slave_req_data_c;

@@ -67,11 +67,11 @@ module syn_gpu_div (
   logic [P_16B_W-1:0]         dividend_f;
   logic [P_16B_W-1:0]         divisor_f;
   mid_t                       div_req_mid_f;
+  logic                       rad4_div_load_f;
 
 //----------------------- Internal Wire Declarations ----------------------
   logic                       div_req_valid_c;
   logic                       rad4_div_rdy_w;
-  logic                       rad4_div_load_c;
   logic                       update_rsp_mid_c;
 
 //----------------------- Internal Interface Declarations -----------------
@@ -90,12 +90,15 @@ module syn_gpu_div (
       dividend_f              <=  0;
       divisor_f               <=  0;
       div_req_mid_f           <=  MID_IDLE;
+      rad4_div_load_f         <=  0;
 
       mulbry_bus_intf.div_busy    <=  0;
       mulbry_bus_intf.div_rsp_mid <=  MID_IDLE;
     end
     else
     begin
+      rad4_div_load_f         <=  div_req_valid_c;
+
       //Register mulberry bus signals
       if(div_req_valid_c)
       begin
@@ -106,7 +109,7 @@ module syn_gpu_div (
 
       if(mulbry_bus_intf.div_busy)  //wait for ready signal for rad4_div
       begin
-        mulbry_bus_intf.div_busy  <=  ~rad4_div_rdy_w;
+        mulbry_bus_intf.div_busy  <=  ~rad4_div_rdy_w | rad4_div_load_f;
       end
       else  //wait for valid request
       begin
@@ -117,14 +120,14 @@ module syn_gpu_div (
     end
   end
 
-  assign  update_rsp_mid_c    = rad4_div_rdy_w  & mulbry_bus_intf.div_busy;
+  assign  update_rsp_mid_c    = rad4_div_rdy_w  & ~rad4_div_load_f  & mulbry_bus_intf.div_busy;
 
   //Radix 4 divider module
   divider_rad4  divider_rad4_inst
   (
     .clk        (cr_intf.clk_ir),
     .rst        (~cr_intf.rst_sync_l),
-    .load       (rad4_div_load_c),
+    .load       (rad4_div_load_f),
     .n          (dividend_f),
     .d          (divisor_f),
     .q          (mulbry_bus_intf.div_rsp_data[(2*P_16B_W)-1:P_16B_W]),

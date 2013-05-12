@@ -243,6 +243,17 @@
         pxl_hsi   = frm_bffr[i/2][((i%2)*(DATA_W/2))  +:  (P_LUM_W+P_CHRM_W+P_CHRM_W)];
         //pxl_rgb   = convert_ycbcr2rgb(pxl_ycbcr);
         pxl_rgb   = convert_hsi2rgb(pxl_hsi);
+
+        //  if((i < 5)  ||  ((i  > 638) &&  (i  < 645)))
+        //  begin
+        //    ovm_report_info(  {get_name(),"[extract]"},
+        //                      $psprintf("[%1d] | pxl_hsi [%1d %1d %1d] | pxl_rgb [%1d %1d %1d]",
+        //                                 i,  pxl_hsi.h,  pxl_hsi.s,  pxl_hsi.i,  pxl_rgb.red,  pxl_rgb.green,  pxl_rgb.blue
+        //                               ),
+        //                      OVM_LOW
+        //                   );
+        //  end
+
         $cast(red[i],   (pxl_rgb.red * 16));
         $cast(green[i], (pxl_rgb.green * 16));
         $cast(blue[i],  (pxl_rgb.blue * 16));

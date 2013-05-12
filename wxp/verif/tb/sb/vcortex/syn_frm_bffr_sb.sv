@@ -48,24 +48,25 @@
 `define __SYN_FRM_BFFR_SB
 
 //Implicit port declarations
-`ovm_analysis_imp_decl(_rcvd_pkt)
-`ovm_analysis_imp_decl(_sent_pkt)
+`ovm_analysis_imp_decl(_lb)
+`ovm_analysis_imp_decl(_sram)
 
   import  syn_gpu_pkg::*;
+  import  syn_image_pkg::syn_calc_shade;
 
-  class syn_frm_bffr_sb #(type  SENT_PKT_TYPE = syn_lb_seq_item,
-                          type  RCVD_PKT_TYPE = syn_lb_seq_item
+  class syn_frm_bffr_sb #(type  LB_PKT_TYPE = syn_lb_seq_item#(32,16),
+                          type  SRAM_PKT_TYPE = syn_lb_seq_item#(16,18)
                         ) extends ovm_scoreboard;
 
     `include  "syn_vcortex_reg_map.sv"
 
     /*  Register with Factory */
-    `ovm_component_param_utils(syn_frm_bffr_sb#(SENT_PKT_TYPE, RCVD_PKT_TYPE))
+    `ovm_component_param_utils(syn_frm_bffr_sb#(LB_PKT_TYPE, SRAM_PKT_TYPE))
 
 
     //Ports
-    ovm_analysis_imp_sent_pkt #(SENT_PKT_TYPE,syn_frm_bffr_sb#(SENT_PKT_TYPE,RCVD_PKT_TYPE))  Mon_sent_2Sb_port;
-    ovm_analysis_imp_rcvd_pkt #(RCVD_PKT_TYPE,syn_frm_bffr_sb#(SENT_PKT_TYPE,RCVD_PKT_TYPE))  Mon_rcvd_2Sb_port;
+    ovm_analysis_imp_sram#(SRAM_PKT_TYPE,syn_frm_bffr_sb#(LB_PKT_TYPE,SRAM_PKT_TYPE))  SramMon2SB_Port;
+    ovm_analysis_imp_lb#(LB_PKT_TYPE,syn_frm_bffr_sb#(LB_PKT_TYPE,SRAM_PKT_TYPE))  LbMon2SB_Port;
 
     OVM_FILE  f;
 
@@ -73,10 +74,10 @@
     syn_reg_map#(32)  gpu_reg_set;
 
     //Queue to hold pending expected frame buffer write transactions
-    RCVD_PKT_TYPE frm_bffr_pending_xtns[$];
+    SRAM_PKT_TYPE frm_bffr_pending_xtns[$];
 
     //Queue to hold sram write xtns
-    RCVD_PKT_TYPE sram_wr_xtns[$];
+    SRAM_PKT_TYPE sram_wr_xtns[$];
 
 
     /*  Constructor */
@@ -99,8 +100,8 @@
 
       ovm_report_info(get_name(),"Start of build ",OVM_LOW);
 
-      Mon_sent_2Sb_port = new("Mon_sent_2Sb_port", this);
-      Mon_rcvd_2Sb_port = new("Mon_rcvd_2Sb_port", this);
+      SramMon2SB_Port = new("SramMon2SB_Port", this);
+      LbMon2SB_Port = new("LbMon2SB_Port", this);
 
       //gpu_reg_set  = new("gpu_reg_set", this);
       gpu_reg_set = syn_reg_map#(32)::type_id::create("gpu_reg_set",  this);
@@ -122,10 +123,10 @@
 
     /*
       * Write Sent Pkt
-      * This function will be called each time a pkt is written into [ovm_analysis_imp_sent_pkt]Mon_sent_2Sb_port
+      * This function will be called each time a pkt is written into [ovm_analysis_imp_lb]LbMon2SB_Port
     */
-    virtual function void write_sent_pkt(input SENT_PKT_TYPE  pkt);
-      ovm_report_info({get_name(),"[write_sent_pkt]"},$psprintf("Received pkt\n%s",pkt.sprint()),OVM_LOW);
+    virtual function void write_lb(input LB_PKT_TYPE  pkt);
+      ovm_report_info({get_name(),"[write_lb]"},$psprintf("Received pkt\n%s",pkt.sprint()),OVM_LOW);
 
       //Update shadow registers
       if((pkt.lb_xtn  ==  WRITE)  ||  (pkt.lb_xtn ==  BURST_WRITE))
@@ -141,7 +142,7 @@
         end
       end
 
-    endfunction : write_sent_pkt
+    endfunction : write_lb
 
     function  string  sprint_gpu_draw_job(gpu_draw_job_t job);
       string  res = "gpu_draw_job :\n";
@@ -210,33 +211,43 @@
 
 
     /*  Function to process a draw job & derive the set of pixel writes */
-    function  process_draw_job(gpu_draw_job_t job);
-      int dx,dy,sx,sy,err,v1,e2;
+    function  void  process_draw_job(gpu_draw_job_t job);
+      int x0,y0,x1,y1,dx,dy,sx,sy,err,v1,e2,ddx;
+      real  shade;
+      pxl_hsi_t tmp_color = job.color;
 
-      if(job.x0 > job.x1)
+      $cast(x0, job.x0);
+      $cast(y0, job.y0);
+      $cast(x1, job.x1);
+      $cast(y1, job.y1);
+
+      if(x0 > x1)
       begin
-        dx  = job.x0  - job.x1;
+        dx  = x0  - x1;
         sx  = -1;
       end
       else
       begin
-        dx  = job.x1  - job.x0;
+        dx  = x1  - x0;
         sx  = 1;
       end
 
-      if(job.y0 > job.y1)
+      if(y0 > y1)
       begin
-        dy  = job.y0  - job.y1;
+        dy  = y0  - y1;
         sy  = -1;
       end
       else
       begin
-        dy  = job.y1  - job.y0;
+        dy  = y1  - y0;
         sy  = 1;
       end
 
       err = dx  - dy;
-      v1  = dx  - dy;
+      v1  = 2*(dx  - dy);
+      ddx = dy;
+
+      ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("dx : %1d, dy : %1d, sx : %1d, sy : %1d",dx,dy,sx,sy),OVM_LOW);
 
       while(1)
       begin
@@ -244,40 +255,46 @@
 
         if(dx >=  dy)
         begin
-          if(v1 > e2)
+          shade = ((real'(dx) - real'(ddx))/(real'(dx)))*(real'(job.color.i));
+          //shade = syn_calc_shade(ddx,dx,int'(job.color.i));
+          $cast(tmp_color.i, $floor(shade));
+
+          if(v1 >= e2)
           begin
-            job.color.i = ((v1-e2)/dx)*job.color.i;
-            putPixel(job.x0,job.y0,job.color);
-            job.color.i = 15  - job.color.i;
-            putPixel(job.x0,job.y0+1,job.color);
+            putPixel(x0,y0,tmp_color);
+            tmp_color.i = 7 - tmp_color.i;
+            putPixel(x0,y0+1, tmp_color);
           end
           else
           begin
-            job.color.i = ((e2-v1)/dx)*job.color.i;
-            putPixel(job.x0,job.y0,job.color);
-            job.color.i = 15  - job.color.i;
-            putPixel(job.x0,job.y0-1,job.color);
+            putPixel(x0,y0,tmp_color);
+            tmp_color.i = 7 - tmp_color.i;
+            putPixel(x0,y0-1, tmp_color);
           end
         end
         else
         begin
+          shade = ((real'(dy) - real'(ddx))/(real'(dy)))*(real'(job.color.i));
+          //shade = syn_calc_shade(ddx,dy,int'(job.color.i));
+          $cast(tmp_color.i, $floor(shade));
+
           if(v1 < e2)
           begin
-            job.color.i = ((e2-v1)/dx)*job.color.i;
-            putPixel(job.x0,job.y0,job.color);
-            job.color.i = 15  - job.color.i;
-            putPixel(job.x0+1,job.y0,job.color);
+            putPixel(x0,y0,tmp_color);
+            tmp_color.i = 7 - tmp_color.i;
+            putPixel(x0+1,y0, tmp_color);
           end
           else
           begin
-            job.color.i = ((v1-e2)/dx)*job.color.i;
-            putPixel(job.x0,job.y0,job.color);
-            job.color.i = 15  - job.color.i;
-            putPixel(job.x0-1,job.y0,job.color);
+            putPixel(x0,y0,tmp_color);
+            tmp_color.i = 7 - tmp_color.i;
+            putPixel(x0-1,y0, tmp_color);
           end
         end
 
-        if((job.x0  ==  job.x1) &&  (job.y0 ==  job.y1))
+        ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("shade : %f, err: %1d, ddx : %1d",shade,err,ddx),OVM_LOW);
+
+        if((x0  ==  x1) &&  (y0 ==  y1))
         begin
           break;
         end
@@ -285,38 +302,47 @@
         if(e2 + dy  > 0)
         begin
           err     -=  dy;
-          job.x0  +=  sx;
+          x0      +=  sx;
+          ddx     +=  dy;
         end
 
         if(e2 - dx  < 0)
         begin
           err     +=  dx;
-          job.y0  +=  sy;
+          y0      +=  sy;
+          ddx     -=  dx;
         end
       end
 
     endfunction : process_draw_job
 
     //Function to convert pixel coordinates to frame buffer address & push into queue
-    function  void  putPixel(int x, int y, pxl_ycbcr_t pxl);
-      RCVD_PKT_TYPE pkt = new();
+    function  void  putPixel(int x, int y, pxl_hsi_t pxl);
+      SRAM_PKT_TYPE pkt;
+
+      if((x >=  P_CANVAS_W) ||  (y  >=  P_CANVAS_H))  return;
+      if((x <   0)          ||  (y  <   0))           return;
+
+      pkt       = new();
       pkt.addr  = new[1];
       pkt.data  = new[1];
       pkt.lb_xtn  = WRITE;
 
       pkt.addr[0] = ((y*P_CANVAS_W)  + x)/2;
 
-      if(x  % 2)
+      ovm_report_info({get_name(),"[putPixel]"},$psprintf("x : %1d, y : %1d, pxl[h s i] : %1d %1d %1d",x,y,pxl.h,pxl.s,pxl.i),OVM_LOW);
+
+      if((x % 2)  ==  0)  //LB
       begin
         //$cast(pkt.data,{8'dx,pxl});
         pkt.data[0][7:0]  = pxl;
-        pkt.data[0][15:0] = 'dx;
+        pkt.data[0][15:8] = 'd0;
       end
-      else
+      else  //UB
       begin
         //$cast(pkt.data,{pxl,8'dx});
-        pkt.data[0][7:0]  = 'dx;
-        pkt.data[0][15:0] = pxl;
+        pkt.data[0][7:0]  = 'd0;
+        pkt.data[0][15:8] = pxl;
       end
 
       frm_bffr_pending_xtns.push_back(pkt);
@@ -325,18 +351,18 @@
 
     /*
       * Write Rcvd Pkt
-      * This function will be called each time a pkt is written into [ovm_analysis_imp_rcvd_pkt]Mon_rcvd_2Sb_port
+      * This function will be called each time a pkt is written into [ovm_analysis_imp_sram]SramMon2SB_Port
     */
-    virtual function void write_rcvd_pkt(input RCVD_PKT_TYPE pkt);
-      ovm_report_info({get_name(),"[write_rcvd_pkt]"},$psprintf("Received pkt\n%s",pkt.sprint()),OVM_LOW);
+    virtual function void write_sram(input SRAM_PKT_TYPE pkt);
+      ovm_report_info({get_name(),"[write_sram]"},$psprintf("Received pkt\n%s",pkt.sprint()),OVM_LOW);
 
       sram_wr_xtns.push_back(pkt);
-    endfunction : write_rcvd_pkt
+    endfunction : write_sram
 
 
     /*  Run */
     task run();
-      RCVD_PKT_TYPE exptd_pkt,actual_pkt;
+      SRAM_PKT_TYPE exptd_pkt,actual_pkt;
 
       ovm_report_info({get_name(),"[run]"},"Start of run",OVM_LOW);
 

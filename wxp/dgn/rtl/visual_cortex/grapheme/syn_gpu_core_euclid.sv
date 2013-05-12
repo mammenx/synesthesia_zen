@@ -86,6 +86,7 @@ module syn_gpu_core_euclid (
   logic                       pxl_out_final_valid_f;
 
   logic [P_IDX_W-1:0]         norm_factor_f;
+  logic [P_16B_W-1:0]         dist_f;
 
 //----------------------- Internal Wire Declarations ----------------------
   logic [P_IDX_W-1:0]         dx_c;
@@ -102,7 +103,6 @@ module syn_gpu_core_euclid (
   logic                       decr_x_c;
   logic                       decr_y_c;
   logic [P_IDX_W+1:0]         polarity_2comp_c;
-  logic [P_IDX_W:0]           dist_factor_c;
 
   logic                       pipe_rdy_c;
   logic                       line_drw_ovr_c;
@@ -181,10 +181,6 @@ enum  logic [1:0] { IDLE_S,
   assign  dx_2comp_c  = {1'b1,~dx_f}  + 1'b1;
   assign  dy_2comp_c  = {1'b1,~dy_f}  + 1'b1;
   assign  polarity_2comp_c  = ~polarity_f + 1'b1;
-
-  //calculate abs value of polarity
-  assign  dist_factor_c = polarity_f[P_IDX_W+1] ? polarity_2comp_c[P_IDX_W:0]
-                                                : polarity_f[P_IDX_W:0]       ;
 
   //Calculate e2=2*err
   assign  e2_w        = {err_f,1'b0};
@@ -300,6 +296,9 @@ enum  logic [1:0] { IDLE_S,
       dx_minus_dy_f           <=  0;
 
       norm_factor_f           <=  0;
+      dist_f                  <=  0;
+
+      alias_intf.misc_info_dist <=  0;
     end
     else
     begin
@@ -334,6 +333,8 @@ enum  logic [1:0] { IDLE_S,
             end
 
           endcase
+
+          dist_f              <=  {{P_16B_W-P_IDX_W{1'b0}}, dy_f};
         end
 
         DRAW_LINE_S :
@@ -355,6 +356,15 @@ enum  logic [1:0] { IDLE_S,
               incr_y_c  : pxl_out_posy_f  <=  pxl_out_posy_f  + 1'b1;
 
               decr_y_c  : pxl_out_posy_f  <=  pxl_out_posy_f  - 1'b1;
+
+            endcase
+
+            case({incr_x_c  | decr_x_c, incr_y_c  | decr_y_c})
+
+              2'b00 : dist_f  <=  dist_f;
+              2'b01 : dist_f  <=  dist_f  - dx_f;
+              2'b10 : dist_f  <=  dist_f  + dy_f;
+              2'b11 : dist_f  <=  dist_f  + dy_f  - dx_f;
 
             endcase
           end
@@ -397,6 +407,8 @@ enum  logic [1:0] { IDLE_S,
         end
 
       endcase
+
+      alias_intf.misc_info_dist <=  dist_f;
     end
   end
 
@@ -410,7 +422,6 @@ enum  logic [1:0] { IDLE_S,
   assign  alias_intf.posx           = pxl_out_final_posx_f;
   assign  alias_intf.posy           = pxl_out_final_posy_f;
   assign  alias_intf.pxl_wr_valid   = pxl_out_final_valid_f;
-  assign  alias_intf.misc_info_dist = {{P_16B_W-P_IDX_W-1{1'b0}}, dist_factor_c};
   assign  alias_intf.misc_info_norm = {pxl_pair_f,  {P_16B_W-P_IDX_W-1{1'b0}},   norm_factor_f};
 
 endmodule // syn_gpu_core_euclid

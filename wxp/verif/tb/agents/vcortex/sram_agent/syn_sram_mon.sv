@@ -121,7 +121,7 @@
 
               if(!intf.SRAM_OE_N  &&  !intf.SRAM_CE_N) //read command
               begin
-                pkt = new();
+                pkt = new("sram_rd_seq_item");
                 pkt.addr  = new[1];
                 pkt.data  = new[1];
 
@@ -136,13 +136,13 @@
 
               if(!intf.SRAM_WE_N  &&  !intf.SRAM_CE_N)  //write command
               begin
-                pkt = new();
+                pkt = new("sram_wr_seq_item");
                 pkt.addr  = new[1];
                 pkt.data  = new[1];
 
                 pkt.lb_xtn  = WRITE;
                 pkt.addr[0] = intf.SRAM_ADDR;
-                pkt.data[0] = {DATA_W{1'bx}};
+                pkt.data[0] = {DATA_W{1'b0}};
 
                 if(~intf.SRAM_LB_N)
                 begin

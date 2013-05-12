@@ -67,30 +67,31 @@ def draw_line_anti(x0,y0,x1,y1,w):
 		sy	=	-1
 	
 	err	=	dx-dy
-	v1  = dx-dy
-
+	v1  = 2*(dx-dy)
+	ddx = dy
+	
 	while(1):
 		e2	=	2*err
 		
 		if(dx>=dy):
-			if(v1>e2):
-				shade1 = ((v1-e2)/dx)*127
+			if(v1>=e2):
+				shade1 = 127*((dx - ddx)/dx) 
 				putpxl(x0,y0,w,color_rgb(shade1,shade1,shade1))
 				shade2 = 255 - shade1
 				putpxl(x0,y0+1,w,color_rgb(shade2,shade2,shade2))
 			else:
-				shade1 = ((e2-v1)/dx)*127
+				shade1 = 127*((dx - ddx)/dx) 
 				putpxl(x0,y0,w,color_rgb(shade1,shade1,shade1))
 				shade2 = 255 - shade1
 				putpxl(x0,y0-1,w,color_rgb(shade2,shade2,shade2))
 		else:
 			if(v1<e2):
-				shade1 = ((e2-v1)/dy)*127
+				shade1 = 127*((dy - ddx)/dy) 
 				putpxl(x0,y0,w,color_rgb(shade1,shade1,shade1))
 				shade2 = 255 - shade1
 				putpxl(x0+1,y0,w,color_rgb(shade2,shade2,shade2))
 			else:
-				shade1 = ((v1-e2)/dy)*127
+				shade1 = 127*((dy - ddx)/dy) 
 				putpxl(x0,y0,w,color_rgb(shade1,shade1,shade1))
 				shade2 = 255 - shade1
 				putpxl(x0-1,y0,w,color_rgb(shade2,shade2,shade2))
@@ -104,10 +105,12 @@ def draw_line_anti(x0,y0,x1,y1,w):
 		if(e2>-dy):
 			err	=	err-dy
 			x0	=	x0+sx
+			ddx = ddx + dy
 		
 		if(e2<dx):
 			err	=	err+dx
 			y0	=	y0+sy
+			ddx = ddx - dx
 		
 	print('Done with line')
 
@@ -218,22 +221,22 @@ def plot_hsi_cube():
 
 
 "	Work Area	-	Write code to test models here ..."
-"win = GraphWin('syn_canvas ' + str(canvas_w) + 'x' + str(canvas_h),canvas_w,canvas_h)"
-""
-"pt = Point(200,200)"
-"pt.draw(win)"
-""
-"draw_line_anti(0,0,100,10,win)"
-"draw_line_anti(0,0,10,100,win)"
-" draw_line_anti(0,200,400,0,win) "
-"draw_line_anti(400,0,0,200,win)"
-"draw_line_anti(0,0,10,canvas_h,win)"
-"draw_line_anti(0,0,canvas_w,20,win)"
-"draw_line_anti(0,0,400,400,win)"
+win = GraphWin('syn_canvas ' + str(canvas_w) + 'x' + str(canvas_h),canvas_w,canvas_h)
+
+pt = Point(200,200)
+pt.draw(win)
+
+draw_line_anti(0,0,100,10,win)
+draw_line_anti(0,0,10,100,win)
+draw_line_anti(0,200,400,0,win)
+draw_line_anti(400,0,0,200,win)
+draw_line_anti(0,0,10,canvas_h,win)
+draw_line_anti(0,0,canvas_w,20,win)
+draw_line_anti(0,0,400,400,win)
 
 
 " plot_ycbcr_cube()"
-plot_hsi_cube()
+"plot_hsi_cube()"
 
 
 input("waiting ...")

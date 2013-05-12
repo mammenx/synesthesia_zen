@@ -100,7 +100,7 @@ module syn_gpu_anti_aliaser (
   logic                       ingr_data_rdy_n_w;
   logic                       ingr_bffr_rd_ack_c;
 
-  logic [P_LUM_W-1:0]         norm_i_w;
+  logic [P_INTENSITY_W-1:0]   norm_i_w;
 
 //----------------------- FSM Declarations --------------------------------
 enum  logic [1:0] { IDLE_S,
@@ -170,7 +170,8 @@ enum  logic [1:0] { IDLE_S,
       begin
         if(~ingr_data_rdy_n_w)
         begin
-          next_state          =   MUL_DIST_LUMA_S;
+          next_state          =   ingr_norm_w[P_16B_W-1]  ? MUL_DIST_LUMA_S
+                                                          : DIV_RES_NORM_S  ;
         end
       end
 
@@ -184,7 +185,7 @@ enum  logic [1:0] { IDLE_S,
 
       DIV_RES_NORM_S  :
       begin
-        if(mul_bus_intf.anti_alias_res_valid)
+        if(mul_bus_intf.anti_alias_res_valid  | ~ingr_norm_w[P_16B_W-1])
         begin
           next_state          =   XMT_RES_S;
         end
@@ -216,15 +217,15 @@ enum  logic [1:0] { IDLE_S,
 
         IDLE_S  :
         begin
-          if(~ingr_data_rdy_n_w)
+          if(~ingr_data_rdy_n_w & ingr_norm_w[P_16B_W-1])
           begin
             mul_bus_intf.anti_alias_sid                         <=  SID_MUL;
-            mul_bus_intf.anti_alias_req_data[P_16B_W-1:0]       <=  ingr_dist_w;
-            mul_bus_intf.anti_alias_req_data[P_32B_W-1:P_16B_W] <=  { {P_16B_W-P_INTENSITY_W{1'b0}},
-                                                                      //ingr_pxl_w.y
-                                                                      ingr_pxl_w.i
-                                                                    };
           end
+
+          mul_bus_intf.anti_alias_req_data[P_16B_W-1:0]       <=  {1'b0,ingr_norm_w[P_16B_W-2:0]} -   ingr_dist_w;
+          mul_bus_intf.anti_alias_req_data[P_32B_W-1:P_16B_W] <=  { {P_16B_W-P_INTENSITY_W{1'b0}},
+                                                                    ingr_pxl_w.i
+                                                                  };
         end
 
         MUL_DIST_LUMA_S :
@@ -255,8 +256,8 @@ enum  logic [1:0] { IDLE_S,
   end
 
 
-  //Extract the normalised Luma value
-  assign  norm_i_w            = mul_bus_intf.anti_alias_res[P_LUM_W-1:0];
+  //Extract the normalised Intensity value
+  assign  norm_i_w            = mul_bus_intf.anti_alias_res[P_16B_W +:  P_INTENSITY_W];
 
   /*  Pixel GW interface logic  */
   always_ff@(posedge cr_intf.clk_ir, negedge cr_intf.rst_sync_l)
@@ -281,10 +282,17 @@ enum  logic [1:0] { IDLE_S,
 
         DIV_RES_NORM_S  :
         begin
-          if(mul_bus_intf.anti_alias_res_valid)
+          if(~ingr_norm_w[P_16B_W-1])
           begin
-            pxl_egr_intf.pxl.i    <=  ingr_norm_w[P_16B_W-1]  ? {P_LUM_W{1'b1}} - norm_i_w
-                                                              : norm_i_w  ;
+            pxl_egr_intf.pxl.i    <=  {P_INTENSITY_W{1'b1}} - pxl_egr_intf.pxl.i;
+
+            pxl_egr_intf.pxl_wr_valid <=  1'b1;
+          end
+          else if(mul_bus_intf.anti_alias_res_valid)
+          begin
+            //pxl_egr_intf.pxl.i    <=  ~ingr_norm_w[P_16B_W-1] ? {P_INTENSITY_W{1'b1}} - norm_i_w
+            //                                                  : norm_i_w  ;
+            pxl_egr_intf.pxl.i    <=  norm_i_w;
 
             pxl_egr_intf.pxl_wr_valid <=  1'b1;
           end

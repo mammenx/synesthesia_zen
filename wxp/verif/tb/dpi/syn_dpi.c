@@ -215,3 +215,23 @@ int syn_dump_raw(
                   );
 
 }
+
+//Calculate the pixel shade based on distance & normalization parameters
+double  syn_calc_shade(
+    int distance,
+    int norm,
+    int color)
+{
+  double  res;
+
+  printf("dist : %1d, norm : %1d, color : %1d | ",distance,norm,color);
+
+  res = (double)(norm)  - (double)(distance);
+  printf("res : %f | ",res);
+  res = res/((double)(norm));
+  printf("res : %f | ",res);
+  res = res * (double)(color);
+  printf("res : %f\n",res);
+
+  return  res;
+}

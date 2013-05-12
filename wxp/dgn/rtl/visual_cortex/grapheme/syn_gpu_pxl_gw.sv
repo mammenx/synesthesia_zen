@@ -84,7 +84,7 @@ module syn_gpu_pxl_gw (
 
 
 //----------------------- Internal Wire Declarations ----------------------
-  pxl_ycbcr_t                 pxl_c;
+  pxl_hsi_t                   pxl_c;
   logic                       pxl_wr_valid_c;
   logic                       pxl_rd_valid_c;
   logic [P_X_W-1:0]           posx_c;
@@ -92,11 +92,16 @@ module syn_gpu_pxl_gw (
 
   logic [P_GPU_SRAM_ADDR_W-7:0]   posy_mul10_c;
 
-
+  logic                       gpu_core_pxl_pos_valid_c;
+  logic                       anti_alias_pxl_pos_valid_c;
 
 
 
 //----------------------- Start of Code -----------------------------------
+
+  //Check that the pixel is in valid range
+  assign  gpu_core_pxl_pos_valid_c    = (gpu_core_intf.posx   < P_CANVAS_W) & (gpu_core_intf.posy   < P_CANVAS_H);
+  assign  anti_alias_pxl_pos_valid_c  = (anti_alias_intf.posx < P_CANVAS_W) & (anti_alias_intf.posy < P_CANVAS_H);
 
   //Mux between antialias & gpu cores
   always_comb
@@ -104,7 +109,7 @@ module syn_gpu_pxl_gw (
     if(gpu_core_intf.pxl_wr_valid | gpu_core_intf.pxl_rd_valid) //highest priority
     begin
       pxl_c                   =   gpu_core_intf.pxl;
-      pxl_wr_valid_c          =   gpu_core_intf.pxl_wr_valid;
+      pxl_wr_valid_c          =   gpu_core_intf.pxl_wr_valid  & gpu_core_pxl_pos_valid_c;
       pxl_rd_valid_c          =   gpu_core_intf.pxl_rd_valid;
       posx_c                  =   gpu_core_intf.posx;
       posy_c                  =   gpu_core_intf.posy;
@@ -115,7 +120,7 @@ module syn_gpu_pxl_gw (
     else
     begin
       pxl_c                   =   anti_alias_intf.pxl;
-      pxl_wr_valid_c          =   anti_alias_intf.pxl_wr_valid;
+      pxl_wr_valid_c          =   anti_alias_intf.pxl_wr_valid  & gpu_core_pxl_pos_valid_c;
       pxl_rd_valid_c          =   anti_alias_intf.pxl_rd_valid;
       posx_c                  =   anti_alias_intf.posx;
       posy_c                  =   anti_alias_intf.posy;

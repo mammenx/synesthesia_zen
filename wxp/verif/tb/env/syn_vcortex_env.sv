@@ -107,8 +107,8 @@
 
       ovm_report_info(get_name(),"START of connect ",OVM_LOW);
 
-      lb_agent.mon.Mon2Sb_port.connect(frm_bffr_sb.Mon_sent_2Sb_port);
-      sram_agent.mon.Mon2Sb_port.connect(frm_bffr_sb.Mon_rcvd_2Sb_port);
+      lb_agent.mon.Mon2Sb_port.connect(frm_bffr_sb.LbMon2SB_Port);
+      sram_agent.mon.Mon2Sb_port.connect(frm_bffr_sb.SramMon2SB_Port);
 
       ovm_report_info(get_name(),"END of connect ",OVM_LOW);
     endfunction

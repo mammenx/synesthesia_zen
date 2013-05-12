@@ -148,9 +148,9 @@ package syn_image_pkg;
     real    x,y,z;
 
     //normalize HSI
-    h = (pxl_in.h * pi)/4;
-    s = pxl_in.s  / 3;
-    i = pxl_in.i  / 7;
+    h = (real'(pxl_in.h) * pi)/4;
+    s = real'(pxl_in.s) / 3;
+    i = real'(pxl_in.i)  / 7;
 
     if(h  < (2*pi/3))
       h1  = h;
@@ -255,5 +255,13 @@ package syn_image_pkg;
     return  pxl_out;
 
   endfunction : convert_rgb2hsi
+
+
+  //Function  to calculate the shade of a pixel based on distance & normalization factors
+  import  "DPI-C" pure function real syn_calc_shade(
+                                                    input int distance,
+                                                    input int norm,
+                                                    input int color
+                                                  );
 
 endpackage  //  syn_image_pkg
