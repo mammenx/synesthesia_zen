@@ -115,17 +115,17 @@ module syn_gpu_pxl_gw (
       posy_c                  =   gpu_core_intf.posy;
 
       anti_alias_intf.ready   =   1'b0;
-      gpu_core_intf.ready     =   sram_intf.gpu_rdy;
+      gpu_core_intf.ready     =   sram_intf.gpu_rdy | ~gpu_core_pxl_pos_valid_c;
     end
     else
     begin
       pxl_c                   =   anti_alias_intf.pxl;
-      pxl_wr_valid_c          =   anti_alias_intf.pxl_wr_valid  & gpu_core_pxl_pos_valid_c;
+      pxl_wr_valid_c          =   anti_alias_intf.pxl_wr_valid  & anti_alias_pxl_pos_valid_c;
       pxl_rd_valid_c          =   anti_alias_intf.pxl_rd_valid;
       posx_c                  =   anti_alias_intf.posx;
       posy_c                  =   anti_alias_intf.posy;
 
-      anti_alias_intf.ready   =   sram_intf.gpu_rdy;
+      anti_alias_intf.ready   =   sram_intf.gpu_rdy | ~anti_alias_pxl_pos_valid_c;
       gpu_core_intf.ready     =   1'b0;
     end
   end
