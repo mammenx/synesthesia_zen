@@ -50,23 +50,26 @@
 //Implicit port declarations
 `ovm_analysis_imp_decl(_lb)
 `ovm_analysis_imp_decl(_sram)
+`ovm_analysis_imp_decl(_pxlgw_ingr)
 
   import  syn_gpu_pkg::*;
   import  syn_image_pkg::syn_calc_shade;
 
   class syn_frm_bffr_sb #(type  LB_PKT_TYPE = syn_lb_seq_item#(32,16),
-                          type  SRAM_PKT_TYPE = syn_lb_seq_item#(16,18)
+                          type  SRAM_PKT_TYPE = syn_lb_seq_item#(16,18),
+                          type  PXL_XFR_PKT_TYPE = syn_gpu_pxl_xfr_seq_item#(pxl_hsi_t)
                         ) extends ovm_scoreboard;
 
     `include  "syn_vcortex_reg_map.sv"
 
     /*  Register with Factory */
-    `ovm_component_param_utils(syn_frm_bffr_sb#(LB_PKT_TYPE, SRAM_PKT_TYPE))
+    `ovm_component_param_utils(syn_frm_bffr_sb#(LB_PKT_TYPE, SRAM_PKT_TYPE,PXL_XFR_PKT_TYPE))
 
 
     //Ports
-    ovm_analysis_imp_sram#(SRAM_PKT_TYPE,syn_frm_bffr_sb#(LB_PKT_TYPE,SRAM_PKT_TYPE))  SramMon2SB_Port;
-    ovm_analysis_imp_lb#(LB_PKT_TYPE,syn_frm_bffr_sb#(LB_PKT_TYPE,SRAM_PKT_TYPE))  LbMon2SB_Port;
+    ovm_analysis_imp_sram#(SRAM_PKT_TYPE,syn_frm_bffr_sb#(LB_PKT_TYPE,SRAM_PKT_TYPE,PXL_XFR_PKT_TYPE))  SramMon2SB_Port;
+    ovm_analysis_imp_lb#(LB_PKT_TYPE,syn_frm_bffr_sb#(LB_PKT_TYPE,SRAM_PKT_TYPE,PXL_XFR_PKT_TYPE))  LbMon2SB_Port;
+    ovm_analysis_imp_pxlgw_ingr#(PXL_XFR_PKT_TYPE,syn_frm_bffr_sb#(LB_PKT_TYPE,SRAM_PKT_TYPE,PXL_XFR_PKT_TYPE))  PxlGwSinffer2SB_Port;
 
     OVM_FILE  f;
 
@@ -78,6 +81,12 @@
 
     //Queue to hold sram write xtns
     SRAM_PKT_TYPE sram_wr_xtns[$];
+
+    //Queue to hold sniffed scents
+    PXL_XFR_PKT_TYPE  pxlgw_xtns[$];
+
+    //Mailbox to hold gpu_draw_jobs
+    mailbox#(gpu_draw_job_t)  gpu_draw_job_mb;
 
 
     /*  Constructor */
@@ -102,6 +111,7 @@
 
       SramMon2SB_Port = new("SramMon2SB_Port", this);
       LbMon2SB_Port = new("LbMon2SB_Port", this);
+      PxlGwSinffer2SB_Port  = new("PxlGwSinffer2SB_Port", this);
 
       //gpu_reg_set  = new("gpu_reg_set", this);
       gpu_reg_set = syn_reg_map#(32)::type_id::create("gpu_reg_set",  this);
@@ -117,9 +127,22 @@
 
       frm_bffr_pending_xtns = '{};  //clear the queue
 
+      gpu_draw_job_mb = new(1);
+
       ovm_report_info(get_name(),"End of build ",OVM_LOW);
     endfunction
 
+    /*
+      * Write Sniffed xtns
+      * This function will be called each time the pxlgw_ingr_sniffer writes to PxlGwSinffer2SB_Port
+    */
+    virtual function void write_pxlgw_ingr(input PXL_XFR_PKT_TYPE pkt);
+      ovm_report_info({get_name(),"[write_pxlgw_ingr]"},$psprintf("Received pkt\n%s",pkt.sprint()),OVM_LOW);
+
+      //Push to queue
+      pxlgw_xtns.push_back(pkt);
+
+    endfunction :write_pxlgw_ingr 
 
     /*
       * Write Sent Pkt
@@ -190,9 +213,11 @@
 
         ovm_report_info({get_name(),"[extract_gpu_job]"},$psprintf("Start of extract_gpu_job : \n%s",  sprint_gpu_draw_job(draw_job)),OVM_LOW);
 
-        process_draw_job(draw_job);
+        if(gpu_draw_job_mb.try_put(draw_job))
+          ovm_report_info({get_name(),"[extract_gpu_job]"},$psprintf("Placed GPU Draw Job into gpu_draw_job_mb"),OVM_LOW);
+        else
+          ovm_report_fatal({get_name(),"[extract_gpu_job]"},$psprintf("Could not place GPU Draw Job into gpu_draw_job_mb!"),OVM_LOW);
 
-        ovm_report_info({get_name(),"[extract_gpu_job]"},$psprintf("Contents of frm_bffr_pending_xtns ...\n%s",sprint_frm_bffr_pending_xtns()),OVM_LOW);
       end
       else
       begin
@@ -210,142 +235,133 @@
     endfunction : sprint_frm_bffr_pending_xtns
 
 
-    /*  Function to process a draw job & derive the set of pixel writes */
-    function  void  process_draw_job(gpu_draw_job_t job);
-      int x0,y0,x1,y1,dx,dy,sx,sy,err,v1,e2,ddx;
-      real  shade;
-      pxl_hsi_t tmp_color = job.color;
+    /*  Task to process a draw job & derive the set of pixel writes */
+    virtual task  process_draw_job;
+      int x0,y0,x1,y1,dx,dy,sx,sy,err,e2;
+      gpu_draw_job_t  job;
+      PXL_XFR_PKT_TYPE  actual_xtn;
+      PXL_XFR_PKT_TYPE  exptd_xtn;
+      string  res;
 
-      $cast(x0, job.x0);
-      $cast(y0, job.y0);
-      $cast(x1, job.x1);
-      $cast(y1, job.y1);
+      ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("Start of process_draw_job"),OVM_LOW);
 
-      if(x0 > x1)
+      forever
       begin
-        dx  = x0  - x1;
-        sx  = -1;
-      end
-      else
-      begin
-        dx  = x1  - x0;
-        sx  = 1;
-      end
+        ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("Waiting on gpu_draw_job_mb"),OVM_LOW);
+        gpu_draw_job_mb.get(job);
 
-      if(y0 > y1)
-      begin
-        dy  = y0  - y1;
-        sy  = -1;
-      end
-      else
-      begin
-        dy  = y1  - y0;
-        sy  = 1;
-      end
+        ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("Processing job :\n%s",sprint_gpu_draw_job(job)),OVM_LOW);
 
-      err = dx  - dy;
-      v1  = 2*(dx  - dy);
-      ddx = dy;
+        $cast(x0, job.x0);
+        $cast(y0, job.y0);
+        $cast(x1, job.x1);
+        $cast(y1, job.y1);
 
-      ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("dx : %1d, dy : %1d, sx : %1d, sy : %1d",dx,dy,sx,sy),OVM_LOW);
-
-      while(1)
-      begin
-        e2  = 2*err;
-
-        if(dx >=  dy)
+        if(x0 > x1)
         begin
-          shade = ((real'(dx) - real'(ddx))/(real'(dx)))*(real'(job.color.i));
-          //shade = syn_calc_shade(ddx,dx,int'(job.color.i));
-          $cast(tmp_color.i, $floor(shade));
-
-          if(v1 >= e2)
-          begin
-            putPixel(x0,y0,tmp_color);
-            tmp_color.i = 7 - tmp_color.i;
-            putPixel(x0,y0+1, tmp_color);
-          end
-          else
-          begin
-            putPixel(x0,y0,tmp_color);
-            tmp_color.i = 7 - tmp_color.i;
-            putPixel(x0,y0-1, tmp_color);
-          end
+          dx  = x0  - x1;
+          sx  = -1;
         end
         else
         begin
-          shade = ((real'(dy) - real'(ddx))/(real'(dy)))*(real'(job.color.i));
-          //shade = syn_calc_shade(ddx,dy,int'(job.color.i));
-          $cast(tmp_color.i, $floor(shade));
+          dx  = x1  - x0;
+          sx  = 1;
+        end
 
-          if(v1 < e2)
-          begin
-            putPixel(x0,y0,tmp_color);
-            tmp_color.i = 7 - tmp_color.i;
-            putPixel(x0+1,y0, tmp_color);
-          end
+        if(y0 > y1)
+        begin
+          dy  = y0  - y1;
+          sy  = -1;
+        end
+        else
+        begin
+          dy  = y1  - y0;
+          sy  = 1;
+        end
+
+        err = dx  - dy;
+
+        ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("dx : %1d, dy : %1d, sx : %1d, sy : %1d",dx,dy,sx,sy),OVM_LOW);
+
+        while(1)
+        begin
+          ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("Waiting for sniffer"),OVM_LOW);
+          while(!pxlgw_xtns.size())  #1;
+
+          actual_xtn  = new();
+          actual_xtn  = pxlgw_xtns.pop_front();
+          ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("Received sniffer xtn :\n%s",actual_xtn.sprint()),OVM_LOW);
+
+          exptd_xtn       = new();
+          exptd_xtn.posx  = x0;
+          exptd_xtn.posy  = y0;
+          exptd_xtn.pxl   = job.color;
+          exptd_xtn.xtn   = PXL_WRITE;
+
+          res = actual_xtn.check(exptd_xtn);
+
+          if(res  ==  "")
+            ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("PxlGw XTN Valid"),OVM_LOW);
           else
+            ovm_report_error({get_name(),"[process_draw_job]"},$psprintf("PxlGw XTN Invalid %s",res),OVM_LOW);
+
+          putPixel(exptd_xtn);
+
+          e2  = 2*err;
+
+          if((x0  ==  x1) &&  (y0 ==  y1))
           begin
-            putPixel(x0,y0,tmp_color);
-            tmp_color.i = 7 - tmp_color.i;
-            putPixel(x0-1,y0, tmp_color);
+            break;
+          end
+
+          if(e2 + dy  > 0)
+          begin
+            err     -=  dy;
+            x0      +=  sx;
+          end
+
+          if(e2 - dx  < 0)
+          begin
+            err     +=  dx;
+            y0      +=  sy;
           end
         end
 
-        ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("shade : %f, err: %1d, ddx : %1d",shade,err,ddx),OVM_LOW);
-
-        if((x0  ==  x1) &&  (y0 ==  y1))
-        begin
-          break;
-        end
-
-        if(e2 + dy  > 0)
-        begin
-          err     -=  dy;
-          x0      +=  sx;
-          ddx     +=  dy;
-        end
-
-        if(e2 - dx  < 0)
-        begin
-          err     +=  dx;
-          y0      +=  sy;
-          ddx     -=  dx;
-        end
+        ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("End of job %s",sprint_gpu_draw_job(job)),OVM_LOW);
       end
-
-    endfunction : process_draw_job
+    endtask: process_draw_job
 
     //Function to convert pixel coordinates to frame buffer address & push into queue
-    function  void  putPixel(int x, int y, pxl_hsi_t pxl);
-      SRAM_PKT_TYPE pkt;
+    function  void  putPixel(PXL_XFR_PKT_TYPE pkt);
+      SRAM_PKT_TYPE pkt_sram;
 
-      if((x >=  P_CANVAS_W) ||  (y  >=  P_CANVAS_H))  return;
-      if((x <   0)          ||  (y  <   0))           return;
+      if((pkt.posx  >=  P_CANVAS_W) ||  (pkt.posy >=  P_CANVAS_H))  return;
+      if((pkt.posx  <   0)          ||  (pkt.posy <   0))           return;
 
-      pkt       = new();
-      pkt.addr  = new[1];
-      pkt.data  = new[1];
-      pkt.lb_xtn  = WRITE;
+      pkt_sram       = new();
+      pkt_sram.addr  = new[1];
+      pkt_sram.data  = new[1];
+      pkt_sram.lb_xtn  = WRITE;
 
-      pkt.addr[0] = ((y*P_CANVAS_W)  + x)/2;
+      pkt_sram.addr[0] = ((pkt.posy*P_CANVAS_W)  + pkt.posx)/2;
 
-      ovm_report_info({get_name(),"[putPixel]"},$psprintf("x : %1d, y : %1d, pxl[h s i] : %1d %1d %1d",x,y,pxl.h,pxl.s,pxl.i),OVM_LOW);
+      //ovm_report_info({get_name(),"[putPixel]"},$psprintf("x : %1d, y : %1d, pxl[h s i] : %1d %1d %1d",pkt.posx,pkt.posy,pkt.pxl.h,pkt.pxl.s,pkt.pxl.i),OVM_LOW);
 
-      if((x % 2)  ==  0)  //LB
+      if((pkt.posx % 2)  ==  0)  //LB
       begin
-        //$cast(pkt.data,{8'dx,pxl});
-        pkt.data[0][7:0]  = pxl;
-        pkt.data[0][15:8] = 'd0;
+        //$cast(pkt_sram.data,{8'dx,pxl});
+        pkt_sram.data[0][7:0]  = pkt.pxl;
+        pkt_sram.data[0][15:8] = 'd0;
       end
       else  //UB
       begin
-        //$cast(pkt.data,{pxl,8'dx});
-        pkt.data[0][7:0]  = 'd0;
-        pkt.data[0][15:8] = pxl;
+        //$cast(pkt_sram.data,{pxl,8'dx});
+        pkt_sram.data[0][7:0]  = 'd0;
+        pkt_sram.data[0][15:8] = pkt.pxl;
       end
 
-      frm_bffr_pending_xtns.push_back(pkt);
+      frm_bffr_pending_xtns.push_back(pkt_sram);
+      ovm_report_info({get_name(),"[putPixel]"},$psprintf("Pushed sram_pkt to frm_bffr_pending_xtns [size=%1d] :\n%s",frm_bffr_pending_xtns.size,pkt_sram.sprint()),OVM_LOW);
 
     endfunction : putPixel
 
@@ -360,22 +376,24 @@
     endfunction : write_sram
 
 
-    /*  Run */
-    task run();
+    /*
+      * Function to check the validity of each SRAM write
+    */
+    task check_sram_writes();
       SRAM_PKT_TYPE exptd_pkt,actual_pkt;
 
-      ovm_report_info({get_name(),"[run]"},"Start of run",OVM_LOW);
+      ovm_report_info({get_name(),"[check_sram_writes]"},"Start of check_sram_writes",OVM_LOW);
 
       forever
       begin
         //Wait for items to arrive in sent & rcvd queues
-        ovm_report_info({get_name(),"[run]"},"Waiting on sram_wr_xtns queue ...",OVM_LOW);
+        ovm_report_info({get_name(),"[check_sram_writes]"},"Waiting on sram_wr_xtns queue ...",OVM_LOW);
         while(!sram_wr_xtns.size())  #1;
 
         if(!frm_bffr_pending_xtns.size())
         begin
           actual_pkt  = sram_wr_xtns.pop_front();
-          ovm_report_error({get_name(),"[run]"},$psprintf("frm_bffr_pending_xtns queue is empty. Unexpected SRAM write \n%s",actual_pkt.sprint()),OVM_LOW);
+          ovm_report_error({get_name(),"[check_sram_writes]"},$psprintf("frm_bffr_pending_xtns queue is empty. Unexpected SRAM write \n%s",actual_pkt.sprint()),OVM_LOW);
         end
         else
         begin
@@ -386,14 +404,31 @@
           //Process, compare, check ...
           if(exptd_pkt.check(actual_pkt))
           begin
-            ovm_report_info({get_name(),"[run]"},"SRAM Write is valid",OVM_LOW);
+            ovm_report_info({get_name(),"[check_sram_writes]"},"SRAM Write is valid",OVM_LOW);
           end
           else
           begin
-            ovm_report_error({get_name(),"[run]"},"SRAM Write is invalid",OVM_LOW);
+            ovm_report_error({get_name(),"[check_sram_writes]"},"SRAM Write is invalid",OVM_LOW);
           end
         end
       end
+
+    endtask : check_sram_writes
+
+
+    /*  Run */
+    virtual task  run();
+      ovm_report_info({get_name(),"[run]"},"Start of run",OVM_LOW);
+
+      fork
+        begin
+          check_sram_writes();
+        end
+
+        begin
+          process_draw_job();
+        end
+      join
 
     endtask : run
 

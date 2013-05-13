@@ -22,11 +22,11 @@
 /*
  --------------------------------------------------------------------------
  -- Project Code      : synesthesia
- -- Interface Name    : syn_anti_alias_status_intf
+ -- Interface Name    : syn_pxl_xfr_tb_intf
  -- Author            : mammenx
- -- Function          : This interfaces contains status signals related to
-                        the anti-alias module that need to pulled out for
-                        LB access.
+ -- Function          : This interface defines the set of signals to transfer
+                        pixel information from module to module.
+                        Used by sniffers.
  --------------------------------------------------------------------------
 */
 
@@ -41,23 +41,35 @@
  --------------------------------------------------------------------------
 */
 
-interface syn_anti_alias_status_intf  (input logic clk_ir,rst_il);
+interface syn_pxl_xfr_tb_intf  #(
+                              parameter type  PIXEL_TYPE  = syn_gpu_pkg::pxl_hsi_t,
+                              parameter       WIDTHX= syn_gpu_pkg::P_X_W,
+                              parameter       WIDTHY= syn_gpu_pkg::P_Y_W
+                            )
+
+                            (input  logic clk_ir, rst_il);
 
   //Logic signals
-  logic   job_que_empty;
+  PIXEL_TYPE          pxl;  //structure containing pixel data
+  logic               pxl_wr_valid;   //1->pixel data is valid for write
+  logic               pxl_rd_valid;   //1->pixel data is valid for read
+  logic [WIDTHX-1:0]  posx;
+  logic [WIDTHY-1:0]  posy;
 
+  //Clocking block
+  clocking  cb@(posedge  clk_ir);
+    default input #2ns output #2ns;
 
-  //Wire Signals
+    input pxl;
+    input pxl_wr_valid;
+    input pxl_rd_valid;
+    input posx;
+    input posy;
 
+  endclocking : cb
 
   //Modports
-  modport anti_alias_mp (
-                          output  job_que_empty
-                        );
-
-  modport lb_mp (
-                  input job_que_empty
-                );
+  modport   tb  (clocking  cb, input rst_il, clk_ir);
 
 
-endinterface  //  syn_anti_alias_status_intf
+endinterface  //  syn_pxl_xfr_tb_intf

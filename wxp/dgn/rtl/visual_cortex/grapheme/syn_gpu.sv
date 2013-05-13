@@ -79,12 +79,8 @@ module syn_gpu (
 
 //----------------------- Internal Interface Declarations -----------------
   mulberry_bus_intf               mul_bus_intf(cr_intf.clk_ir,  cr_intf.rst_sync_l);
-  syn_pxl_xfr_intf                core2anti_alias_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
   syn_pxl_xfr_intf                core2pxl_gw_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
-  syn_pxl_xfr_intf                anti_alias2pxl_gw_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
   syn_pxl_xfr_intf                pxl_gw2core_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
-  syn_anti_alias_status_intf      anti_alias_stat_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
-
 
 
 //----------------------- Start of Code -----------------------------------
@@ -99,28 +95,9 @@ module syn_gpu (
 
     .mul_bus_intf           (mul_bus_intf.gpu_core_mp),
 
-    .anti_alias_intf        (core2anti_alias_intf.master),
-
     .pxl_gw_tx_intf         (core2pxl_gw_intf.master),
 
-    .pxl_gw_rx_intf         (pxl_gw2core_intf.slave),
-
-    .anti_alias_stat_intf   (anti_alias_stat_intf.lb_mp)
-
-  );
-
-  syn_gpu_anti_aliaser      syn_gpu_anti_aliaser_inst
-  (
-
-    .cr_intf                (cr_intf),
-
-    .pxl_ingr_intf          (core2anti_alias_intf.slave),
-
-    .pxl_egr_intf           (anti_alias2pxl_gw_intf.master),
-
-    .mul_bus_intf           (mul_bus_intf.anti_alias_mp),
-
-    .lb_stat_intf           (anti_alias_stat_intf.anti_alias_mp)
+    .pxl_gw_rx_intf         (pxl_gw2core_intf.slave)
 
   );
 
@@ -155,8 +132,6 @@ module syn_gpu (
   (
 
     .cr_intf                (cr_intf),
-
-    .anti_alias_intf        (anti_alias2pxl_gw_intf.slave),
 
     .gpu_core_intf          (core2pxl_gw_intf.slave),
 

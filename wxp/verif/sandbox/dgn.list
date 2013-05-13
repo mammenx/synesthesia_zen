@@ -32,20 +32,19 @@
 ../../dgn/rtl/intf/syn_lb_intf.sv
 ../../dgn/rtl/intf/syn_sram_mem_intf.sv
 ../../dgn/rtl/intf/syn_vga_intf.sv
+../../verif/tb/env/interfaces/syn_pxl_xfr_tb_intf.sv
 
 ../../dgn/rtl/visual_cortex/intf/sram_acc_intf.sv
 
 ../../dgn/rtl/visual_cortex/grapheme/intf/mulberry_bus_intf.sv
 ../../dgn/rtl/visual_cortex/grapheme/intf/syn_gpu_core_job_intf.sv
 ../../dgn/rtl/visual_cortex/grapheme/intf/syn_pxl_xfr_intf.sv
-../../dgn/rtl/visual_cortex/grapheme/intf/syn_anti_alias_status_intf.sv
 
 ../../dgn/rtl/visual_cortex/vga_drvr/intf/syn_vga_drvr_lb_intf.sv
 
 //Vcortex
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu_core_euclid.sv
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu_core.sv
-../../dgn/rtl/visual_cortex/grapheme/syn_gpu_anti_aliaser.sv
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu_pxl_gw.sv
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu_div.sv
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu_mul.sv

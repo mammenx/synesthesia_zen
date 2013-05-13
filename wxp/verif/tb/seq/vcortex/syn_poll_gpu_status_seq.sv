@@ -59,7 +59,7 @@
     `include  "syn_cortex_reg_map.sv"
     `include  "syn_vcortex_reg_map.sv"
 
-    bit gpu_busy,anti_alias_job_qeue_empty;
+    bit gpu_busy;
     PKT_TYPE  pkt, rsp;
 
     /*  Constructor */
@@ -67,7 +67,6 @@
       super.new(name);
 
       gpu_busy  = 0;
-      anti_alias_job_qeue_empty = 1;
       pkt = new();
       rsp = new();
     endfunction
@@ -98,7 +97,7 @@
 
         p_sequencer.ovm_report_info(get_name(),$psprintf("Got Response - \n%s", rsp.sprint()),OVM_LOW);
       end
-      while(rsp.data[0][1:0]  !=  {anti_alias_job_qeue_empty,gpu_busy});
+      while(rsp.data[0][0]  !=  gpu_busy);
 
       #1;
 

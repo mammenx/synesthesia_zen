@@ -1,5 +1,6 @@
 //Sequence items
 `include  "syn_lb_seq_item.sv"
+`include  "syn_gpu_pxl_xfr_seq_item.sv"
 
 //RAL
 `include  "syn_reg_map.sv"
@@ -14,6 +15,9 @@
 `include  "syn_sram_mon.sv"
 `include  "syn_sram_seqr.sv"
 `include  "syn_sram_agent.sv"
+
+//Sniffers
+`include  "syn_gpu_pxlgw_ingr_sniffer.sv"
 
 //Scoreboards
 `include  "syn_frm_bffr_sb.sv"

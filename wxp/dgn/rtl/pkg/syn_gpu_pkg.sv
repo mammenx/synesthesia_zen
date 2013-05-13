@@ -125,12 +125,11 @@ package syn_gpu_pkg;
 
 
   //Parameters for Mulberry Bus
-  parameter P_NUM_MASTERS = 3;
+  parameter P_NUM_MASTERS = 2;
 
   typedef enum  logic [$clog2(P_NUM_MASTERS+1)-1:0] { MID_IDLE={$clog2(P_NUM_MASTERS+1){1'b0}}, //used for idle condition
                                                       MID_GPU_LB,
-                                                      MID_GPU_CORE,
-                                                      MID_ANTI_ALIAS
+                                                      MID_GPU_CORE
                                                     } mid_t;  //Master ID type
 
   parameter P_NUM_SLAVES  = 3;

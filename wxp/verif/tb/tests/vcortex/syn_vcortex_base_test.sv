@@ -116,6 +116,7 @@ class syn_vcortex_base_test extends ovm_test;
       this.env.sram_agent.drvr.intf = $root.syn_vcortex_tb_top.sram_mem_intf;
       this.env.sram_agent.mon.intf  = $root.syn_vcortex_tb_top.sram_mem_intf;
 
+      this.env.pxlgw_ingr_sniffer.intf  = $root.syn_vcortex_tb_top.syn_vcortex_inst.syn_gpu_inst.syn_gpu_pxl_gw_inst.ingr_sniff_intf;
       ovm_report_info(get_full_name(),"End of connect",OVM_LOW);
     endfunction : connect
 

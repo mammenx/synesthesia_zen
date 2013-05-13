@@ -52,13 +52,9 @@ module syn_gpu_core (
 
   mulberry_bus_intf               mul_bus_intf,
 
-  syn_pxl_xfr_intf                anti_alias_intf,
-
   syn_pxl_xfr_intf                pxl_gw_tx_intf,
 
-  syn_pxl_xfr_intf                pxl_gw_rx_intf,
-
-  syn_anti_alias_status_intf      anti_alias_stat_intf
+  syn_pxl_xfr_intf                pxl_gw_rx_intf
 
   //--------------------- Misc Ports (Logic)  -----------
 
@@ -100,7 +96,7 @@ module syn_gpu_core (
 
 //----------------------- Internal Interface Declarations -----------------
   syn_gpu_core_job_intf       gpu_job_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
-  syn_pxl_xfr_intf            euclid_anti_alias_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
+  syn_pxl_xfr_intf            euclid_pxlgw_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
 
 //----------------------- Start of Code -----------------------------------
 
@@ -157,7 +153,6 @@ module syn_gpu_core (
 
           VCORTEX_GPU_CONTROL_REG_ADDR    : lb_intf.rd_data <=  {{P_32B_W-1{1'b0}},gpu_en_f};
           VCORTEX_GPU_STATUS_REG_ADDR     : lb_intf.rd_data <=  { {P_32B_W-2{1'b0}},
-                                                                  anti_alias_stat_intf.job_que_empty,
                                                                   gpu_job_intf.euclid_busy
                                                                 };
           VCORTEX_GPU_JOB_BFFR_0_REG_ADDR : lb_intf.rd_data <=  {{P_32B_W-2{1'b0}},gpu_job_action_f};
@@ -197,7 +192,7 @@ module syn_gpu_core (
 
     .job_intf           (gpu_job_intf.euclid),
 
-    .alias_intf         (euclid_anti_alias_intf.master)
+    .pxlgw_intf         (euclid_pxlgw_intf.master)
 
   );
 
@@ -207,36 +202,27 @@ module syn_gpu_core (
   begin : engine_mux_logic
     if(gpu_job_action_f ==  DRAW)
     begin
-      anti_alias_intf.pxl             =  euclid_anti_alias_intf.pxl;
-      anti_alias_intf.pxl_wr_valid    =  euclid_anti_alias_intf.pxl_wr_valid;
-      anti_alias_intf.pxl_rd_valid    =  euclid_anti_alias_intf.pxl_rd_valid;
-      anti_alias_intf.posx            =  euclid_anti_alias_intf.posx;
-      anti_alias_intf.posy            =  euclid_anti_alias_intf.posy;
-      anti_alias_intf.misc_info_dist  =  euclid_anti_alias_intf.misc_info_dist;
-      anti_alias_intf.misc_info_norm  =  euclid_anti_alias_intf.misc_info_norm;
-      euclid_anti_alias_intf.ready    =  anti_alias_intf.ready;
+      pxl_gw_tx_intf.pxl              =  euclid_pxlgw_intf.pxl;
+      pxl_gw_tx_intf.pxl_wr_valid     =  euclid_pxlgw_intf.pxl_wr_valid;
+      pxl_gw_tx_intf.pxl_rd_valid     =  euclid_pxlgw_intf.pxl_rd_valid;
+      pxl_gw_tx_intf.posx             =  euclid_pxlgw_intf.posx;
+      pxl_gw_tx_intf.posy             =  euclid_pxlgw_intf.posy;
+      pxl_gw_tx_intf.misc_info_dist   =  euclid_pxlgw_intf.misc_info_dist;
+      pxl_gw_tx_intf.misc_info_norm   =  euclid_pxlgw_intf.misc_info_norm;
+      euclid_pxlgw_intf.ready         =  pxl_gw_tx_intf.ready;
     end
     else
     begin
-      anti_alias_intf.pxl             =  0;
-      anti_alias_intf.pxl_wr_valid    =  0;
-      anti_alias_intf.pxl_rd_valid    =  0;
-      anti_alias_intf.posx            =  0;
-      anti_alias_intf.posy            =  0;
-      anti_alias_intf.misc_info_dist  =  0;
-      anti_alias_intf.misc_info_norm  =  0;
-      euclid_anti_alias_intf.ready    =  0;
-
+      pxl_gw_tx_intf.pxl              =  0;
+      pxl_gw_tx_intf.pxl_wr_valid     =  0;
+      pxl_gw_tx_intf.pxl_rd_valid     =  0;
+      pxl_gw_tx_intf.posx             =  0;
+      pxl_gw_tx_intf.posy             =  0;
+      pxl_gw_tx_intf.misc_info_dist   =  0;
+      pxl_gw_tx_intf.misc_info_norm   =  0;
+      euclid_pxlgw_intf.ready         =  0;
     end
   end
-
-  assign  pxl_gw_tx_intf.pxl              =  0;
-  assign  pxl_gw_tx_intf.pxl_wr_valid     =  0;
-  assign  pxl_gw_tx_intf.pxl_rd_valid     =  0;
-  assign  pxl_gw_tx_intf.posx             =  0;
-  assign  pxl_gw_tx_intf.posy             =  0;
-  assign  pxl_gw_tx_intf.misc_info_dist   =  0;
-  assign  pxl_gw_tx_intf.misc_info_norm   =  0;
 
   assign  pxl_gw_rx_intf.ready            =  0;
 

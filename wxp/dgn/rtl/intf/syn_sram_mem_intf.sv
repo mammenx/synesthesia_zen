@@ -84,6 +84,9 @@ interface syn_sram_mem_intf (input  logic clk_ir, rst_il);
                 output  tb_dq_sel,
                 output  tb_dq,
 
+                input   clk_ir,
+                input   rst_il,
+
                 inout   SRAM_DQ
               );
 

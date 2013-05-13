@@ -57,12 +57,6 @@ interface mulberry_bus_intf  #(parameter  P_BUS_DATA_W=32)  (input logic  clk_ir
   logic                     gpu_core_res_valid;
   logic [P_BUS_DATA_W-1:0]  gpu_core_res;
 
-  logic                     anti_alias_req_rdy;
-  sid_t                     anti_alias_sid;
-  logic [P_BUS_DATA_W-1:0]  anti_alias_req_data;
-  logic                     anti_alias_res_valid;
-  logic [P_BUS_DATA_W-1:0]  anti_alias_res;
-
   logic                     rand_busy;
   logic [P_BUS_DATA_W-1:0]  rand_req_data;
   mid_t                     rand_req_mid;
@@ -99,14 +93,6 @@ interface mulberry_bus_intf  #(parameter  P_BUS_DATA_W=32)  (input logic  clk_ir
                     input   gpu_core_res
                   );
 
-  modport anti_alias_mp  (
-                    input   anti_alias_req_rdy,
-                    output  anti_alias_sid,
-                    output  anti_alias_req_data,
-                    input   anti_alias_res_valid,
-                    input   anti_alias_res
-                  );
-
   modport rand_mp  (
                   output  rand_busy,
                   input   rand_req_data,
@@ -135,12 +121,11 @@ interface mulberry_bus_intf  #(parameter  P_BUS_DATA_W=32)  (input logic  clk_ir
     * Arbitration Logic
     * Based on logic that most probable sources of requests get least priority
     * Recomended that each master issue requests in pulses to prevent GPU pipe race
-    * GPU_LB >  GPU_CORE  > ANTI_ALIAS
+    * GPU_LB >  GPU_CORE 
   */
 
   logic gpu_lb_req_rdy_c;
   logic gpu_core_req_rdy_c;
-  logic anti_alias_req_rdy_c;
 
   logic rand_rsp_rdy_c;
   logic div_rsp_rdy_c;
@@ -158,7 +143,6 @@ interface mulberry_bus_intf  #(parameter  P_BUS_DATA_W=32)  (input logic  clk_ir
   //Check if the masters have placed a valid transaction on the bus
   assign  gpu_lb_req_rdy_c      = (gpu_lb_sid ==  SID_IDLE)     ? 1'b0  : 1'b1;
   assign  gpu_core_req_rdy_c    = (gpu_core_sid ==  SID_IDLE)   ? 1'b0  : 1'b1;
-  assign  anti_alias_req_rdy_c  = (anti_alias_sid ==  SID_IDLE) ? 1'b0  : 1'b1;
 
   //Select the master that has access on the bus now
   //Need to modify this so that in case a master tries to access a slave that
@@ -172,10 +156,6 @@ interface mulberry_bus_intf  #(parameter  P_BUS_DATA_W=32)  (input logic  clk_ir
     else if(gpu_core_req_rdy_c)
     begin
       curr_master_c = MID_GPU_CORE;
-    end
-    else if(anti_alias_req_rdy_c)
-    begin
-      curr_master_c = MID_ANTI_ALIAS;
     end
     else
     begin
@@ -191,7 +171,6 @@ interface mulberry_bus_intf  #(parameter  P_BUS_DATA_W=32)  (input logic  clk_ir
       MID_IDLE        : target_slave_c  = SID_IDLE;
       MID_GPU_LB      : target_slave_c  = gpu_lb_sid;
       MID_GPU_CORE    : target_slave_c  = gpu_core_sid;
-      MID_ANTI_ALIAS  : target_slave_c  = anti_alias_sid;
 
     endcase
   end
@@ -217,7 +196,6 @@ interface mulberry_bus_intf  #(parameter  P_BUS_DATA_W=32)  (input logic  clk_ir
       MID_IDLE        : target_slave_req_data_c = {P_BUS_DATA_W{1'b0}};
       MID_GPU_LB      : target_slave_req_data_c = gpu_lb_req_data;
       MID_GPU_CORE    : target_slave_req_data_c = gpu_core_req_data;
-      MID_ANTI_ALIAS  : target_slave_req_data_c = anti_alias_req_data;
 
     endcase
   end
@@ -265,7 +243,6 @@ interface mulberry_bus_intf  #(parameter  P_BUS_DATA_W=32)  (input logic  clk_ir
   //Give slave busy feedback to current master
   assign  gpu_lb_req_rdy      = (curr_master_c  ==  MID_GPU_LB)     ? ~target_slave_busy_c  : 1'b0;
   assign  gpu_core_req_rdy    = (curr_master_c  ==  MID_GPU_CORE)   ? ~target_slave_busy_c  : 1'b0;
-  assign  anti_alias_req_rdy  = (curr_master_c  ==  MID_ANTI_ALIAS) ? ~target_slave_busy_c  : 1'b0;
 
   //Assign MID & request data to slaves
   assign  rand_req_data = target_slave_req_data_c;
@@ -284,7 +261,6 @@ interface mulberry_bus_intf  #(parameter  P_BUS_DATA_W=32)  (input logic  clk_ir
     begin
       gpu_lb_res_valid        <=  0;
       gpu_core_res_valid      <=  0;
-      anti_alias_res_valid    <=  0;
 
       rsp_data_f              <=  0;
     end
@@ -292,7 +268,6 @@ interface mulberry_bus_intf  #(parameter  P_BUS_DATA_W=32)  (input logic  clk_ir
     begin
       gpu_lb_res_valid        <= (rsp_master_c ==  MID_GPU_LB)     ? 1'b1  : 1'b0;
       gpu_core_res_valid      <= (rsp_master_c ==  MID_GPU_CORE)   ? 1'b1  : 1'b0;
-      anti_alias_res_valid    <= (rsp_master_c ==  MID_ANTI_ALIAS) ? 1'b1  : 1'b0;
 
       rsp_data_f              <=  rsp_data_c;
     end
@@ -300,6 +275,5 @@ interface mulberry_bus_intf  #(parameter  P_BUS_DATA_W=32)  (input logic  clk_ir
 
   assign  gpu_lb_res          = rsp_data_f;
   assign  gpu_core_res        = rsp_data_f;
-  assign  anti_alias_res      = rsp_data_f;
 
 endinterface  //  mulberry_bus_intf

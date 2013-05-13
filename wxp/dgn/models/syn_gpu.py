@@ -226,13 +226,13 @@ win = GraphWin('syn_canvas ' + str(canvas_w) + 'x' + str(canvas_h),canvas_w,canv
 pt = Point(200,200)
 pt.draw(win)
 
-draw_line_anti(0,0,100,10,win)
-draw_line_anti(0,0,10,100,win)
-draw_line_anti(0,200,400,0,win)
-draw_line_anti(400,0,0,200,win)
-draw_line_anti(0,0,10,canvas_h,win)
-draw_line_anti(0,0,canvas_w,20,win)
-draw_line_anti(0,0,400,400,win)
+draw_line(0,0,100,10,win)
+draw_line(0,0,10,100,win)
+draw_line(0,200,400,0,win)
+draw_line(400,0,0,200,win)
+draw_line(0,0,10,canvas_h,win)
+draw_line(0,0,canvas_w,20,win)
+draw_line(0,0,400,400,win)
 
 
 " plot_ycbcr_cube()"

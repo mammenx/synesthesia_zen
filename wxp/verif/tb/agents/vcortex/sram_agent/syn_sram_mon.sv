@@ -107,6 +107,7 @@
 
       ovm_report_info({get_name(),"[run]"},"Start of run ",OVM_LOW);
 
+      @(posedge intf.rst_il);
 
       if(enable)
       begin
@@ -115,7 +116,8 @@
             forever
             begin
               //Monitor logic
-              @(intf.SRAM_DQ, intf.SRAM_ADDR, intf.SRAM_LB_N, intf.SRAM_UB_N, intf.SRAM_CE_N, intf.SRAM_OE_N, intf.SRAM_WE_N);
+              //@(intf.SRAM_DQ, intf.SRAM_ADDR, intf.SRAM_LB_N, intf.SRAM_UB_N, intf.SRAM_CE_N, intf.SRAM_OE_N, intf.SRAM_WE_N);
+              @(negedge intf.clk_ir iff intf.rst_il); //sample @mid of phase
 
               #4ns;
 

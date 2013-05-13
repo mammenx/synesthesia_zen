@@ -120,9 +120,8 @@ class syn_vcortex_gpu_draw_line_test extends syn_vcortex_base_test;
       gpu_draw_job_seq.job.y0     = 0;
       //gpu_draw_job_seq.job.x1     = P_CANVAS_W-1;
       //gpu_draw_job_seq.job.y1     = P_CANVAS_H-1;
-      gpu_draw_job_seq.job.x1     = 110;
-      gpu_draw_job_seq.job.y1     = 123;
-      //$cast(gpu_draw_job_seq.job.color, $random);
+      gpu_draw_job_seq.job.x1     = P_CANVAS_W-1;
+      gpu_draw_job_seq.job.y1     = 50;
       gpu_draw_job_seq.job.color.h  = 0;
       gpu_draw_job_seq.job.color.s  = 3;
       gpu_draw_job_seq.job.color.i  = 15;
@@ -132,7 +131,19 @@ class syn_vcortex_gpu_draw_line_test extends syn_vcortex_base_test;
 
       gpu_status_poll_seq.start(super.env.lb_agent.seqr);
 
-      #1us;
+      //gpu_draw_job_seq.job.x1     = 0;
+      //gpu_draw_job_seq.job.y1     = P_CANVAS_H-1;
+      //gpu_draw_job_seq.job.x0     = P_CANVAS_W-1;
+      //gpu_draw_job_seq.job.y0     = 0;
+      gpu_draw_job_seq.job.x1     = 50;
+      gpu_draw_job_seq.job.y1     = P_CANVAS_H-1;
+      gpu_draw_job_seq.job.color.h  = 1;
+
+      gpu_draw_job_seq.start(super.env.lb_agent.seqr);
+
+      gpu_status_poll_seq.start(super.env.lb_agent.seqr);
+
+      #100ns;
 
       ovm_report_info(get_name(),"Calling global_stop_request().....",OVM_LOW);
       global_stop_request();

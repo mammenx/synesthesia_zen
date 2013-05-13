@@ -8,6 +8,7 @@
 +incdir+../../verif/tb/sb/vcortex/
 +incdir+../../verif/tb/seq/
 +incdir+../../verif/tb/seq/vcortex/
++incdir+../../verif/tb/sniffers/
 +incdir+../../verif/tb/tests/
 +incdir+../../verif/tb/tests/vcortex/
 +incdir+../../dgn/rtl/visual_cortex/
@@ -22,6 +23,7 @@
 
 //Interfaces
 ../../verif/tb/env/interfaces/syn_lb_tb_intf.sv
+../../verif/tb/env/interfaces/syn_pxl_xfr_tb_intf.sv
 
 //Packages
 ../../verif/tb/env/syn_math_pkg.sv

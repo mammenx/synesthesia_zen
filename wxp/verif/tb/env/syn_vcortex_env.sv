@@ -60,6 +60,9 @@
     parameter type  SRAM_PKT_T  = syn_lb_seq_item#(SRAM_DATA_W,SRAM_ADDR_W);
     parameter type  SRAM_INTF_T = virtual syn_sram_mem_intf.TB;
 
+    parameter type  PXLGW_SNIFF_PKT_T = syn_gpu_pxl_xfr_seq_item#(syn_gpu_pkg::pxl_hsi_t);
+    parameter type  PXLGW_SNIFF_INTF_T= virtual syn_pxl_xfr_tb_intf#(syn_gpu_pkg::pxl_hsi_t,syn_gpu_pkg::P_X_W,syn_gpu_pkg::P_Y_W);
+
 
     /*  Register with factory */
     `ovm_component_utils(syn_vcortex_env)
@@ -68,7 +71,8 @@
     //Declare agents, scoreboards
     syn_lb_agent#(LB_DATA_W,LB_ADDR_W,LB_PKT_T,LB_DRVR_INTF_T,LB_MON_INTF_T)  lb_agent;
     syn_sram_agent#(SRAM_DATA_W,SRAM_ADDR_W,SRAM_PKT_T,SRAM_INTF_T)   sram_agent;
-    syn_frm_bffr_sb#(LB_PKT_T,SRAM_PKT_T)                             frm_bffr_sb;
+    syn_frm_bffr_sb#(LB_PKT_T,SRAM_PKT_T,PXLGW_SNIFF_PKT_T)           frm_bffr_sb;
+    syn_gpu_pxlgw_ingr_sniffer#(PXLGW_SNIFF_PKT_T,PXLGW_SNIFF_INTF_T) pxlgw_ingr_sniffer;
 
     OVM_FILE  f;
 
@@ -95,7 +99,8 @@
 
       lb_agent    = syn_lb_agent#(LB_DATA_W,LB_ADDR_W,LB_PKT_T,LB_DRVR_INTF_T,LB_MON_INTF_T)::type_id::create("lb_agent",  this);
       sram_agent  = syn_sram_agent#(SRAM_DATA_W,SRAM_ADDR_W,SRAM_PKT_T,SRAM_INTF_T)::type_id::create("sram_agent",  this);
-      frm_bffr_sb = syn_frm_bffr_sb#(LB_PKT_T,SRAM_PKT_T)::type_id::create("frm_bffr_sb", this);
+      frm_bffr_sb = syn_frm_bffr_sb#(LB_PKT_T,SRAM_PKT_T,PXLGW_SNIFF_PKT_T)::type_id::create("frm_bffr_sb", this);
+      pxlgw_ingr_sniffer  = syn_gpu_pxlgw_ingr_sniffer#(PXLGW_SNIFF_PKT_T,PXLGW_SNIFF_INTF_T)::type_id::create("pxlgw_ingr_sniffer",this);
 
       ovm_report_info(get_name(),"End of build ",OVM_LOW);
     endfunction
@@ -109,6 +114,7 @@
 
       lb_agent.mon.Mon2Sb_port.connect(frm_bffr_sb.LbMon2SB_Port);
       sram_agent.mon.Mon2Sb_port.connect(frm_bffr_sb.SramMon2SB_Port);
+      pxlgw_ingr_sniffer.Sniffer2Sb_port.connect(frm_bffr_sb.PxlGwSinffer2SB_Port);
 
       ovm_report_info(get_name(),"END of connect ",OVM_LOW);
     endfunction
