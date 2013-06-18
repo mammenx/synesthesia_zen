@@ -88,6 +88,8 @@ module syn_gpu_core (
   logic [P_16B_W-1:0]         gpu_job_bffr_5_f;
   logic [P_16B_W-1:0]         gpu_job_bffr_6_f;
   logic [P_16B_W-1:0]         gpu_job_bffr_7_f;
+  logic [P_16B_W-1:0]         gpu_job_bffr_8_f;
+  logic [P_16B_W-1:0]         gpu_job_bffr_9_f;
 
   logic                       gpu_job_start_f;
 
@@ -114,6 +116,8 @@ module syn_gpu_core (
       gpu_job_bffr_5_f        <=  0;
       gpu_job_bffr_6_f        <=  0;
       gpu_job_bffr_7_f        <=  0;
+      gpu_job_bffr_8_f        <=  0;
+      gpu_job_bffr_9_f        <=  0;
 
       gpu_job_start_f         <=  0;
 
@@ -137,6 +141,8 @@ module syn_gpu_core (
           VCORTEX_GPU_JOB_BFFR_5_REG_ADDR : gpu_job_bffr_5_f  <=  lb_intf.wr_data[P_16B_W-1:0];
           VCORTEX_GPU_JOB_BFFR_6_REG_ADDR : gpu_job_bffr_6_f  <=  lb_intf.wr_data[P_16B_W-1:0];
           VCORTEX_GPU_JOB_BFFR_7_REG_ADDR : gpu_job_bffr_7_f  <=  lb_intf.wr_data[P_16B_W-1:0];
+          VCORTEX_GPU_JOB_BFFR_8_REG_ADDR : gpu_job_bffr_8_f  <=  lb_intf.wr_data[P_16B_W-1:0];
+          VCORTEX_GPU_JOB_BFFR_9_REG_ADDR : gpu_job_bffr_9_f  <=  lb_intf.wr_data[P_16B_W-1:0];
 
         endcase
       end
@@ -163,6 +169,8 @@ module syn_gpu_core (
           VCORTEX_GPU_JOB_BFFR_5_REG_ADDR : lb_intf.rd_data <=  {{P_16B_W{1'b0}},gpu_job_bffr_5_f};
           VCORTEX_GPU_JOB_BFFR_6_REG_ADDR : lb_intf.rd_data <=  {{P_16B_W{1'b0}},gpu_job_bffr_6_f};
           VCORTEX_GPU_JOB_BFFR_7_REG_ADDR : lb_intf.rd_data <=  {{P_16B_W{1'b0}},gpu_job_bffr_7_f};
+          VCORTEX_GPU_JOB_BFFR_8_REG_ADDR : lb_intf.rd_data <=  {{P_16B_W{1'b0}},gpu_job_bffr_8_f};
+          VCORTEX_GPU_JOB_BFFR_9_REG_ADDR : lb_intf.rd_data <=  {{P_16B_W{1'b0}},gpu_job_bffr_9_f};
 
           default : lb_intf.rd_data       <=  32'hdeadbabe;
 
@@ -180,8 +188,10 @@ module syn_gpu_core (
   assign  gpu_job_intf.euclid_job_data.y0       = gpu_job_bffr_3_f[P_Y_W-1:0];
   assign  gpu_job_intf.euclid_job_data.x1       = gpu_job_bffr_4_f[P_X_W-1:0];
   assign  gpu_job_intf.euclid_job_data.y1       = gpu_job_bffr_5_f[P_Y_W-1:0];
-  assign  gpu_job_intf.euclid_job_data.color    = gpu_job_bffr_6_f[(P_LUM_W + P_CHRM_W + P_CHRM_W)-1:0];
-  assign  gpu_job_intf.euclid_job_data.width    = gpu_job_bffr_7_f[3:0];
+  assign  gpu_job_intf.euclid_job_data.x2       = gpu_job_bffr_6_f[P_X_W-1:0];
+  assign  gpu_job_intf.euclid_job_data.y2       = gpu_job_bffr_7_f[P_Y_W-1:0];
+  assign  gpu_job_intf.euclid_job_data.color    = gpu_job_bffr_8_f[(P_LUM_W + P_CHRM_W + P_CHRM_W)-1:0];
+  assign  gpu_job_intf.euclid_job_data.bzdepth  = gpu_job_bffr_9_f[3:0];
 
 
   /*  Instantiating Sub Modules */

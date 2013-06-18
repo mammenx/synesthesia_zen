@@ -78,10 +78,16 @@ package syn_gpu_pkg;
     logic [P_INTENSITY_W-1:0]   i;
   } pxl_hsi_t;
 
+  //Point structure
+  typedef struct  packed  {
+    logic [P_X_W-1:0] x;
+    logic [P_Y_W-1:0] y;
+  } point_t;
+
 
   //Opcode for shape
   typedef enum  logic [1:0] { LINE    = 2'd0,
-                              CIRCLE  = 2'd1
+                              BEZIER  = 2'd1
                             } shape_t;
 
   //Opcode for type of job
@@ -94,16 +100,18 @@ package syn_gpu_pkg;
   typedef struct  packed  {
     shape_t           shape;
     logic [P_X_W-1:0] x0;
-    logic [P_Y_W-1:0] y0; //Line  ->  Start of line,  Circle  ->  Center
+    logic [P_Y_W-1:0] y0; //Line  ->  Start of line,  Bezier ->  P0
     logic [P_X_W-1:0] x1;
-    logic [P_Y_W-1:0] y1; //Line  ->  End of line,    Circle  ->  Radius
+    logic [P_Y_W-1:0] y1; //Line  ->  End of line,    Bezier ->  P1
+    logic [P_X_W-1:0] x2;
+    logic [P_Y_W-1:0] y2; //                          Bezier ->  P2
     //pxl_ycbcr_t       color;
     pxl_hsi_t         color;
-    logic [3:0]       width;  //width of shape
+    logic [3:0]       bzdepth;  //Depth of Bezier algorithm; the Bz curve will be broken down to ~2^bzdepth lines
 
   } gpu_draw_job_t;
 
-  parameter P_GPU_DRAW_JOB_BFFR_W = 2 + (2*(P_X_W + P_Y_W)) + (P_LUM_W  + P_CHRM_W  + P_CHRM_W) + 4;
+  parameter P_GPU_DRAW_JOB_BFFR_W = 2 + (3*(P_X_W + P_Y_W)) + (P_LUM_W  + P_CHRM_W  + P_CHRM_W) + 4;
 
 
   //Structure describing GPU Fill Job

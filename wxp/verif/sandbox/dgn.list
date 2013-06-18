@@ -15,6 +15,7 @@
 ../../dgn/rtl/altera/cycloneii_atoms.v
 ../../dgn/rtl/altera/divider.v
 ../../dgn/rtl/altera/ff_64x128_fwft.v
+../../dgn/rtl/altera/ff_64x512_fwft.v
 ../../dgn/rtl/altera/ff_4xM4k_fwft.v
 ../../dgn/rtl/altera/mul_8x8_unsigned.v
 ../../dgn/rtl/altera/mult_16x16_unsigned.v

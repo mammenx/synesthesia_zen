@@ -26,7 +26,8 @@ del /f /q *.raw
 mkdir logs
 
 rem set TEST_NAME=syn_vcortex_base_test
-set TEST_NAME=syn_vcortex_gpu_draw_line_test
+rem set TEST_NAME=syn_vcortex_gpu_draw_line_test
+set TEST_NAME=syn_vcortex_gpu_draw_bezier_test
 
 set TB_TOP=syn_vcortex_tb_top
 

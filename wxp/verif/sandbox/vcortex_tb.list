@@ -36,3 +36,4 @@
 //Tests
 `include  "syn_vcortex_base_test.sv"
 `include  "syn_vcortex_gpu_draw_line_test.sv"
+`include  "syn_vcortex_gpu_draw_bezier_test.sv"

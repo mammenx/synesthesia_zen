@@ -85,8 +85,8 @@
 
       start_item(pkt);  //start_item has wait_for_grant()
       
-      pkt.addr  = new[8];
-      pkt.data  = new[8];
+      pkt.addr  = new[10];
+      pkt.data  = new[10];
       pkt.lb_xtn= BURST_WRITE;
 
       $cast(pkt.addr[0],{VCORTEX_BLK,VCORTEX_GPU_CODE,VCORTEX_GPU_JOB_BFFR_1_REG_ADDR});
@@ -105,13 +105,19 @@
       $cast(pkt.data[4],job.y1);
 
       $cast(pkt.addr[5],{VCORTEX_BLK,VCORTEX_GPU_CODE,VCORTEX_GPU_JOB_BFFR_6_REG_ADDR});
-      $cast(pkt.data[5],job.color);
+      $cast(pkt.data[5],job.x2);
 
       $cast(pkt.addr[6],{VCORTEX_BLK,VCORTEX_GPU_CODE,VCORTEX_GPU_JOB_BFFR_7_REG_ADDR});
-      $cast(pkt.data[6],job.width);
+      $cast(pkt.data[6],job.y2);
 
-      $cast(pkt.addr[7],{VCORTEX_BLK,VCORTEX_GPU_CODE,VCORTEX_GPU_JOB_BFFR_0_REG_ADDR});
-      $cast(pkt.data[7],action);
+      $cast(pkt.addr[7],{VCORTEX_BLK,VCORTEX_GPU_CODE,VCORTEX_GPU_JOB_BFFR_8_REG_ADDR});
+      $cast(pkt.data[7],job.color);
+
+      $cast(pkt.addr[8],{VCORTEX_BLK,VCORTEX_GPU_CODE,VCORTEX_GPU_JOB_BFFR_9_REG_ADDR});
+      $cast(pkt.data[8],job.width);
+
+      $cast(pkt.addr[9],{VCORTEX_BLK,VCORTEX_GPU_CODE,VCORTEX_GPU_JOB_BFFR_0_REG_ADDR});
+      $cast(pkt.data[9],action);
 
       p_sequencer.ovm_report_info(get_name(),$psprintf("Generated pkt - \n%s", pkt.sprint()),OVM_LOW);
 

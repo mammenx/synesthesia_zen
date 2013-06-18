@@ -86,8 +86,11 @@
     PXL_XFR_PKT_TYPE  pxlgw_xtns[$];
 
     //Mailbox to hold gpu_draw_jobs
-    mailbox#(gpu_draw_job_t)  gpu_draw_job_mb;
+    mailbox#(gpu_draw_job_t)  gpu_draw_line_job_mb;
+    mailbox#(gpu_draw_job_t)  gpu_draw_bezier_job_mb;
 
+    //queue to hold bezier_gen points
+    point_t bezier_points_q[$];
 
     /*  Constructor */
     function new(string name = "syn_frm_bffr_sb", ovm_component parent);
@@ -124,10 +127,13 @@
       gpu_reg_set.create_field("gpu_job_bffr_5",VCORTEX_GPU_JOB_BFFR_5_REG_ADDR,0,31);
       gpu_reg_set.create_field("gpu_job_bffr_6",VCORTEX_GPU_JOB_BFFR_6_REG_ADDR,0,31);
       gpu_reg_set.create_field("gpu_job_bffr_7",VCORTEX_GPU_JOB_BFFR_7_REG_ADDR,0,31);
+      gpu_reg_set.create_field("gpu_job_bffr_8",VCORTEX_GPU_JOB_BFFR_8_REG_ADDR,0,31);
+      gpu_reg_set.create_field("gpu_job_bffr_9",VCORTEX_GPU_JOB_BFFR_9_REG_ADDR,0,31);
 
       frm_bffr_pending_xtns = '{};  //clear the queue
 
-      gpu_draw_job_mb = new(1);
+      gpu_draw_line_job_mb    = new(1);
+      gpu_draw_bezier_job_mb  = new(1);
 
       ovm_report_info(get_name(),"End of build ",OVM_LOW);
     endfunction
@@ -171,12 +177,14 @@
       string  res = "gpu_draw_job :\n";
 
       if(job.shape  ==  LINE)         res = {res,"Shape : LINE\n"};
-      else if(job.shape  ==  CIRCLE)  res = {res,"Shape : CIRCLE\n"};
+      else if(job.shape  ==  BEZIER)  res = {res,"Shape : BEZIER\n"};
 
       res = {res,$psprintf("X0 : %1d\n",job.x0)};
       res = {res,$psprintf("Y0 : %1d\n",job.y0)};
       res = {res,$psprintf("X1 : %1d\n",job.x1)};
       res = {res,$psprintf("Y1 : %1d\n",job.y1)};
+      res = {res,$psprintf("X2 : %1d\n",job.x2)};
+      res = {res,$psprintf("Y2 : %1d\n",job.y2)};
       res = {res,$psprintf("Color : 0x%1x\n",job.color)};
       res = {res,$psprintf("Width : %d\n",job.width)};
 
@@ -207,17 +215,28 @@
         draw_job.y0       = gpu_reg_set.get_field("gpu_job_bffr_3") & {P_Y_W{1'b1}};
         draw_job.x1       = gpu_reg_set.get_field("gpu_job_bffr_4") & {P_X_W{1'b1}};
         draw_job.y1       = gpu_reg_set.get_field("gpu_job_bffr_5") & {P_Y_W{1'b1}};
-        draw_job.color    = gpu_reg_set.get_field("gpu_job_bffr_6");
-        draw_job.width    = gpu_reg_set.get_field("gpu_job_bffr_7");
+        draw_job.x2       = gpu_reg_set.get_field("gpu_job_bffr_6") & {P_X_W{1'b1}};
+        draw_job.y2       = gpu_reg_set.get_field("gpu_job_bffr_7") & {P_Y_W{1'b1}};
+        draw_job.color    = gpu_reg_set.get_field("gpu_job_bffr_8");
+        draw_job.width    = gpu_reg_set.get_field("gpu_job_bffr_9");
 
 
         ovm_report_info({get_name(),"[extract_gpu_job]"},$psprintf("Start of extract_gpu_job : \n%s",  sprint_gpu_draw_job(draw_job)),OVM_LOW);
 
-        if(gpu_draw_job_mb.try_put(draw_job))
-          ovm_report_info({get_name(),"[extract_gpu_job]"},$psprintf("Placed GPU Draw Job into gpu_draw_job_mb"),OVM_LOW);
-        else
-          ovm_report_fatal({get_name(),"[extract_gpu_job]"},$psprintf("Could not place GPU Draw Job into gpu_draw_job_mb!"),OVM_LOW);
-
+        if(draw_job.shape == LINE)
+        begin
+          if(gpu_draw_line_job_mb.try_put(draw_job))
+            ovm_report_info({get_name(),"[extract_gpu_job]"},$psprintf("Placed GPU Draw Job into gpu_draw_line_job_mb"),OVM_LOW);
+          else
+            ovm_report_fatal({get_name(),"[extract_gpu_job]"},$psprintf("Could not place GPU Draw Job into gpu_draw_line_job_mb!"),OVM_LOW);
+        end
+        else if(draw_job.shape == BEZIER)
+        begin
+          if(gpu_draw_bezier_job_mb.try_put(draw_job))
+            ovm_report_info({get_name(),"[extract_gpu_job]"},$psprintf("Placed GPU Draw Job into gpu_draw_bezier_job_mb"),OVM_LOW);
+          else
+            ovm_report_fatal({get_name(),"[extract_gpu_job]"},$psprintf("Could not place GPU Draw Job into gpu_draw_bezier_job_mb!"),OVM_LOW);
+        end
       end
       else
       begin
@@ -235,22 +254,22 @@
     endfunction : sprint_frm_bffr_pending_xtns
 
 
-    /*  Task to process a draw job & derive the set of pixel writes */
-    virtual task  process_draw_job;
+    /*  Task to process a draw line job & derive the set of pixel writes */
+    virtual task  process_draw_line_job;
       int x0,y0,x1,y1,dx,dy,sx,sy,err,e2;
       gpu_draw_job_t  job;
       PXL_XFR_PKT_TYPE  actual_xtn;
       PXL_XFR_PKT_TYPE  exptd_xtn;
       string  res;
 
-      ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("Start of process_draw_job"),OVM_LOW);
+      ovm_report_info({get_name(),"[process_draw_line_job]"},$psprintf("Start of process_draw_line_job"),OVM_LOW);
 
       forever
       begin
-        ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("Waiting on gpu_draw_job_mb"),OVM_LOW);
-        gpu_draw_job_mb.get(job);
+        ovm_report_info({get_name(),"[process_draw_line_job]"},$psprintf("Waiting on gpu_draw_line_job_mb"),OVM_LOW);
+        gpu_draw_line_job_mb.get(job);
 
-        ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("Processing job :\n%s",sprint_gpu_draw_job(job)),OVM_LOW);
+        ovm_report_info({get_name(),"[process_draw_line_job]"},$psprintf("Processing job :\n%s",sprint_gpu_draw_job(job)),OVM_LOW);
 
         $cast(x0, job.x0);
         $cast(y0, job.y0);
@@ -281,16 +300,16 @@
 
         err = dx  - dy;
 
-        ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("dx : %1d, dy : %1d, sx : %1d, sy : %1d",dx,dy,sx,sy),OVM_LOW);
+        ovm_report_info({get_name(),"[process_draw_line_job]"},$psprintf("dx : %1d, dy : %1d, sx : %1d, sy : %1d",dx,dy,sx,sy),OVM_LOW);
 
         while(1)
         begin
-          ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("Waiting for sniffer"),OVM_LOW);
+          ovm_report_info({get_name(),"[process_draw_line_job]"},$psprintf("Waiting for sniffer"),OVM_LOW);
           while(!pxlgw_xtns.size())  #1;
 
           actual_xtn  = new();
           actual_xtn  = pxlgw_xtns.pop_front();
-          ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("Received sniffer xtn :\n%s",actual_xtn.sprint()),OVM_LOW);
+          ovm_report_info({get_name(),"[process_draw_line_job]"},$psprintf("Received sniffer xtn :\n%s",actual_xtn.sprint()),OVM_LOW);
 
           exptd_xtn       = new();
           exptd_xtn.posx  = x0;
@@ -301,9 +320,9 @@
           res = actual_xtn.check(exptd_xtn);
 
           if(res  ==  "")
-            ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("PxlGw XTN Valid"),OVM_LOW);
+            ovm_report_info({get_name(),"[process_draw_line_job]"},$psprintf("PxlGw XTN Valid"),OVM_LOW);
           else
-            ovm_report_error({get_name(),"[process_draw_job]"},$psprintf("PxlGw XTN Invalid %s",res),OVM_LOW);
+            ovm_report_error({get_name(),"[process_draw_line_job]"},$psprintf("PxlGw XTN Invalid %s",res),OVM_LOW);
 
           putPixel(exptd_xtn);
 
@@ -327,9 +346,89 @@
           end
         end
 
-        ovm_report_info({get_name(),"[process_draw_job]"},$psprintf("End of job %s",sprint_gpu_draw_job(job)),OVM_LOW);
+        ovm_report_info({get_name(),"[process_draw_line_job]"},$psprintf("End of job %s",sprint_gpu_draw_job(job)),OVM_LOW);
       end
-    endtask: process_draw_job
+    endtask: process_draw_line_job
+
+    /*  Task to process a draw bezier job & derive the set of pixel writes  */
+    virtual task  process_draw_bezier_job;
+      gpu_draw_job_t  job;
+      PXL_XFR_PKT_TYPE  actual_xtn;
+      PXL_XFR_PKT_TYPE  exptd_xtn;
+      point_t p0,p1,p2,m0,m1,m2;
+      string  res;
+
+      ovm_report_info({get_name(),"[process_draw_bezier_job]"},$psprintf("Start of process_draw_bezier_job"),OVM_LOW);
+
+      forever
+      begin
+        ovm_report_info({get_name(),"[process_draw_bezier_job]"},$psprintf("Waiting on gpu_draw_bezier_job_mb"),OVM_LOW);
+        gpu_draw_bezier_job_mb.get(job);
+
+        ovm_report_info({get_name(),"[process_draw_bezier_job]"},$psprintf("Processing job :\n%s",sprint_gpu_draw_job(job)),OVM_LOW);
+
+        p0.x  = job.x0; p0.y  = job.y0;
+        p1.x  = job.x1; p1.y  = job.y1;
+        p2.x  = job.x2; p2.y  = job.y2;
+
+        bezier_points_q = '{};  //clear queue
+
+        bezier_points_q.push_back(p0);
+        bezier_points_q.push_back(p1);
+        bezier_points_q.push_back(p2);
+
+        while(bezier_points_q.size)
+        begin
+          p0  = bezier_points_q.pop_front();
+          p1  = bezier_points_q.pop_front();
+          p2  = bezier_points_q.pop_front();
+
+          //Calculate mid points
+          m0.x  = (p0.x + p1.x)/2 ; m0.y  = (p0.y + p1.y) /2  ;
+          m1.x  = (p1.x + p2.x)/2 ; m1.y  = (p1.y + p2.y) /2  ;
+          m2.x  = (m0.x + m1.x)/2 ; m2.y  = (m0.y + m1.y) /2  ;
+
+          ovm_report_info({get_name(),"[bezier_gen]"},$psprintf("Waiting for sniffer"),OVM_LOW);
+          while(!pxlgw_xtns.size())  #1;
+
+          actual_xtn  = new();
+          actual_xtn  = pxlgw_xtns.pop_front();
+          ovm_report_info({get_name(),"[bezier_gen]"},$psprintf("Received sniffer xtn :\n%s",actual_xtn.sprint()),OVM_LOW);
+
+          exptd_xtn       = new();
+          exptd_xtn.posx  = m2.x;
+          exptd_xtn.posy  = m2.y;
+          exptd_xtn.pxl   = job.color;
+          exptd_xtn.xtn   = PXL_WRITE;
+
+          res = actual_xtn.check(exptd_xtn);
+
+          if(res  ==  "")
+            ovm_report_info({get_name(),"[bezier_gen]"},$psprintf("PxlGw XTN Valid"),OVM_LOW);
+          else
+            ovm_report_error({get_name(),"[bezier_gen]"},$psprintf("PxlGw XTN Invalid %s",res),OVM_LOW);
+
+          putPixel(exptd_xtn);
+
+          if(m0 !=  p0)
+          begin
+            bezier_points_q.push_back(p0);
+            bezier_points_q.push_back(m0);
+            bezier_points_q.push_back(m2);
+          end
+
+          if(m1 !=  p2)
+          begin
+            bezier_points_q.push_back(m2);
+            bezier_points_q.push_back(m1);
+            bezier_points_q.push_back(p2);
+          end
+        end
+
+        ovm_report_info({get_name(),"[process_draw_bezier_job]"},$psprintf("End of job ..."),OVM_LOW);
+      end
+    endtask : process_draw_bezier_job
+
 
     //Function to convert pixel coordinates to frame buffer address & push into queue
     function  void  putPixel(PXL_XFR_PKT_TYPE pkt);
@@ -426,7 +525,11 @@
         end
 
         begin
-          process_draw_job();
+          process_draw_line_job();
+        end
+
+        begin
+          process_draw_bezier_job();
         end
       join
 
