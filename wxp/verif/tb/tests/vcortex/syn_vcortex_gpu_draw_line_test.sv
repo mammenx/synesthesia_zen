@@ -127,7 +127,7 @@ class syn_vcortex_gpu_draw_line_test extends syn_vcortex_base_test;
       gpu_draw_job_seq.job.color.h  = 0;
       gpu_draw_job_seq.job.color.s  = 3;
       gpu_draw_job_seq.job.color.i  = 15;
-      $cast(gpu_draw_job_seq.job.width, $random);
+      $cast(gpu_draw_job_seq.job.bzdepth, $random);
 
       gpu_draw_job_seq.start(super.env.lb_agent.seqr);
 

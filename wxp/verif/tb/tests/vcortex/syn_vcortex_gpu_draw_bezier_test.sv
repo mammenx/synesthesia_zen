@@ -81,7 +81,7 @@ class syn_vcortex_gpu_draw_bezier_test extends syn_vcortex_base_test;
       gpu_draw_job_seq    = syn_gpu_draw_job_config_seq#(super.LB_SEQ_ITEM_T,super.LB_SEQR_T)::type_id::create("gpu_draw_job_config_seq");
       gpu_status_poll_seq = syn_poll_gpu_status_seq#(super.LB_SEQ_ITEM_T,super.LB_SEQR_T)::type_id::create("gpu_status_poll_seq");
 
-      no_of_curves  = 3;
+      no_of_curves  = 1;
 
       ovm_report_info(get_full_name(),"End of build",OVM_LOW);
     endfunction : build
@@ -119,37 +119,22 @@ class syn_vcortex_gpu_draw_bezier_test extends syn_vcortex_base_test;
 
       //Build Job
       gpu_draw_job_seq.job.shape  = BEZIER;
-      gpu_draw_job_seq.job.x0     = $random % (P_CANVAS_W/no_of_curves);
-      gpu_draw_job_seq.job.y0     = $random % (P_CANVAS_H/no_of_curves);
-      gpu_draw_job_seq.job.x1     = gpu_draw_job_seq.job.x0 + ($random % (P_CANVAS_W/no_of_curves));
-      gpu_draw_job_seq.job.y1     = gpu_draw_job_seq.job.y0 + ($random % (P_CANVAS_H/no_of_curves));
-      gpu_draw_job_seq.job.x2     = gpu_draw_job_seq.job.x1 + ($random % (P_CANVAS_W/no_of_curves));
-      gpu_draw_job_seq.job.y2     = gpu_draw_job_seq.job.y1 + ($random % (P_CANVAS_H/no_of_curves));
+      gpu_draw_job_seq.job.x0     = 0;
+      gpu_draw_job_seq.job.y0     = 0;
+      gpu_draw_job_seq.job.x1     = 0;
+      gpu_draw_job_seq.job.y1     = P_CANVAS_H-1;
+      gpu_draw_job_seq.job.x2     = P_CANVAS_W-1;
+      gpu_draw_job_seq.job.y2     = P_CANVAS_H-1;
       gpu_draw_job_seq.job.color.h  = $random;
       gpu_draw_job_seq.job.color.s  = $random;
       gpu_draw_job_seq.job.color.i  = 15;
-      $cast(gpu_draw_job_seq.job.width, $random);
+      gpu_draw_job_seq.job.bzdepth  = 8;
 
-      for(int i=0; i<no_of_curves; i++)
-      begin
-        gpu_draw_job_seq.start(super.env.lb_agent.seqr);
+      gpu_draw_job_seq.start(super.env.lb_agent.seqr);
 
-        gpu_status_poll_seq.start(super.env.lb_agent.seqr);
+      gpu_status_poll_seq.start(super.env.lb_agent.seqr);
 
-        #100ns;
-
-        gpu_draw_job_seq.job.x0     = gpu_draw_job_seq.job.x0;
-        gpu_draw_job_seq.job.y0     = gpu_draw_job_seq.job.y0;
-        gpu_draw_job_seq.job.x1     = ($random % (P_CANVAS_W/no_of_curves));
-        gpu_draw_job_seq.job.y1     = ($random % (P_CANVAS_H/no_of_curves));
-        gpu_draw_job_seq.job.x2     = ($random % (P_CANVAS_W/no_of_curves));
-        gpu_draw_job_seq.job.y2     = ($random % (P_CANVAS_H/no_of_curves));
-        gpu_draw_job_seq.job.color.h  = $random;
-        gpu_draw_job_seq.job.color.s  = $random;
-        gpu_draw_job_seq.job.color.i  = 15;
-        $cast(gpu_draw_job_seq.job.width, $random);
-
-      end
+      #100ns;
 
       ovm_report_info(get_name(),"Calling global_stop_request().....",OVM_LOW);
       global_stop_request();

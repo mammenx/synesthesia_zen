@@ -114,7 +114,7 @@
       $cast(pkt.data[7],job.color);
 
       $cast(pkt.addr[8],{VCORTEX_BLK,VCORTEX_GPU_CODE,VCORTEX_GPU_JOB_BFFR_9_REG_ADDR});
-      $cast(pkt.data[8],job.width);
+      $cast(pkt.data[8],job.bzdepth);
 
       $cast(pkt.addr[9],{VCORTEX_BLK,VCORTEX_GPU_CODE,VCORTEX_GPU_JOB_BFFR_0_REG_ADDR});
       $cast(pkt.data[9],action);

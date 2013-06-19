@@ -115,6 +115,7 @@ module syn_gpu_core_euclid (
   logic                       pipe_rdy_c;
   logic                       line_drw_ovr_c;
   logic                       nstate_idle_c;
+  logic                       pstate_idle_c;
 
   logic                       bzff_empty_w;
   logic                       bzff_full_w;
@@ -142,10 +143,10 @@ enum  logic [1:0] { IDLE_S,
                     DRAW_LINE_S
                   } lfsm_pstate, lfsm_nstate;
 
-enum  logic [1:0] { IDLE_S, 
-                    DRAW_BEZIER_S,
-                    WAIT_FOR_LINE0_S,
-                    WAIT_FOR_LINE1_S
+enum  logic [1:0] { BZ_IDLE_S, 
+                    BZ_DRAW_BEZIER_S,
+                    BZ_WAIT_FOR_LINE0_S,
+                    BZ_WAIT_FOR_LINE1_S
                   } bfsm_pstate, bfsm_nstate;
 
 
@@ -156,7 +157,7 @@ enum  logic [1:0] { IDLE_S,
     if(~cr_intf.rst_sync_l)
     begin
       lfsm_pstate              <=  IDLE_S;
-      bfsm_pstate              <=  IDLE_S;
+      bfsm_pstate              <=  BZ_IDLE_S;
     end
     else
     begin
@@ -172,7 +173,7 @@ enum  logic [1:0] { IDLE_S,
     begin
       start_ljob_c      =   job_intf.euclid_job_start;
     end
-    else if(bfsm_pstate ==  DRAW_BEZIER_S)  //wait for trigger from BZ Pipe
+    else if(bfsm_pstate ==  BZ_DRAW_BEZIER_S)  //wait for trigger from BZ Pipe
     begin
       start_ljob_c      =   (|bz_pst_vec_f[2:1])  & skip_push_c;
     end
@@ -244,46 +245,46 @@ enum  logic [1:0] { IDLE_S,
 
     case(bfsm_pstate)
 
-      IDLE_S  :
+      BZ_IDLE_S  :
       begin
         if(start_bjob_c)
         begin
-          bfsm_nstate   = DRAW_BEZIER_S;
+          bfsm_nstate   = BZ_DRAW_BEZIER_S;
         end
       end
 
-      DRAW_BEZIER_S :
+      BZ_DRAW_BEZIER_S :
       begin
         if(~wait_for_bzff_init_f)
         begin
           if(bzff_occ_w ==  0)
           begin
-            bfsm_nstate   = IDLE_S;
+            bfsm_nstate   = BZ_IDLE_S;
           end
           if(bz_pst_vec_f[1]  & skip_push_c)
           begin
-            bfsm_nstate   = WAIT_FOR_LINE0_S;
+            bfsm_nstate   = BZ_WAIT_FOR_LINE0_S;
           end
           else if(bz_pst_vec_f[2]  & skip_push_c)
           begin
-            bfsm_nstate   = WAIT_FOR_LINE1_S;
+            bfsm_nstate   = BZ_WAIT_FOR_LINE1_S;
           end
         end
       end
 
-      WAIT_FOR_LINE0_S  :
+      BZ_WAIT_FOR_LINE0_S  :
       begin
         if(line_drw_ovr_c)
         begin
-          bfsm_nstate   = DRAW_BEZIER_S;
+          bfsm_nstate   = BZ_DRAW_BEZIER_S;
         end
       end
 
-      WAIT_FOR_LINE1_S  :
+      BZ_WAIT_FOR_LINE1_S  :
       begin
         if(line_drw_ovr_c)
         begin
-          bfsm_nstate   = DRAW_BEZIER_S;
+          bfsm_nstate   = BZ_DRAW_BEZIER_S;
         end
       end
 
@@ -419,7 +420,8 @@ enum  logic [1:0] { IDLE_S,
 
         DRAW_LINE_S :
         begin
-          pxl_out_valid_f     <=  ~line_drw_ovr_c & pxlgw_intf.ready;
+          //pxl_out_valid_f     <=  ~line_drw_ovr_c & pxlgw_intf.ready;
+          pxl_out_valid_f     <=  ~line_drw_ovr_c;
 
           if(pipe_rdy_c)
           begin
@@ -446,11 +448,14 @@ enum  logic [1:0] { IDLE_S,
   end
 
   //Check if the current FSM is idle
-  assign  nstate_idle_c  = (job_intf.euclid_job_data.shape ==  LINE)  ? (lfsm_pstate  ==  IDLE_S)
-                                                                      : (bfsm_nstate  ==  IDLE_S) ;
+  assign  nstate_idle_c  = (job_intf.euclid_job_data.shape ==  LINE)  ? (lfsm_nstate  ==  IDLE_S)
+                                                                      : (bfsm_nstate  ==  BZ_IDLE_S) ;
+
+  assign  pstate_idle_c  = (job_intf.euclid_job_data.shape ==  LINE)  ? (lfsm_pstate  ==  IDLE_S)
+                                                                      : (bfsm_pstate  ==  BZ_IDLE_S) ;
 
   //Feedback to Job interface
-  assign  job_intf.euclid_busy      = (lfsm_pstate !=  IDLE_S) ? 1'b1  : 1'b0;
+  assign  job_intf.euclid_busy      = ~pstate_idle_c;
   assign  job_intf.euclid_job_done  = job_intf.euclid_busy  & nstate_idle_c;
 
   //Assigning Alias interface outputs
@@ -509,17 +514,16 @@ enum  logic [1:0] { IDLE_S,
     begin
       case(bfsm_pstate)
 
-        IDLE_S  :
+        BZ_IDLE_S  :
         begin
           bz_push_valid_f     <=  start_bjob_c; //push the initial points into the bezier fifo
+          bz_pop_valid_f      <=  0;
           bz_pst_vec_f        <=  4'b0001;
           bz_depth_f          <=  0;   
           wait_for_bzff_init_f<=  1'b1;
-          bz_push_valid_f     <=  0;
-          bz_pop_valid_f      <=  0;
         end
 
-        DRAW_BEZIER_S :
+        BZ_DRAW_BEZIER_S :
         begin
           wait_for_bzff_init_f<=  1'b0;
 
@@ -545,19 +549,19 @@ enum  logic [1:0] { IDLE_S,
 
           bz_push_valid_f     <=  (|bz_pst_vec_f[2:1])  & ~skip_push_c;
           
-          bz_pop_valid_f      <=  bz_pst_vec_f[2];
+          bz_pop_valid_f      <=  bz_pst_vec_f[2] & ~skip_push_c;
         end
 
-        WAIT_FOR_LINE0_S  :
+        BZ_WAIT_FOR_LINE0_S  :
         begin
           bz_push_valid_f     <=  0;
           bz_pop_valid_f      <=  0;
         end
 
-        WAIT_FOR_LINE1_S  :
+        BZ_WAIT_FOR_LINE1_S  :
         begin
           bz_push_valid_f     <=  0;
-          bz_pop_valid_f      <=  0;
+          bz_pop_valid_f      <=  line_drw_ovr_c;
         end
 
       endcase

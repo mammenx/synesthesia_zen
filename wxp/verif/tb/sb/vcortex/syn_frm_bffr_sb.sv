@@ -89,8 +89,15 @@
     mailbox#(gpu_draw_job_t)  gpu_draw_line_job_mb;
     mailbox#(gpu_draw_job_t)  gpu_draw_bezier_job_mb;
 
+    typedef struct  packed  {
+      point_t p0;
+      point_t p1;
+      point_t p2;
+      int     depth;
+    } bz_set_t;
+
     //queue to hold bezier_gen points
-    point_t bezier_points_q[$];
+    bz_set_t  bezier_points_q[$];
 
     /*  Constructor */
     function new(string name = "syn_frm_bffr_sb", ovm_component parent);
@@ -132,7 +139,8 @@
 
       frm_bffr_pending_xtns = '{};  //clear the queue
 
-      gpu_draw_line_job_mb    = new(1);
+      //gpu_draw_line_job_mb    = new(1);
+      gpu_draw_line_job_mb    = new();
       gpu_draw_bezier_job_mb  = new(1);
 
       ovm_report_info(get_name(),"End of build ",OVM_LOW);
@@ -186,7 +194,7 @@
       res = {res,$psprintf("X2 : %1d\n",job.x2)};
       res = {res,$psprintf("Y2 : %1d\n",job.y2)};
       res = {res,$psprintf("Color : 0x%1x\n",job.color)};
-      res = {res,$psprintf("Width : %d\n",job.width)};
+      res = {res,$psprintf("Width : %d\n",job.bzdepth)};
 
       return  res;
     endfunction : sprint_gpu_draw_job
@@ -218,7 +226,7 @@
         draw_job.x2       = gpu_reg_set.get_field("gpu_job_bffr_6") & {P_X_W{1'b1}};
         draw_job.y2       = gpu_reg_set.get_field("gpu_job_bffr_7") & {P_Y_W{1'b1}};
         draw_job.color    = gpu_reg_set.get_field("gpu_job_bffr_8");
-        draw_job.width    = gpu_reg_set.get_field("gpu_job_bffr_9");
+        draw_job.bzdepth  = gpu_reg_set.get_field("gpu_job_bffr_9");
 
 
         ovm_report_info({get_name(),"[extract_gpu_job]"},$psprintf("Start of extract_gpu_job : \n%s",  sprint_gpu_draw_job(draw_job)),OVM_LOW);
@@ -352,11 +360,10 @@
 
     /*  Task to process a draw bezier job & derive the set of pixel writes  */
     virtual task  process_draw_bezier_job;
-      gpu_draw_job_t  job;
-      PXL_XFR_PKT_TYPE  actual_xtn;
-      PXL_XFR_PKT_TYPE  exptd_xtn;
-      point_t p0,p1,p2,m0,m1,m2;
-      string  res;
+      gpu_draw_job_t  job,ljob;
+      point_t m0,m1,m2;
+      bz_set_t  bz_set,bz_set_nxt;
+      int depth;
 
       ovm_report_info({get_name(),"[process_draw_bezier_job]"},$psprintf("Start of process_draw_bezier_job"),OVM_LOW);
 
@@ -367,61 +374,67 @@
 
         ovm_report_info({get_name(),"[process_draw_bezier_job]"},$psprintf("Processing job :\n%s",sprint_gpu_draw_job(job)),OVM_LOW);
 
-        p0.x  = job.x0; p0.y  = job.y0;
-        p1.x  = job.x1; p1.y  = job.y1;
-        p2.x  = job.x2; p2.y  = job.y2;
+        bz_set.p0.x  = job.x0; bz_set.p0.y  = job.y0;
+        bz_set.p1.x  = job.x1; bz_set.p1.y  = job.y1;
+        bz_set.p2.x  = job.x2; bz_set.p2.y  = job.y2;
+        bz_set.depth = 0;
 
         bezier_points_q = '{};  //clear queue
 
-        bezier_points_q.push_back(p0);
-        bezier_points_q.push_back(p1);
-        bezier_points_q.push_back(p2);
+        bezier_points_q.push_back(bz_set);
 
         while(bezier_points_q.size)
         begin
-          p0  = bezier_points_q.pop_front();
-          p1  = bezier_points_q.pop_front();
-          p2  = bezier_points_q.pop_front();
+          bz_set  = bezier_points_q.pop_front();
 
-          //Calculate mid points
-          m0.x  = (p0.x + p1.x)/2 ; m0.y  = (p0.y + p1.y) /2  ;
-          m1.x  = (p1.x + p2.x)/2 ; m1.y  = (p1.y + p2.y) /2  ;
-          m2.x  = (m0.x + m1.x)/2 ; m2.y  = (m0.y + m1.y) /2  ;
-
-          ovm_report_info({get_name(),"[bezier_gen]"},$psprintf("Waiting for sniffer"),OVM_LOW);
-          while(!pxlgw_xtns.size())  #1;
-
-          actual_xtn  = new();
-          actual_xtn  = pxlgw_xtns.pop_front();
-          ovm_report_info({get_name(),"[bezier_gen]"},$psprintf("Received sniffer xtn :\n%s",actual_xtn.sprint()),OVM_LOW);
-
-          exptd_xtn       = new();
-          exptd_xtn.posx  = m2.x;
-          exptd_xtn.posy  = m2.y;
-          exptd_xtn.pxl   = job.color;
-          exptd_xtn.xtn   = PXL_WRITE;
-
-          res = actual_xtn.check(exptd_xtn);
-
-          if(res  ==  "")
-            ovm_report_info({get_name(),"[bezier_gen]"},$psprintf("PxlGw XTN Valid"),OVM_LOW);
-          else
-            ovm_report_error({get_name(),"[bezier_gen]"},$psprintf("PxlGw XTN Invalid %s",res),OVM_LOW);
-
-          putPixel(exptd_xtn);
-
-          if(m0 !=  p0)
+          if(bz_set.depth  ==  job.bzdepth)  //issue line jobs
           begin
-            bezier_points_q.push_back(p0);
-            bezier_points_q.push_back(m0);
-            bezier_points_q.push_back(m2);
+            ljob.shape  = LINE;
+            ljob.x0     = bz_set.p0.x;
+            ljob.y0     = bz_set.p0.y;
+            ljob.x1     = bz_set.p1.x;
+            ljob.y1     = bz_set.p1.y;
+            ljob.color  = job.color;
+            if(gpu_draw_line_job_mb.try_put(ljob))
+              ovm_report_info({get_name(),"[process_draw_bezier_job]"},$psprintf("Placed GPU Draw Job into gpu_draw_line_job_mb"),OVM_LOW);
+            else
+              ovm_report_fatal({get_name(),"[process_draw_bezier_job]"},$psprintf("Could not place GPU Draw Job into gpu_draw_line_job_mb!"),OVM_LOW);
+
+            #1;
+
+            ljob.x0     = bz_set.p1.x;
+            ljob.y0     = bz_set.p1.y;
+            ljob.x1     = bz_set.p2.x;
+            ljob.y1     = bz_set.p2.y;
+            if(gpu_draw_line_job_mb.try_put(ljob))
+              ovm_report_info({get_name(),"[process_draw_bezier_job]"},$psprintf("Placed GPU Draw Job into gpu_draw_line_job_mb"),OVM_LOW);
+            else
+              ovm_report_fatal({get_name(),"[process_draw_bezier_job]"},$psprintf("Could not place GPU Draw Job into gpu_draw_line_job_mb!"),OVM_LOW);
+
+            continue;
           end
 
-          if(m1 !=  p2)
+          //Calculate mid points
+          m0.x  = (bz_set.p0.x + bz_set.p1.x)/2 ; m0.y  = (bz_set.p0.y + bz_set.p1.y) /2  ;
+          m1.x  = (bz_set.p1.x + bz_set.p2.x)/2 ; m1.y  = (bz_set.p1.y + bz_set.p2.y) /2  ;
+          m2.x  = (m0.x + m1.x)/2 ; m2.y  = (m0.y + m1.y) /2  ;
+
+          if(m0 !=  bz_set.p0)
           begin
-            bezier_points_q.push_back(m2);
-            bezier_points_q.push_back(m1);
-            bezier_points_q.push_back(p2);
+            bz_set_nxt.p0 = bz_set.p0;
+            bz_set_nxt.p1 = m0;
+            bz_set_nxt.p2 = m2;
+            bz_set_nxt.depth  = bz_set.depth  + 1;
+            bezier_points_q.push_back(bz_set_nxt);
+          end
+
+          if(m1 !=  bz_set.p2)
+          begin
+            bz_set_nxt.p0 = m2;
+            bz_set_nxt.p1 = m1;
+            bz_set_nxt.p2 = bz_set.p2;
+            bz_set_nxt.depth  = bz_set.depth  + 1;
+            bezier_points_q.push_back(bz_set_nxt);
           end
         end
 

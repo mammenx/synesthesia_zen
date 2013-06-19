@@ -108,7 +108,8 @@ module syn_gpu_pxl_gw (
     sram_intf.gpu_rd_en       =   gpu_core_intf.pxl_rd_valid;
     sram_intf.gpu_wr_en       =   gpu_core_intf.pxl_wr_valid  & gpu_core_pxl_pos_valid_c;
     sram_intf.gpu_wr_data     =   gpu_core_intf.pxl;
-    gpu_core_intf.ready       =   sram_intf.gpu_rdy;
+    gpu_core_intf.ready       =   gpu_core_pxl_pos_valid_c  ? sram_intf.gpu_rdy
+                                                            : gpu_core_intf.pxl_rd_valid  | gpu_core_intf.pxl_wr_valid;
   end
 
   //Send data read from SRAM to GPU Core
