@@ -578,8 +578,9 @@ enum  logic [1:0] { BZ_IDLE_S,
   //Pack data into Bezier FIFO
   always_comb
   begin : bezier_wdata_logic
+    bzff_wdata_c  = 0;
+
     bzff_wdata_c[P_BEZIER_FF_DATA_W-1:P_BEZIER_FF_DATA_W-4] = bz_depth_f;
-    bzff_wdata_c[P_BEZIER_FF_DATA_W-5:P_BEZIER_POINTS_W]    = 'd0;
 
     if(bz_pst_vec_f[2])
     begin

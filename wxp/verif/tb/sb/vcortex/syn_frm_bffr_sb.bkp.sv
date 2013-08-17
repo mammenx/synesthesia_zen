@@ -109,11 +109,6 @@
     //for fill job processing
     point_t fill_job_q[$];
 
-    //GPU FF variables
-    int gpu_ff_wptr,  gpu_ff_rptr;
-    const int gpu_ff_size = (212  * 1024  * 8)  / (4  * 8); //number of pointers that can be stored
-
-
     /*  Constructor */
     function new(string name = "syn_frm_bffr_sb", ovm_component parent);
       super.new(name, parent);
@@ -159,10 +154,6 @@
       gpu_draw_line_job_mb    = new();
       gpu_draw_bezier_job_mb  = new(1);
       gpu_fill_job_mb         = new(1);
-
-      //set gpu_ff pointers
-      gpu_ff_wptr   = (P_CANVAS_W * P_CANVAS_H) / 2;
-      gpu_ff_rptr   = (P_CANVAS_W * P_CANVAS_H) / 2;
 
       ovm_report_info(get_name(),"End of build ",OVM_LOW);
     endfunction
@@ -874,64 +865,6 @@
 
     endtask : run
 
-
-    /*  GPU FF Functions  */
-
-    function  bit is_gpuff_full ();
-      if(fill_job_q.size  >=  gpu_ff_size)
-        return  1;
-      else
-        return  0;
-    endfunction : is_gpuff_full
-
-    function  bit is_gpuff_empty ();
-      if(fill_job_q.size  ==  0)
-        return  1;
-      else
-        return  0;
-    endfunction : is_gpuff_empty
-
-    function  int get_nxt_wptr();
-      int res;
-
-      if(is_gpuff_full)
-      begin
-        res = gpu_ff_wptr;
-      end
-      else if(gpu_ff_wptr ==  (2  **  18))
-      begin
-        gpu_ff_wptr = (P_CANVAS_W * P_CANVAS_H) / 2;
-        res = gpu_ff_wptr;
-      end
-      else
-      begin
-        res = gpu_ff_wptr;
-        gpu_ff_wptr +=  4;
-      end
-
-      return  res;
-    endfunction : get_nxt_wptr
-
-    function  int get_nxt_rptr();
-      int res;
-
-      if(is_gpuff_empty)
-      begin
-        res = gpu_ff_rptr;
-      end
-      else if(gpu_ff_rptr ==  (2  **  18))
-      begin
-        gpu_ff_rptr = (P_CANVAS_W * P_CANVAS_H) / 2;
-        res = gpu_ff_rptr;
-      end
-      else
-      begin
-        res = gpu_ff_rptr;
-        gpu_ff_rptr +=  4;
-      end
-
-      return  res;
-    endfunction : get_nxt_rptr
 
     /*  Report  */
     virtual function void report();

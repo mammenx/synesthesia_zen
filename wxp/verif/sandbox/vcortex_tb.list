@@ -17,7 +17,7 @@
 `include  "syn_sram_agent.sv"
 
 //Sniffers
-`include  "syn_gpu_pxlgw_ingr_sniffer.sv"
+`include  "syn_gpu_pxlgw_sniffer.sv"
 
 //Scoreboards
 `include  "syn_frm_bffr_sb.sv"
@@ -28,12 +28,17 @@
 
 //Sequences
 `include  "syn_gpu_draw_job_config_seq.sv"
+`include  "syn_gpu_fill_job_config_seq.sv"
 `include  "syn_gpu_enable_seq.sv"
 `include  "syn_poll_gpu_status_seq.sv"
 `include  "syn_fb_init_seq.sv"
+`include  "syn_gpu_mul_job_config_seq.sv"
+`include  "syn_gpu_debug_job_config_seq.sv"
 
 
 //Tests
 `include  "syn_vcortex_base_test.sv"
 `include  "syn_vcortex_gpu_draw_line_test.sv"
 `include  "syn_vcortex_gpu_draw_bezier_test.sv"
+`include  "syn_vcortex_gpu_fill_test.sv"
+`include  "syn_vcortex_host_acc_test.sv"

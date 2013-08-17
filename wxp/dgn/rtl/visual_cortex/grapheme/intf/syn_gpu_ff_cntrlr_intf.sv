@@ -22,11 +22,10 @@
 /*
  --------------------------------------------------------------------------
  -- Project Code      : synesthesia
- -- Interface Name    : syn_pxl_xfr_tb_intf
+ -- Interface Name    : syn_gpu_ff_cntrlr_intf
  -- Author            : mammenx
- -- Function          : This interface defines the set of signals to transfer
-                        pixel information from module to module.
-                        Used by sniffers.
+ -- Function          : This defines the set of signals for interfacing to
+                        the GPU FF Controller module.
  --------------------------------------------------------------------------
 */
 
@@ -41,39 +40,41 @@
  --------------------------------------------------------------------------
 */
 
-interface syn_pxl_xfr_tb_intf  #(
-                              parameter type  PIXEL_TYPE  = syn_gpu_pkg::pxl_hsi_t,
-                              parameter       WIDTHX= syn_gpu_pkg::P_X_W,
-                              parameter       WIDTHY= syn_gpu_pkg::P_Y_W
-                            )
+interface syn_gpu_ff_cntrlr_intf  #(
+                                      parameter WIDTHX  = syn_gpu_pkg::P_X_W,
+                                      parameter WIDTHY  = syn_gpu_pkg::P_Y_W
+                                  )
 
-                            (input  logic clk_ir, rst_il);
+                                  (input logic clk_ir,rst_il);
+
+  import  syn_gpu_pkg::point_t;
 
   //Logic signals
-  PIXEL_TYPE          pxl;  //structure containing pixel data
-  logic               pxl_wr_valid;   //1->pixel data is valid for write
-  logic               pxl_rd_valid;   //1->pixel data is valid for read
-  logic [WIDTHX-1:0]  posx;
-  logic [WIDTHY-1:0]  posy;
-  PIXEL_TYPE          rd_pxl;
-  logic               rd_rdy;
-
-  //Clocking block
-  clocking  cb@(posedge  clk_ir);
-    default input #2ns output #2ns;
-
-    input pxl;
-    input pxl_wr_valid;
-    input pxl_rd_valid;
-    input posx;
-    input posy;
-    input rd_rdy;
-    input rd_pxl;
-
-  endclocking : cb
+  logic               wr_en;
+  logic               rd_en;
+  logic               empty;
+  logic               full;
+  point_t             waddr;
+  point_t             raddr;
 
   //Modports
-  modport   tb  (clocking  cb, input rst_il, clk_ir);
+  modport cntrlr  (
+                    input   wr_en,
+                    input   rd_en,
+                    output  empty,
+                    output  full,
+                    output  waddr,
+                    output  raddr
+                  );
+
+  modport master  (
+                    output  wr_en,
+                    output  rd_en,
+                    input   empty,
+                    input   full,
+                    input   waddr,
+                    input   raddr
+                  );
 
 
-endinterface  //  syn_pxl_xfr_tb_intf
+endinterface  //  syn_gpu_ff_cntrlr_intf

@@ -44,16 +44,18 @@ package syn_gpu_pkg;
 
   parameter P_CANVAS_W  = 640;
   parameter P_CANVAS_H  = 480;
-  parameter P_X_W       = $clog2(P_CANVAS_W);
-  parameter P_Y_W       = $clog2(P_CANVAS_H);
+  parameter P_GPU_SRAM_ADDR_W = 19;
+  parameter P_GPU_SRAM_DATA_W = 8;
   parameter P_RGB_RES   = 4;
   parameter P_LUM_W     = 4;
   parameter P_CHRM_W    = 2;
   parameter P_HUE_W     = 3;
   parameter P_SATURATION_W  = 2;
   parameter P_INTENSITY_W   = 3;
-  parameter P_GPU_SRAM_ADDR_W = 19;
-  parameter P_GPU_SRAM_DATA_W = 8;
+  parameter P_PXL_HSI_W = P_HUE_W + P_SATURATION_W  + P_INTENSITY_W;
+  parameter P_X_W       = $clog2(P_CANVAS_W);
+  //parameter P_Y_W       = $clog2(P_CANVAS_H);
+  parameter P_Y_W       = $clog2(((2**P_GPU_SRAM_ADDR_W)*P_GPU_SRAM_DATA_W) / (P_CANVAS_W*P_PXL_HSI_W));
 
   //RGB pixel stucture
   typedef struct  packed  {
@@ -70,6 +72,7 @@ package syn_gpu_pkg;
     logic [P_CHRM_W-1:0]  cr;
 
   } pxl_ycbcr_t;
+
 
   //HSI pixel structure
   typedef struct  packed  {
@@ -92,7 +95,9 @@ package syn_gpu_pkg;
 
   //Opcode for type of job
   typedef enum  logic [1:0] { DRAW    = 2'd0,
-                              FILL    = 2'd1
+                              FILL    = 2'd1,
+                              MULBRY  = 2'd2,
+                              DEBUG   = 2'd3    //For host access to frame buffer
                             } action_t;
 
 
@@ -125,6 +130,14 @@ package syn_gpu_pkg;
 
   } gpu_fill_job_t;
 
+  //Structure describing Host access job
+  typedef struct  packed  {
+    logic             read_n_write; //1->Read, 0->Write
+    logic [P_X_W-1:0] x;
+    logic [P_Y_W-1:0] y;
+    pxl_hsi_t         pxl;
+  } host_acc_job_t;
+
   parameter P_GPU_FILL_JOB_BFFR_W = 2*(P_LUM_W  + P_CHRM_W  + P_CHRM_W) + (P_X_W  + P_Y_W);
 
 
@@ -148,5 +161,15 @@ package syn_gpu_pkg;
                                                       SID_DIV
                                                     } sid_t;
 
+  function  sid_t decode_sid(input  logic[$clog2(P_NUM_SLAVES+1)-1:0] val);
+    if(val  ==  'd0)
+      return  SID_IDLE;
+    else if(val ==  'd1)
+      return  SID_RAND;
+    else if(val ==  'd2)
+      return  SID_MUL;
+    else
+      return  SID_DIV;
+  endfunction
 
 endpackage  //  syn_gpu_pkg

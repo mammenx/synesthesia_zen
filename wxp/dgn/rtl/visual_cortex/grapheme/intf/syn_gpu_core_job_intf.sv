@@ -47,11 +47,15 @@ interface syn_gpu_core_job_intf (input logic clk_ir, rst_il);
   import  syn_gpu_pkg::*;
 
   //Signals & Structures
-  logic           euclid_job_start; //1->Start line draw job in euclid engine
+  logic           euclid_job_start; //1->Start line/bezier draw job in euclid engine
   gpu_draw_job_t  euclid_job_data;  //Details of job
   logic           euclid_busy;      //1->Euclid engine is busy
   logic           euclid_job_done;  //1->Job is done
 
+  logic           picasso_job_start; //1->Start fill job in picasso engine
+  gpu_fill_job_t  picasso_job_data;  //Details of job
+  logic           picasso_busy;      //1->Picasso engine is busy
+  logic           picasso_job_done;  //1->Job is done
 
 
   //Modports
@@ -59,7 +63,12 @@ interface syn_gpu_core_job_intf (input logic clk_ir, rst_il);
                     output  euclid_job_start,
                     output  euclid_job_data,
                     input   euclid_busy,
-                    input   euclid_job_done
+                    input   euclid_job_done,
+
+                    output  picasso_job_start,
+                    output  picasso_job_data,
+                    input   picasso_busy,
+                    input   picasso_job_done
                   );
 
   modport euclid  (
@@ -67,6 +76,13 @@ interface syn_gpu_core_job_intf (input logic clk_ir, rst_il);
                     input   euclid_job_data,
                     output  euclid_busy,
                     output  euclid_job_done
+                  );
+
+  modport picasso  (
+                    input   picasso_job_start,
+                    input   picasso_job_data,
+                    output  picasso_busy,
+                    output  picasso_job_done
                   );
 
 

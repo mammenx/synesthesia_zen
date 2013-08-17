@@ -62,6 +62,8 @@ interface syn_pxl_xfr_intf  #(
   logic [WIDTHY-1:0]  posy;
   logic [P_16B_W-1:0] misc_info_dist; //Used by anti aliaser
   logic [P_16B_W-1:0] misc_info_norm; //Used by anti aliaser
+  pxl_hsi_t           rd_pxl;  //pixel data read
+  logic               rd_rdy;
 
 
   //Modports
@@ -73,6 +75,8 @@ interface syn_pxl_xfr_intf  #(
                       output  posy,
                       output  misc_info_dist,
                       output  misc_info_norm,
+                      input   rd_pxl,
+                      input   rd_rdy,
                       input   ready
                     );
 
@@ -84,6 +88,8 @@ interface syn_pxl_xfr_intf  #(
                       input   posy,
                       input   misc_info_dist,
                       input   misc_info_norm,
+                      output  rd_pxl,
+                      output  rd_rdy,
                       output  ready
                     );
 

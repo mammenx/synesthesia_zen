@@ -80,7 +80,6 @@ module syn_gpu (
 //----------------------- Internal Interface Declarations -----------------
   mulberry_bus_intf               mul_bus_intf(cr_intf.clk_ir,  cr_intf.rst_sync_l);
   syn_pxl_xfr_intf                core2pxl_gw_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
-  syn_pxl_xfr_intf                pxl_gw2core_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
 
 
 //----------------------- Start of Code -----------------------------------
@@ -93,11 +92,11 @@ module syn_gpu (
 
     .lb_intf                (lb_intf),
 
-    .mul_bus_intf           (mul_bus_intf.gpu_core_mp),
+    .mul_bus_gpu_intf       (mul_bus_intf.gpu_core_mp),
 
-    .pxl_gw_tx_intf         (core2pxl_gw_intf.master),
+    .mul_bus_lb_intf        (mul_bus_intf.gpu_lb_mp),
 
-    .pxl_gw_rx_intf         (pxl_gw2core_intf.slave)
+    .pxl_gw_intf            (core2pxl_gw_intf.master)
 
   );
 
@@ -134,8 +133,6 @@ module syn_gpu (
     .cr_intf                (cr_intf),
 
     .gpu_core_intf          (core2pxl_gw_intf.slave),
-
-    .gw2gpu_core_intf       (pxl_gw2core_intf.master),
 
     .sram_intf              (sram_intf)
 

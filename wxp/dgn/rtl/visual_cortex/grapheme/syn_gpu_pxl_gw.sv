@@ -53,8 +53,6 @@ module syn_gpu_pxl_gw (
 
   syn_pxl_xfr_intf                gpu_core_intf,    //Interface from GPU Core
 
-  syn_pxl_xfr_intf                gw2gpu_core_intf, //Interface to GPU Core, for read data
-
   sram_acc_intf                   sram_intf         //Interface to SRAM
 
   //--------------------- Misc Ports (Logic)  -----------
@@ -88,7 +86,7 @@ module syn_gpu_pxl_gw (
   logic [P_X_W-1:0]           posx_c;
   logic [P_Y_W-1:0]           posy_c;
 
-  logic [P_GPU_SRAM_ADDR_W-7:0]   posy_mul10_c;
+  logic [P_GPU_SRAM_ADDR_W-1:0]   posy_mul10_c;
 
   logic                       gpu_core_pxl_pos_valid_c;
 
@@ -106,7 +104,8 @@ module syn_gpu_pxl_gw (
 
     sram_intf.gpu_addr        =   {posy_mul10_c,6'd0} + gpu_core_intf.posx;
     sram_intf.gpu_rd_en       =   gpu_core_intf.pxl_rd_valid;
-    sram_intf.gpu_wr_en       =   gpu_core_intf.pxl_wr_valid  & gpu_core_pxl_pos_valid_c;
+    //sram_intf.gpu_wr_en       =   gpu_core_intf.pxl_wr_valid  & gpu_core_pxl_pos_valid_c;
+    sram_intf.gpu_wr_en       =   gpu_core_intf.pxl_wr_valid;
     sram_intf.gpu_wr_data     =   gpu_core_intf.pxl;
     gpu_core_intf.ready       =   gpu_core_pxl_pos_valid_c  ? sram_intf.gpu_rdy
                                                             : gpu_core_intf.pxl_rd_valid  | gpu_core_intf.pxl_wr_valid;
@@ -117,24 +116,15 @@ module syn_gpu_pxl_gw (
   begin
     if(~cr_intf.rst_sync_l)
     begin
-      gw2gpu_core_intf.posx   <=  0;
-      gw2gpu_core_intf.posy   <=  0;
+      gpu_core_intf.rd_pxl    <=  '{default:0};
+      gpu_core_intf.rd_rdy    <=  0;
     end
     else
     begin
-      if(gpu_core_intf.pxl_rd_valid)
-      begin
-        gw2gpu_core_intf.posx <=  gpu_core_intf.posx;
-        gw2gpu_core_intf.posy <=  gpu_core_intf.posy;
-      end
+      gpu_core_intf.rd_rdy    <=  sram_intf.gpu_rd_valid;
+      gpu_core_intf.rd_pxl    <=  sram_intf.gpu_rd_data;
     end
   end
-
-  assign  gw2gpu_core_intf.pxl_rd_valid   = sram_intf.gpu_rd_valid;
-  assign  gw2gpu_core_intf.pxl            = sram_intf.gpu_rd_data;
-  assign  gw2gpu_core_intf.pxl_wr_valid   = 1'b0;
-  assign  gw2gpu_core_intf.misc_info_dist = 0;
-  assign  gw2gpu_core_intf.misc_info_norm = 0;
 
 
   /*  For TB Sniffers */
@@ -148,6 +138,8 @@ module syn_gpu_pxl_gw (
     ingr_sniff_intf.pxl_rd_valid  = gpu_core_intf.pxl_rd_valid;
     ingr_sniff_intf.posx          = gpu_core_intf.posx;
     ingr_sniff_intf.posy          = gpu_core_intf.posy;
+    ingr_sniff_intf.rd_rdy        = gpu_core_intf.rd_rdy;
+    ingr_sniff_intf.rd_pxl        = gpu_core_intf.rd_pxl;
   end
 
   //synthesis translate_on

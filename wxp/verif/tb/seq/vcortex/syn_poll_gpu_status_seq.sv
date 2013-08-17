@@ -59,14 +59,20 @@
     `include  "syn_cortex_reg_map.sv"
     `include  "syn_vcortex_reg_map.sv"
 
-    bit gpu_busy;
+    bit euclid_busy;
+    bit picasso_busy;
+    bit host_acc_done;
+    bit host_mul_job_done;
     PKT_TYPE  pkt, rsp;
 
     /*  Constructor */
     function new(string name  = "syn_poll_gpu_status_seq");
       super.new(name);
 
-      gpu_busy  = 0;
+      euclid_busy   = 0;
+      picasso_busy  = 0;
+      host_acc_done = 1;
+      host_mul_job_done = 1;
       pkt = new();
       rsp = new();
     endfunction
@@ -97,7 +103,7 @@
 
         p_sequencer.ovm_report_info(get_name(),$psprintf("Got Response - \n%s", rsp.sprint()),OVM_LOW);
       end
-      while(rsp.data[0][0]  !=  gpu_busy);
+      while(rsp.data[0][3:0]  !=  {host_mul_job_done,host_acc_done,picasso_busy,euclid_busy});
 
       #1;
 

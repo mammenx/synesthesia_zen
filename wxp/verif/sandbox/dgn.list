@@ -40,11 +40,14 @@
 ../../dgn/rtl/visual_cortex/grapheme/intf/mulberry_bus_intf.sv
 ../../dgn/rtl/visual_cortex/grapheme/intf/syn_gpu_core_job_intf.sv
 ../../dgn/rtl/visual_cortex/grapheme/intf/syn_pxl_xfr_intf.sv
+../../dgn/rtl/visual_cortex/grapheme/intf/syn_gpu_ff_cntrlr_intf.sv
 
 ../../dgn/rtl/visual_cortex/vga_drvr/intf/syn_vga_drvr_lb_intf.sv
 
 //Vcortex
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu_core_euclid.sv
+../../dgn/rtl/visual_cortex/grapheme/syn_gpu_core_picasso.sv
+../../dgn/rtl/visual_cortex/grapheme/syn_gpu_ff_cntrlr.sv
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu_core.sv
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu_pxl_gw.sv
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu_div.sv

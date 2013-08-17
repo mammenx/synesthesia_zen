@@ -24,8 +24,8 @@
  -- Project Code      : synesthesia
  -- Sequence Name     : syn_fb_init_seq
  -- Author            : mammenx
- -- Function          : This sequence generates a LB transaction that
-                        enables the GPU.
+ -- Function          : This sequence initializes the frame buffer to a 
+                        given pixel value.
  --------------------------------------------------------------------------
 */
 
