@@ -22,10 +22,10 @@
 /*
  --------------------------------------------------------------------------
  -- Project Code      : synesthesia
- -- Interface Name    : syn_vga_intf
+ -- Interface Name    : syn_wm8731_intf
  -- Author            : mammenx
- -- Function          : This contains all the signals related to the VGA
-                        interface in DE1 board.
+ -- Function          : This interface contains all the signals required to
+                        interface with the WM8731 Audio Codec.
  --------------------------------------------------------------------------
 */
 
@@ -40,33 +40,40 @@
  --------------------------------------------------------------------------
 */
 
-interface syn_vga_intf  #(parameter WIDTH = 4) (input logic clk_ir, rst_il);
+interface syn_wm8731_intf  ();
 
   //Logic signals
-  logic [WIDTH-1:0] r;
-  logic [WIDTH-1:0] g;
-  logic [WIDTH-1:0] b;
-  logic             hsync_n;
-  logic             vsync_n;
+  logic   mclk;
+
+  logic   bclk;
+  logic   adc_dat;
+  logic   adc_lrc;
+  logic   dac_dat;
+  logic   dac_lrc;
+
+  //Interfaces
+  syn_i2c_intf  i2c_intf();
 
 
   //Modports
-  modport mp  (
-                output  r,
-                output  g,
-                output  b,
-                output  hsync_n,
-                output  vsync_n
-              );
+  modport i2c     (
+                    output  i2c_intf.scl,
+                    output  i2c_intf.sda_o,
+                    input   i2c_intf.sda_i,
+                    output  i2c_intf.release_sda
+                  );
 
-  modport TB  (
-                input   clk_ir,
-                input   rst_il,
-                input   r,
-                input   g,
-                input   b,
-                input   hsync_n,
-                input   vsync_n
-              );
+  modport cmux    (
+                    output  mclk
+                  );
 
-endinterface  //  syn_vga_intf
+  modport wmdrvr  (
+                    output  bclk,
+                    input   adc_dat,
+                    output  adc_lrc,
+                    output  dac_dat,
+                    output  dac_lrc
+                  );
+
+
+endinterface  //  syn_wm8731_intf

@@ -1,6 +1,7 @@
 //Sequence items
 `include  "syn_lb_seq_item.sv"
 `include  "syn_gpu_pxl_xfr_seq_item.sv"
+`include  "syn_vga_seq_item.sv"
 
 //RAL
 `include  "syn_reg_map.sv"
@@ -15,6 +16,9 @@
 `include  "syn_sram_mon.sv"
 `include  "syn_sram_seqr.sv"
 `include  "syn_sram_agent.sv"
+
+`include  "syn_vga_mon.sv"
+`include  "syn_vga_agent.sv"
 
 //Sniffers
 `include  "syn_gpu_pxlgw_sniffer.sv"
@@ -34,6 +38,7 @@
 `include  "syn_fb_init_seq.sv"
 `include  "syn_gpu_mul_job_config_seq.sv"
 `include  "syn_gpu_debug_job_config_seq.sv"
+`include  "syn_vga_enable_seq.sv"
 
 
 //Tests
@@ -42,3 +47,4 @@
 `include  "syn_vcortex_gpu_draw_bezier_test.sv"
 `include  "syn_vcortex_gpu_fill_test.sv"
 `include  "syn_vcortex_host_acc_test.sv"
+`include  "syn_vcortex_vga_test.sv"

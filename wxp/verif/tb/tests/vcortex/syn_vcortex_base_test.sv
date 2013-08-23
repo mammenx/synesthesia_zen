@@ -41,7 +41,10 @@
 */
 
 
+import  syn_env_pkg::*;
+
 class syn_vcortex_base_test extends ovm_test;
+
 
     parameter LB_DATA_W = 32;
     parameter LB_ADDR_W = 12;
@@ -117,6 +120,9 @@ class syn_vcortex_base_test extends ovm_test;
       this.env.sram_agent.mon.intf  = $root.syn_vcortex_tb_top.sram_mem_intf;
 
       this.env.pxlgw_sniffer.intf   = $root.syn_vcortex_tb_top.syn_vcortex_inst.syn_gpu_inst.syn_gpu_pxl_gw_inst.ingr_sniff_intf;
+
+      this.env.vga_agent.mon.intf   = $root.syn_vcortex_tb_top.vga_intf;
+
       ovm_report_info(get_full_name(),"End of connect",OVM_LOW);
     endfunction : connect
 
@@ -144,9 +150,12 @@ class syn_vcortex_base_test extends ovm_test;
       ovm_report_info(get_full_name(),"End of run",OVM_LOW);
     endtask : run 
 
-    virtual task  init_fb();
-      ovm_report_info({get_full_name(),"[init_fb]"},"Start of init_fb",OVM_LOW);
 
+
+    virtual task  init_fb(input fb_init_mode_t  fb_init_mode=STATIC);
+      ovm_report_info({get_full_name(),"[init_fb]"},$psprintf("Start of init_fb with mode:%s",fb_init_mode.name),OVM_LOW);
+
+      fb_init_seq.init_mode = fb_init_mode;
       fb_init_seq.start(this.env.sram_agent.seqr);
 
       ovm_report_info({get_full_name(),"[init_fb]"},"End of init_fb",OVM_LOW);

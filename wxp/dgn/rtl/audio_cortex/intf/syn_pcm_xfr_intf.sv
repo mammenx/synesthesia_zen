@@ -22,10 +22,10 @@
 /*
  --------------------------------------------------------------------------
  -- Project Code      : synesthesia
- -- Interface Name    : syn_vga_intf
+ -- Interface Name    : syn_pcm_xfr_intf
  -- Author            : mammenx
- -- Function          : This contains all the signals related to the VGA
-                        interface in DE1 board.
+ -- Function          : This interface contains signals required to transfer
+                        PCM data.
  --------------------------------------------------------------------------
 */
 
@@ -40,33 +40,44 @@
  --------------------------------------------------------------------------
 */
 
-interface syn_vga_intf  #(parameter WIDTH = 4) (input logic clk_ir, rst_il);
+interface syn_pcm_xfr_intf  (input logic  clk_ir,rst_il); 
+
+  import  syn_audio_pkg::pcm_data_t;
 
   //Logic signals
-  logic [WIDTH-1:0] r;
-  logic [WIDTH-1:0] g;
-  logic [WIDTH-1:0] b;
-  logic             hsync_n;
-  logic             vsync_n;
+  logic       pcm_data_valid;
+  pcm_data_t  pcm_data;
+  logic       ack;
 
 
   //Modports
-  modport mp  (
-                output  r,
-                output  g,
-                output  b,
-                output  hsync_n,
-                output  vsync_n
-              );
+  modport master  (
+                    output  pcm_data_valid,
+                    output  pcm_data,
+                    input   ack
+                  );
 
-  modport TB  (
-                input   clk_ir,
-                input   rst_il,
-                input   r,
-                input   g,
-                input   b,
-                input   hsync_n,
-                input   vsync_n
-              );
+  modport slave   (
+                    input   pcm_data_valid,
+                    input   pcm_data,
+                    output  ack
+                  );
 
-endinterface  //  syn_vga_intf
+
+  /*
+    * Timing Diagram
+    *
+    *                      __________________
+    * pcm_data_valid      |                  |
+    *                 ____|                  |____
+    *                 ___  _________________  ____
+    * pcm_data        xxx\/  valid pcm data \/xxx
+    *                 ___/\_________________/\____
+    *                                   ____
+    * ack                              |    |
+    *                 _________________|    |_____
+    *
+  */
+
+
+endinterface  //  syn_pcm_xfr_intf

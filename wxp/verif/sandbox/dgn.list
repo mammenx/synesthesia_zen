@@ -8,6 +8,8 @@
 +incdir+../../dgn/rtl/visual_cortex/grapheme/intf/
 +incdir+../../dgn/rtl/visual_cortex/vga_drvr/
 +incdir+../../dgn/rtl/visual_cortex/vga_drvr/intf/
++incdir+../../dgn/rtl/audio_cortex/
++incdir+../../dgn/rtl/audio_cortex/intf/
 
 //Compile Altera Components
 ../../dgn/rtl/altera/220model.v
@@ -21,18 +23,23 @@
 ../../dgn/rtl/altera/mult_16x16_unsigned.v
 ../../dgn/rtl/altera/ram_1xM4K_16bW_dualport.v
 ../../dgn/rtl/altera/ram_4xM4K_8bW_16bW_dualport.v
+../../dgn/rtl/altera/pcm_sample_ram.v
 
 //Packages
 ../../dgn/rtl/pkg/syn_global_pkg.sv
 ../../dgn/rtl/pkg/syn_gpu_pkg.sv
+../../dgn/rtl/pkg/syn_audio_pkg.sv
 
 //Interfaces
 ../../dgn/rtl/intf/ff_intf.sv
+../../dgn/rtl/intf/mem_intf.sv
 ../../dgn/rtl/intf/syn_clk_rst_async_intf.sv
 ../../dgn/rtl/intf/syn_clk_rst_sync_intf.sv
+../../dgn/rtl/intf/syn_i2c_intf.sv
 ../../dgn/rtl/intf/syn_lb_intf.sv
 ../../dgn/rtl/intf/syn_sram_mem_intf.sv
 ../../dgn/rtl/intf/syn_vga_intf.sv
+../../dgn/rtl/intf/syn_wm8731_intf.sv
 ../../verif/tb/env/interfaces/syn_pxl_xfr_tb_intf.sv
 
 ../../dgn/rtl/visual_cortex/intf/sram_acc_intf.sv
@@ -43,6 +50,10 @@
 ../../dgn/rtl/visual_cortex/grapheme/intf/syn_gpu_ff_cntrlr_intf.sv
 
 ../../dgn/rtl/visual_cortex/vga_drvr/intf/syn_vga_drvr_lb_intf.sv
+
+../../dgn/rtl/audio_cortex/intf/syn_acortex_lb_bus_intf.sv
+../../dgn/rtl/audio_cortex/intf/syn_pcm_xfr_intf.sv
+
 
 //Vcortex
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu_core_euclid.sv
@@ -62,3 +73,12 @@
 
 ../../dgn/rtl/visual_cortex/syn_sram_drvr.sv
 ../../dgn/rtl/visual_cortex/syn_vcortex.sv
+
+//Acortex
+../../dgn/rtl/audio_cortex/dd_sync.sv
+../../dgn/rtl/audio_cortex/syn_acortex_lb.sv
+../../dgn/rtl/audio_cortex/syn_clk_mux.sv
+../../dgn/rtl/audio_cortex/syn_i2c_master.sv
+../../dgn/rtl/audio_cortex/syn_wm8731_drvr.sv
+../../dgn/rtl/audio_cortex/syn_audio_cache.sv
+../../dgn/rtl/audio_cortex/syn_acortex.sv

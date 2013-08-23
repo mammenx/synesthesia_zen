@@ -22,10 +22,10 @@
 /*
  --------------------------------------------------------------------------
  -- Project Code      : synesthesia
- -- Interface Name    : syn_vga_intf
+ -- Interface Name    : syn_i2c_intf
  -- Author            : mammenx
- -- Function          : This contains all the signals related to the VGA
-                        interface in DE1 board.
+ -- Function          : This interface contains all the signals for I2C
+                        protocol.
  --------------------------------------------------------------------------
 */
 
@@ -40,33 +40,32 @@
  --------------------------------------------------------------------------
 */
 
-interface syn_vga_intf  #(parameter WIDTH = 4) (input logic clk_ir, rst_il);
+interface syn_i2c_intf  ();
 
   //Logic signals
-  logic [WIDTH-1:0] r;
-  logic [WIDTH-1:0] g;
-  logic [WIDTH-1:0] b;
-  logic             hsync_n;
-  logic             vsync_n;
+  logic   scl;
+  logic   sda_o;
+  logic   sda_i;
+  logic   release_sda;
+
+  //Wire Signals
+  wire    sda;
+
+
+  /*  SDA Tristate Logic  */
+  assign  sda = release_sda ? 1'bz  : sda_o;
+
+  /*  Tap SDA line for input  */
+  assign  sda_i = sda;
 
 
   //Modports
-  modport mp  (
-                output  r,
-                output  g,
-                output  b,
-                output  hsync_n,
-                output  vsync_n
+  modport dut (
+                output  scl,
+                output  sda_o,
+                input   sda_i,
+                output  release_sda
               );
 
-  modport TB  (
-                input   clk_ir,
-                input   rst_il,
-                input   r,
-                input   g,
-                input   b,
-                input   hsync_n,
-                input   vsync_n
-              );
 
-endinterface  //  syn_vga_intf
+endinterface  //  syn_i2c_intf

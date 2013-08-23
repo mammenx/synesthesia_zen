@@ -22,10 +22,10 @@
 /*
  --------------------------------------------------------------------------
  -- Project Code      : synesthesia
- -- Interface Name    : syn_vga_intf
+ -- Package Name      : syn_env_pkg
  -- Author            : mammenx
- -- Function          : This contains all the signals related to the VGA
-                        interface in DE1 board.
+ -- Description       : This package contains functions & definitions used
+                        across the syn_verif_env
  --------------------------------------------------------------------------
 */
 
@@ -40,33 +40,8 @@
  --------------------------------------------------------------------------
 */
 
-interface syn_vga_intf  #(parameter WIDTH = 4) (input logic clk_ir, rst_il);
+package syn_env_pkg;
 
-  //Logic signals
-  logic [WIDTH-1:0] r;
-  logic [WIDTH-1:0] g;
-  logic [WIDTH-1:0] b;
-  logic             hsync_n;
-  logic             vsync_n;
+  typedef enum  int {STATIC=0,  PXL_INC}  fb_init_mode_t;
 
-
-  //Modports
-  modport mp  (
-                output  r,
-                output  g,
-                output  b,
-                output  hsync_n,
-                output  vsync_n
-              );
-
-  modport TB  (
-                input   clk_ir,
-                input   rst_il,
-                input   r,
-                input   g,
-                input   b,
-                input   hsync_n,
-                input   vsync_n
-              );
-
-endinterface  //  syn_vga_intf
+endpackage : syn_env_pkg

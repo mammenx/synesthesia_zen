@@ -2,6 +2,7 @@
 +incdir+../../verif/tb/agents/lb/
 +incdir+../../verif/tb/agents/vcortex/
 +incdir+../../verif/tb/agents/vcortex/sram_agent/
++incdir+../../verif/tb/agents/vcortex/vga_agent/
 +incdir+../../verif/tb/env/
 +incdir+../../verif/tb/env/seq_items/
 +incdir+../../verif/tb/sb/
@@ -28,6 +29,7 @@
 //Packages
 ../../verif/tb/env/syn_math_pkg.sv
 ../../verif/tb/env/syn_image_pkg.sv
+../../verif/tb/env/syn_env_pkg.sv
 
 
 //TB TOP

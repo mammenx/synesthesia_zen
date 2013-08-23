@@ -22,10 +22,10 @@
 /*
  --------------------------------------------------------------------------
  -- Project Code      : synesthesia
- -- Interface Name    : syn_vga_intf
+ -- Package Name      : syn_audio_pkg
  -- Author            : mammenx
- -- Function          : This contains all the signals related to the VGA
-                        interface in DE1 board.
+ -- Description       : This package contains definitions of all Audio
+                        related structures & types.
  --------------------------------------------------------------------------
 */
 
@@ -40,33 +40,23 @@
  --------------------------------------------------------------------------
 */
 
-interface syn_vga_intf  #(parameter WIDTH = 4) (input logic clk_ir, rst_il);
+package syn_audio_pkg;
 
-  //Logic signals
-  logic [WIDTH-1:0] r;
-  logic [WIDTH-1:0] g;
-  logic [WIDTH-1:0] b;
-  logic             hsync_n;
-  logic             vsync_n;
+  //PCM Data structure
+  typedef struct  packed  {
+    logic [31:0]  lchnnl;
+    logic [31:0]  rchnnl;
+  } pcm_data_t;
 
+  //Bits Per Sample data type
+  typedef enum  logic {
+                        BPS_16=0,
+                        BPS_32
+                      } bps_t;
 
-  //Modports
-  modport mp  (
-                output  r,
-                output  g,
-                output  b,
-                output  hsync_n,
-                output  vsync_n
-              );
+  typedef enum  logic {
+                        NORMAL=0,
+                        CAPTURE
+                      } acache_mode_t;
 
-  modport TB  (
-                input   clk_ir,
-                input   rst_il,
-                input   r,
-                input   g,
-                input   b,
-                input   hsync_n,
-                input   vsync_n
-              );
-
-endinterface  //  syn_vga_intf
+endpackage  //  syn_audio_pkg

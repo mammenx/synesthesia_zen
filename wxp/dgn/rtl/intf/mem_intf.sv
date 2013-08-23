@@ -22,10 +22,10 @@
 /*
  --------------------------------------------------------------------------
  -- Project Code      : synesthesia
- -- Interface Name    : syn_vga_intf
+ -- Interface Name    : mem_intf
  -- Author            : mammenx
- -- Function          : This contains all the signals related to the VGA
-                        interface in DE1 board.
+ -- Function          : This interface contains all the signals needed to
+                        read/write data from a RAM block.
  --------------------------------------------------------------------------
 */
 
@@ -40,33 +40,33 @@
  --------------------------------------------------------------------------
 */
 
-interface syn_vga_intf  #(parameter WIDTH = 4) (input logic clk_ir, rst_il);
+interface mem_intf  #(
+                      parameter RAM_DATA_W  = 32,
+                      parameter RAM_ADDR_W  = 7
+                    )
+                    
+                    (input logic clk_ir,  rst_il);
 
   //Logic signals
-  logic [WIDTH-1:0] r;
-  logic [WIDTH-1:0] g;
-  logic [WIDTH-1:0] b;
-  logic             hsync_n;
-  logic             vsync_n;
+  logic [RAM_ADDR_W-1:0]  addr;
+  logic [RAM_DATA_W-1:0]  wdata;
+  logic                   wren;
+  logic [RAM_DATA_W-1:0]  rdata;
 
 
   //Modports
-  modport mp  (
-                output  r,
-                output  g,
-                output  b,
-                output  hsync_n,
-                output  vsync_n
-              );
+  modport master  (
+                    output  addr,
+                    output  wdata,
+                    output  wren,
+                    input   rdata
+                  );
 
-  modport TB  (
-                input   clk_ir,
-                input   rst_il,
-                input   r,
-                input   g,
-                input   b,
-                input   hsync_n,
-                input   vsync_n
-              );
+  modport slave   (
+                    input   addr,
+                    input   wdata,
+                    input   wren,
+                    output  rdata
+                  );
 
-endinterface  //  syn_vga_intf
+endinterface  //  mem_intf

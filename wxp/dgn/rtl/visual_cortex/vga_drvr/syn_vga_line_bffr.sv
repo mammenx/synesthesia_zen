@@ -164,7 +164,7 @@ module syn_vga_line_bffr (
   assign  fsm_intf.ff_rd_data = bffr_rd_ms_sel_f  ? bffr_ram_rd_data_w[P_BFFR_DATA_W-1:P_8B_W]
                                                   : bffr_ram_rd_data_w[P_8B_W-1:0];
 
-  assign  fsm_intf.ff_empty   = (bffr_occ_w >=  P_BFFR_LMARK) ? 1'b1  : 1'b0;
+  assign  fsm_intf.ff_empty   = (bffr_occ_w >=  P_BFFR_LMARK) ? 1'b0  : 1'b1;
 
   assign  bffr_afull_c        = (bffr_occ_w >=  P_BFFR_HMARK) ? 1'b1  : 1'b0;
 

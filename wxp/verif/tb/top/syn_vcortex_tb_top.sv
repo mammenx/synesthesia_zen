@@ -65,6 +65,7 @@
     //Clock Reset signals
     logic   sys_clk_50;
     logic   sys_rst;
+    logic   vga_pxl_clk;
 
 
 
@@ -80,7 +81,7 @@
 
     syn_sram_mem_intf                 sram_mem_intf(sys_clk_50,sys_rst);
 
-    syn_vga_intf#(VGA_RES_W)          vga_intf(sys_clk_50,sys_rst);
+    syn_vga_intf#(VGA_RES_W)          vga_intf(vga_pxl_clk,sys_rst);
     //syn_vga_intf                      vga_intf(sys_clk_50,sys_rst);
     //defparam  vga_intf.WIDTH  = VGA_RES_W;
 
@@ -118,6 +119,18 @@
 
     end
 
+    initial
+    begin
+      vga_pxl_clk = 1;
+
+      @(posedge sys_rst);
+
+      forever
+      begin
+        @(posedge sys_clk_50);
+        vga_pxl_clk = ~vga_pxl_clk;
+      end
+    end
 
 
     /*  DUT */

@@ -29,7 +29,8 @@ rem set TEST_NAME=syn_vcortex_base_test
 rem set TEST_NAME=syn_vcortex_gpu_draw_line_test
 rem set TEST_NAME=syn_vcortex_gpu_draw_bezier_test
 rem set TEST_NAME=syn_vcortex_gpu_fill_test
-set TEST_NAME=syn_vcortex_host_acc_test
+rem set TEST_NAME=syn_vcortex_host_acc_test
+set TEST_NAME=syn_vcortex_vga_test
 
 set TB_TOP=syn_vcortex_tb_top
 
