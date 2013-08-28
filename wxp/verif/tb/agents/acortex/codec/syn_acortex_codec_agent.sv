@@ -47,6 +47,7 @@
                                   parameter       REG_MAP_W     = 9,
                                   parameter       I2C_DATA_W    = 16,
                                   parameter type  I2C_INTF_TYPE = virtual syn_wm8731_intf.TB_I2C,
+                                  parameter type  I2C_PKT_TYPE  = syn_lb_seq_item,
                                   parameter type  PKT_TYPE      = syn_pcm_seq_item,
                                   parameter type  DAC_INTF_TYPE = virtual syn_wm8731_intf.TB_DAC,
                                   parameter type  ADC_INTF_TYPE = virtual syn_wm8731_intf.TB_ADC
@@ -57,6 +58,7 @@
 
     //Declare Seqr, Drvr, Mon, Sb objects
     syn_acortex_codec_i2c_slave#(REG_MAP_W, I2C_DATA_W, I2C_INTF_TYPE)  i2c_slave;
+    syn_acortex_codec_i2c_mon#(I2C_DATA_W,  I2C_PKT_TYPE,I2C_INTF_TYPE) i2c_mon;
     syn_acortex_codec_dac_mon#(REG_MAP_W, PKT_TYPE, DAC_INTF_TYPE)      dac_mon;
     syn_acortex_codec_adc_drvr#(REG_MAP_W,  PKT_TYPE, ADC_INTF_TYPE)    adc_drvr;
     syn_acortex_codec_adc_mon#(REG_MAP_W, PKT_TYPE, ADC_INTF_TYPE)      adc_mon;
@@ -87,6 +89,7 @@
 
       //Build Seqr, Drvr, Mon, Sb objects using Factory
       i2c_slave = syn_acortex_codec_i2c_slave#(REG_MAP_W,I2C_DATA_W,I2C_INTF_TYPE)::type_id::create("i2c_slave",  this);
+      i2c_mon   = syn_acortex_codec_i2c_mon#(I2C_DATA_W,I2C_PKT_TYPE,I2C_INTF_TYPE)::type_id::create("i2c_mon",  this);
       dac_mon   = syn_acortex_codec_dac_mon#(REG_MAP_W,PKT_TYPE,DAC_INTF_TYPE)::type_id::create("dac_mon",  this);
       adc_drvr  = syn_acortex_codec_adc_drvr#(REG_MAP_W,PKT_TYPE,ADC_INTF_TYPE)::type_id::create("adc_drvr",  this);
       adc_mon   = syn_acortex_codec_adc_mon#(REG_MAP_W,PKT_TYPE,ADC_INTF_TYPE)::type_id::create("adc_mon",  this);
@@ -112,10 +115,10 @@
     function  void  disable_agent();
 
       i2c_slave.enable  = 0;
+      i2c_mon.enable    = 0;
       dac_mon.enable    = 0;
       adc_drvr.enable   = 0;
       adc_mon.enable    = 0;
-      adc_seqr.enable   = 0;
 
       ovm_report_info(get_name(),"Disabled myself & kids ...",OVM_LOW);
     endfunction : disable_agent
