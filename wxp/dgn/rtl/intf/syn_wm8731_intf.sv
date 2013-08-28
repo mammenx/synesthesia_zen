@@ -75,5 +75,26 @@ interface syn_wm8731_intf  ();
                     output  dac_lrc
                   );
 
+  `ifdef  SIMULATION
+    modport TB_I2C  (
+                      input   i2c_intf.scl,
+                      output  i2c_intf.sda_tb,
+                      inout   i2c_intf.sda
+                    );
+
+    modport TB_DAC  (
+                      input   bclk,
+                      input   dac_dat,
+                      input   dac_lrc
+                    );
+
+    modport TB_ADC  (
+                      input   bclk,
+                      inout   adc_dat,
+                      input   adc_lrc
+                    );
+
+  `endif
+
 
 endinterface  //  syn_wm8731_intf

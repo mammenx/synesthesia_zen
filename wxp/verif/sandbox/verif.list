@@ -3,6 +3,8 @@
 +incdir+../../verif/tb/agents/vcortex/
 +incdir+../../verif/tb/agents/vcortex/sram_agent/
 +incdir+../../verif/tb/agents/vcortex/vga_agent/
++incdir+../../verif/tb/agents/acortex/
++incdir+../../verif/tb/agents/acortex/codec/
 +incdir+../../verif/tb/env/
 +incdir+../../verif/tb/env/seq_items/
 +incdir+../../verif/tb/sb/

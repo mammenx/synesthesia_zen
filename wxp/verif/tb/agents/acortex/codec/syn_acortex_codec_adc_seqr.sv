@@ -22,10 +22,9 @@
 /*
  --------------------------------------------------------------------------
  -- Project Code      : synesthesia
- -- Interface Name    : syn_i2c_intf
- -- Author            : mammenx
- -- Function          : This interface contains all the signals for I2C
-                        protocol.
+ -- Component Name    : syn_acortex_codec_adc_seqr
+ -- Author            : mammenx 
+ -- Function          : ADC Sequencer class.
  --------------------------------------------------------------------------
 */
 
@@ -40,39 +39,39 @@
  --------------------------------------------------------------------------
 */
 
-interface syn_i2c_intf  ();
+`ifndef __SYN_ACORTEX_CODEC_ADC_SEQR
+`define __SYN_ACORTEX_CODEC_ADC_SEQR
 
-  //Logic signals
-  logic   scl;
-  logic   sda_o;
-  logic   sda_i;
-  logic   release_sda;
+class syn_acortex_codec_adc_seqr  #(type  PKT_TYPE  = syn_pcm_seq_item
+                                  ) extends ovm_sequencer #(PKT_TYPE);
 
-  //Wire Signals
-  wire    sda;
+    /*  Register with factory */
+    `ovm_component_param_utils(syn_acortex_codec_adc_seqr#(PKT_TYPE))
+  
+    OVM_FILE  f;
 
-  `ifdef  SIMULATION
-    //For TB
-    logic   sda_tb;
+    function new (string name = "syn_acortex_codec_adc_seqr", ovm_component parent);
+        super.new(name, parent);
+    endfunction : new
 
-    /*  SDA Tristate Logic  */
-    assign  sda = release_sda ? sda_tb  : sda_o;
-  `else
-    /*  SDA Tristate Logic  */
-    assign  sda = release_sda ? 1'bz  : sda_o;
-  `endif
+    function  void  build();
+      super.build();
 
-  /*  Tap SDA line for input  */
-  assign  sda_i = sda;
+      f = $fopen({"./logs/",get_full_name(),".log"},  "w");
 
+      set_report_default_file(f);
+      set_report_severity_action(OVM_INFO,  OVM_DISPLAY | OVM_LOG);
+      set_report_severity_action(OVM_WARNING, OVM_DISPLAY | OVM_LOG);
+      set_report_severity_action(OVM_ERROR,  OVM_COUNT | OVM_DISPLAY | OVM_LOG);
+      set_report_severity_action(OVM_FATAL,  OVM_EXIT | OVM_DISPLAY | OVM_LOG);
 
-  //Modports
-  modport dut (
-                output  scl,
-                output  sda_o,
-                input   sda_i,
-                output  release_sda
-              );
+      ovm_report_info(get_name(),"Start of build ",OVM_LOW);
 
 
-endinterface  //  syn_i2c_intf
+      ovm_report_info(get_name(),"End of build ",OVM_LOW);
+    endfunction : build
+
+ 
+endclass : syn_acortex_codec_adc_seqr
+
+`endif
