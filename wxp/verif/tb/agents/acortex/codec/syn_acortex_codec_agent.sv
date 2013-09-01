@@ -54,7 +54,7 @@
                                 ) extends ovm_component;
 
     /*  Register with factory */
-    `ovm_component_utils(syn_acortex_codec_agent)
+    `ovm_component_param_utils(syn_acortex_codec_agent#(REG_MAP_W,I2C_DATA_W,I2C_INTF_TYPE,I2C_PKT_TYPE,PKT_TYPE,DAC_INTF_TYPE,ADC_INTF_TYPE))
 
     //Declare Seqr, Drvr, Mon, Sb objects
     syn_acortex_codec_i2c_slave#(REG_MAP_W, I2C_DATA_W, I2C_INTF_TYPE)  i2c_slave;
@@ -106,6 +106,7 @@
       ovm_report_info(get_name(),"START of connect ",OVM_LOW);
 
         //Make port connections
+        adc_drvr.seq_item_port.connect(adc_seqr.seq_item_export);
 
       ovm_report_info(get_name(),"END of connect ",OVM_LOW);
     endfunction

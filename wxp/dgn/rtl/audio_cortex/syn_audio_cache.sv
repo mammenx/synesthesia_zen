@@ -58,11 +58,12 @@ module syn_audio_cache (
   //Fgyrus side
   syn_clk_rst_sync_intf           fgyrus_cr_intf,    //Clock Reset Interface
 
-  mem_intf                        fgyrus_mem_intf,   //slave
+  mem_intf                        fgyrus_lchnnl_mem_intf,   //slave
 
+  mem_intf                        fgyrus_rchnnl_mem_intf,   //slave
 
   //--------------------- Misc Ports (Logic)  -----------
-  fgyrus_pcm_data_rdy_oh
+  output  logic fgyrus_pcm_data_rdy_oh
 
                 );
 
@@ -78,6 +79,8 @@ module syn_audio_cache (
   parameter   P_PCM_RAM_DATA_W      = P_32B_W;
   parameter   P_PCM_RAM_ADDR_W      = 7;
 
+  parameter   P_RAM_RD_DELAY        = 2;
+
 //----------------------- Input Declarations ------------------------------
 
 
@@ -85,10 +88,10 @@ module syn_audio_cache (
 
 
 //----------------------- Output Declarations -----------------------------
-  output                      fgyrus_pcm_data_rdy_oh;
+  //output                      fgyrus_pcm_data_rdy_oh;
 
 //----------------------- Output Register Declaration ---------------------
-  logic                       fgyrus_pcm_data_rdy_oh;
+  //logic                       fgyrus_pcm_data_rdy_oh;
 
 
 //----------------------- Internal Register Declarations ------------------
@@ -101,6 +104,8 @@ module syn_audio_cache (
   logic                         ingr_addr_inc_en_f;
   logic                         egr_data_rdy_f;
 
+  logic [P_RAM_RD_DELAY-1:0]    lpcm_rd_del_f;
+  logic [P_RAM_RD_DELAY-1:0]    rpcm_rd_del_f;
 
 //----------------------- Internal Wire Declarations ----------------------
   logic                         switch_bffrs_c;
@@ -244,7 +249,7 @@ module syn_audio_cache (
   end
 
   //Check when to switch buffers
-  assign switch_bffrs_c = (ingr_addr_f  ==  {P_PCM_RAM_ADDR_W{1'b1}}  ? wmdrvr_ingr_intf.pcm_data_valid : 1'b0;
+  assign switch_bffrs_c = (ingr_addr_f  ==  {P_PCM_RAM_ADDR_W{1'b1}}) ? wmdrvr_ingr_intf.pcm_data_valid : 1'b0;
 
 
   //Mux Port A signals
@@ -254,28 +259,50 @@ module syn_audio_cache (
     begin
       //Buffer 1 is used by ingress & buffer 2 by egress
       pbffr_lchnnl_1a_addr_c          =   ingr_addr_f;
-      pbffr_lchnnl_1a_wdata_c         =   wmdrvr_ingr_intf.pcm_data;
+      pbffr_lchnnl_1a_wdata_c         =   wmdrvr_ingr_intf.pcm_data.lchnnl;
       pbffr_lchnnl_1a_wren_c          =   wmdrvr_ingr_intf.pcm_data_valid;
+
+      pbffr_rchnnl_1a_addr_c          =   ingr_addr_f;
+      pbffr_rchnnl_1a_wdata_c         =   wmdrvr_ingr_intf.pcm_data.rchnnl;
+      pbffr_rchnnl_1a_wren_c          =   wmdrvr_ingr_intf.pcm_data_valid;
+
       wmdrvr_ingr_intf.ack            =   wmdrvr_ingr_intf.pcm_data_valid;
 
       pbffr_lchnnl_2a_addr_c          =   egr_addr_f;
       pbffr_lchnnl_2a_wdata_c         =   0;
       pbffr_lchnnl_2a_wren_c          =   0;
-      wmdrvr_egr_intf.pcm_data        =   pbffr_lchnnl_2a_rdata_w;
+
+      pbffr_rchnnl_2a_addr_c          =   egr_addr_f;
+      pbffr_rchnnl_2a_wdata_c         =   0;
+      pbffr_rchnnl_2a_wren_c          =   0;
+
+      wmdrvr_egr_intf.pcm_data.lchnnl =   pbffr_lchnnl_2a_rdata_w;
+      wmdrvr_egr_intf.pcm_data.rchnnl =   pbffr_rchnnl_2a_rdata_w;
       wmdrvr_egr_intf.pcm_data_valid  =   1'b1;
     end
     else
     begin
       //Buffer 2 is used by ingress & buffer 1 by egress
       pbffr_lchnnl_2a_addr_c          =   ingr_addr_f;
-      pbffr_lchnnl_2a_wdata_c         =   wmdrvr_ingr_intf.pcm_data;
+      pbffr_lchnnl_2a_wdata_c         =   wmdrvr_ingr_intf.pcm_data.lchnnl;
       pbffr_lchnnl_2a_wren_c          =   wmdrvr_ingr_intf.pcm_data_valid;
+
+      pbffr_rchnnl_2a_addr_c          =   ingr_addr_f;
+      pbffr_rchnnl_2a_wdata_c         =   wmdrvr_ingr_intf.pcm_data.rchnnl;
+      pbffr_rchnnl_2a_wren_c          =   wmdrvr_ingr_intf.pcm_data_valid;
+
       wmdrvr_ingr_intf.ack            =   wmdrvr_ingr_intf.pcm_data_valid;
 
       pbffr_lchnnl_1a_addr_c          =   egr_addr_f;
       pbffr_lchnnl_1a_wdata_c         =   0;
       pbffr_lchnnl_1a_wren_c          =   0;
-      wmdrvr_egr_intf.pcm_data        =   pbffr_lchnnl_1a_rdata_w;
+
+      pbffr_rchnnl_1a_addr_c          =   egr_addr_f;
+      pbffr_rchnnl_1a_wdata_c         =   0;
+      pbffr_rchnnl_1a_wren_c          =   0;
+
+      wmdrvr_egr_intf.pcm_data.lchnnl =   pbffr_lchnnl_1a_rdata_w;
+      wmdrvr_egr_intf.pcm_data.rchnnl =   pbffr_rchnnl_1a_rdata_w;
       wmdrvr_egr_intf.pcm_data_valid  =   1'b1;
     end
   end
@@ -283,37 +310,67 @@ module syn_audio_cache (
   //Mux Port B signals
   always_comb
   begin : port_b_mux_logic
-    pbffr_lchnnl_1b_addr_c            =   fgyrus_mem_intf.addr;
-    pbffr_lchnnl_1b_wdata_c           =   fgyrus_mem_intf.wdata;
-    pbffr_lchnnl_1b_wren_c            =   fgyrus_mem_intf.wren;
+    pbffr_lchnnl_1b_addr_c            =   fgyrus_lchnnl_mem_intf.addr;
+    pbffr_lchnnl_1b_wdata_c           =   fgyrus_lchnnl_mem_intf.wdata;
+    pbffr_lchnnl_1b_wren_c            =   fgyrus_lchnnl_mem_intf.wren;
 
-    pbffr_lchnnl_2b_addr_c            =   fgyrus_mem_intf.addr;
-    pbffr_lchnnl_2b_wdata_c           =   fgyrus_mem_intf.wdata;
-    pbffr_lchnnl_2b_wren_c            =   fgyrus_mem_intf.wren;
+    pbffr_lchnnl_2b_addr_c            =   fgyrus_lchnnl_mem_intf.addr;
+    pbffr_lchnnl_2b_wdata_c           =   fgyrus_lchnnl_mem_intf.wdata;
+    pbffr_lchnnl_2b_wren_c            =   fgyrus_lchnnl_mem_intf.wren;
+
+    pbffr_rchnnl_1b_addr_c            =   fgyrus_rchnnl_mem_intf.addr;
+    pbffr_rchnnl_1b_wdata_c           =   fgyrus_rchnnl_mem_intf.wdata;
+    pbffr_rchnnl_1b_wren_c            =   fgyrus_rchnnl_mem_intf.wren;
+
+    pbffr_rchnnl_2b_addr_c            =   fgyrus_rchnnl_mem_intf.addr;
+    pbffr_rchnnl_2b_wdata_c           =   fgyrus_rchnnl_mem_intf.wdata;
+    pbffr_rchnnl_2b_wren_c            =   fgyrus_rchnnl_mem_intf.wren;
 
     if(~bffr_sel_1_n_2_f)
     begin
       //Buffer 1 is used by fgyrus
-      fgyrus_mem_intf.rdata           =   pbffr_lchnnl_1b_rdata_w;
+      fgyrus_lchnnl_mem_intf.rdata    =   pbffr_lchnnl_1b_rdata_w;
+      fgyrus_rchnnl_mem_intf.rdata    =   pbffr_rchnnl_1b_rdata_w;
     end
     else
     begin
       //Buffer 2 is used by fgyrus
-      fgyrus_mem_intf.rdata           =   pbffr_lchnnl_2b_rdata_w;
+      fgyrus_lchnnl_mem_intf.rdata    =   pbffr_lchnnl_2b_rdata_w;
+      fgyrus_rchnnl_mem_intf.rdata    =   pbffr_rchnnl_2b_rdata_w;
+    end
+
+    fgyrus_lchnnl_mem_intf.rd_valid   =   lpcm_rd_del_f[P_RAM_RD_DELAY-1];
+    fgyrus_rchnnl_mem_intf.rd_valid   =   rpcm_rd_del_f[P_RAM_RD_DELAY-1];
+  end
+
+
+  /*  Read Valid Logic  */
+  always_ff@(posedge fgyrus_cr_intf.clk_ir, negedge fgyrus_cr_intf.rst_sync_l)
+  begin : rd_valid_logic
+    if(~fgyrus_cr_intf.rst_sync_l)
+    begin
+      lpcm_rd_del_f           <=  0;
+      rpcm_rd_del_f           <=  0;
+    end
+    else
+    begin
+      lpcm_rd_del_f           <=  {lpcm_rd_del_f[P_RAM_RD_DELAY-2],fgyrus_lchnnl_mem_intf.rden};
+      rpcm_rd_del_f           <=  {rpcm_rd_del_f[P_RAM_RD_DELAY-2],fgyrus_lchnnl_mem_intf.rden};
     end
   end
+
 
   /*  Instantiate PCM Buffer set 1  */
   pcm_sample_ram  pcm_bffr_lchnnl_1_inst
   (
-    .aclr_a       (~cr_intf.rst_il),
+    .aclr_a       (~cr_intf.rst_sync_l),
     .clock_a      (cr_intf.clk_ir),
     .address_a    (pbffr_lchnnl_1a_addr_c),
     .data_a       (pbffr_lchnnl_1a_wdata_c),
     .wren_a       (pbffr_lchnnl_1a_wren_c),
     .q_a          (pbffr_lchnnl_1a_rdata_w),
 
-    .aclr_b       (~fgyrus_cr_intf.rst_il),
+    .aclr_b       (~fgyrus_cr_intf.rst_sync_l),
     .clock_b      (fgyrus_cr_intf.clk_ir),
     .address_b    (pbffr_lchnnl_1b_addr_c),
     .data_b       (pbffr_lchnnl_1b_wdata_c),
@@ -323,14 +380,14 @@ module syn_audio_cache (
 
   pcm_sample_ram  pcm_bffr_rchnnl_1_inst
   (
-    .aclr_a       (~cr_intf.rst_il),
+    .aclr_a       (~cr_intf.rst_sync_l),
     .clock_a      (cr_intf.clk_ir),
     .address_a    (pbffr_rchnnl_1a_addr_c),
     .data_a       (pbffr_rchnnl_1a_wdata_c),
     .wren_a       (pbffr_rchnnl_1a_wren_c),
     .q_a          (pbffr_rchnnl_1a_rdata_w),
 
-    .aclr_b       (~fgyrus_cr_intf.rst_il),
+    .aclr_b       (~fgyrus_cr_intf.rst_sync_l),
     .clock_b      (fgyrus_cr_intf.clk_ir),
     .address_b    (pbffr_rchnnl_1b_addr_c),
     .data_b       (pbffr_rchnnl_1b_wdata_c),
@@ -341,14 +398,14 @@ module syn_audio_cache (
   /*  Instantiate PCM Buffer set 2  */
   pcm_sample_ram  pcm_bffr_lchnnl_2_inst
   (
-    .aclr_a       (~cr_intf.rst_il),
+    .aclr_a       (~cr_intf.rst_sync_l),
     .clock_a      (cr_intf.clk_ir),
     .address_a    (pbffr_lchnnl_2a_addr_c),
     .data_a       (pbffr_lchnnl_2a_wdata_c),
     .wren_a       (pbffr_lchnnl_2a_wren_c),
     .q_a          (pbffr_lchnnl_2a_rdata_w),
 
-    .aclr_b       (~fgyrus_cr_intf.rst_il),
+    .aclr_b       (~fgyrus_cr_intf.rst_sync_l),
     .clock_b      (fgyrus_cr_intf.clk_ir),
     .address_b    (pbffr_lchnnl_2b_addr_c),
     .data_b       (pbffr_lchnnl_2b_wdata_c),
@@ -358,14 +415,14 @@ module syn_audio_cache (
 
   pcm_sample_ram  pcm_bffr_rchnnl_2_inst
   (
-    .aclr_a       (~cr_intf.rst_il),
+    .aclr_a       (~cr_intf.rst_sync_l),
     .clock_a      (cr_intf.clk_ir),
     .address_a    (pbffr_rchnnl_2a_addr_c),
     .data_a       (pbffr_rchnnl_2a_wdata_c),
     .wren_a       (pbffr_rchnnl_2a_wren_c),
     .q_a          (pbffr_rchnnl_2a_rdata_w),
 
-    .aclr_b       (~fgyrus_cr_intf.rst_il),
+    .aclr_b       (~fgyrus_cr_intf.rst_sync_l),
     .clock_b      (fgyrus_cr_intf.clk_ir),
     .address_b    (pbffr_rchnnl_2b_addr_c),
     .data_b       (pbffr_rchnnl_2b_wdata_c),

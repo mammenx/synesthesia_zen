@@ -107,14 +107,17 @@
 
       if(enable)
       begin
-        intf.i2c_intf.sda_tb = 'bz;
+        intf.sda_o      <= 1;
+        intf.sda_tb_en  <= 0;
+
+        @(posedge intf.rst_il);
 
         forever
         begin
           ovm_report_info({get_name(),"[run]"},"Waiting for <Start> ...",OVM_LOW);
 
-          @(negedge intf.i2c_intf.sda);
-          @(negedge intf.i2c_intf.scl);
+          @(negedge intf.sda);
+          @(negedge intf.scl);
 
           ovm_report_info({get_name(),"[run]"},"<Start> detected ...",OVM_LOW);
 
@@ -122,42 +125,44 @@
 
           repeat(7)
           begin
-            @(posedge intf.i2c_intf.scl);
+            @(posedge intf.scl);
             #1;
 
-            addr  = (addr <<  1)  + intf.i2c_intf.sda; //sample address bits
+            addr  = (addr <<  1)  + intf.sda; //sample address bits
           end
 
           ovm_report_info({get_name(),"[run]"},$psprintf("Got address : 0x%x",addr),OVM_LOW);
 
-          @(posedge intf.i2c_intf.scl);
+          @(posedge intf.scl);
           #1;
 
-          rd_n_wr = intf.i2c_intf.sda;   //sample RD/nWR bit
+          rd_n_wr = intf.sda;   //sample RD/nWR bit
 
           ovm_report_info({get_name(),"[run]"},$psprintf("Got Read/nWr : 0x%x",rd_n_wr),OVM_LOW);
 
-          @(posedge intf.i2c_intf.scl)
+          @(posedge intf.scl)
           #2;
 
           if({addr,rd_n_wr}  ==  dev_addr)  //Device address
           begin
             ovm_report_info({get_name(),"[run]"},$psprintf("Driving ACK"),OVM_LOW);
-            intf.i2c_intf.sda_tb = 0;
+            intf.sda_o      <=  0;
+            intf.sda_tb_en  <=  1;
 
-            @(negedge intf.i2c_intf.scl);
-            intf.i2c_intf.sda_tb = 'bz;
+            @(negedge intf.scl);
+            intf.sda_tb_en  <=  0;
           end
           else
           begin
             ovm_report_error({get_name(),"[run]"},$psprintf("Driving NACK"),OVM_LOW);
-            intf.i2c_intf.sda_tb = 1;
+            intf.sda_o      <=  1;
+            intf.sda_tb_en  <=  1;
 
-            @(negedge intf.i2c_intf.scl);
-            intf.i2c_intf.sda_tb = 'bz;
+            @(negedge intf.scl);
+            intf.sda_tb_en  <=  0;
 
-            @(posedge intf.i2c_intf.scl);
-            @(posedge intf.i2c_intf.sda);
+            @(posedge intf.scl);
+            @(posedge intf.sda);
             ovm_report_info({get_name(),"[run]"},$psprintf("<STOP> detected ...\n\n\n"),OVM_LOW);
 
             continue;
@@ -169,24 +174,25 @@
           begin
             repeat(8)
             begin
-              @(posedge intf.i2c_intf.scl);
+              @(posedge intf.scl);
               #1;
 
-              data  = (data <<  1)  + intf.i2c_intf.sda;
+              data  = (data <<  1)  + intf.sda;
             end
 
-            @(posedge intf.i2c_intf.scl);
+            @(posedge intf.scl);
             #2;
 
             ovm_report_info({get_name(),"[run]"},$psprintf("Driving ACK"),OVM_LOW);
-            intf.i2c_intf.sda_tb = 0;
+            intf.sda_o      <=  0;
+            intf.sda_tb_en  <=  1;
 
-            @(negedge intf.i2c_intf.scl);
-            intf.i2c_intf.sda_tb = 'bz;
+            @(negedge intf.scl);
+            intf.sda_tb_en  <=  0;
           end
 
-          @(posedge intf.i2c_intf.scl);
-          @(posedge intf.i2c_intf.sda);
+          @(posedge intf.scl);
+          @(posedge intf.sda);
           ovm_report_info({get_name(),"[run]"},$psprintf("<STOP> detected ...\n\n\n"),OVM_LOW);
 
           if(reg_map.chk_addr_exist(data[DATA_W-1:REG_MAP_W]) ==  syn_reg_map#(REG_MAP_W)::SUCCESS)

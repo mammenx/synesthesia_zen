@@ -52,15 +52,18 @@ module syn_acortex (
 
   syn_wm8731_intf                 wm8731_intf,
 
+  syn_clk_vec_intf                clk_vec_intf,
+
   //Fgyrus side
   syn_clk_rst_sync_intf           fgyrus_cr_intf,    //Clock Reset Interface
 
-  mem_intf                        fgyrus_mem_intf,   //slave
+  mem_intf                        fgyrus_lchnnl_mem_intf,   //slave
+
+  mem_intf                        fgyrus_rchnnl_mem_intf,   //slave
 
   //--------------------- Misc Ports (Logic)  -----------
-  fgyrus_pcm_data_rdy_oh,
+  output logic  fgyrus_pcm_data_rdy_oh
 
-  clk_vec_ir
                 );
 
 //----------------------- Global parameters Declarations ------------------
@@ -68,13 +71,13 @@ module syn_acortex (
   parameter   P_NUM_CLOCKS          = 4;
 
 //----------------------- Input Declarations ------------------------------
-  input logic [P_NUM_CLOCKS-1:0]  clk_vec_ir;
+
 
 //----------------------- Inout Declarations ------------------------------
 
 
 //----------------------- Output Declarations -----------------------------
-  output  logic               fgyrus_pcm_data_rdy_oh;
+  //logic                       fgyrus_pcm_data_rdy_oh;
 
 //----------------------- Output Register Declaration ---------------------
 
@@ -86,9 +89,9 @@ module syn_acortex (
 
 
 //----------------------- Internal Interface Declarations -----------------
-  syn_acortex_lb_bus_intf     acortex_lb_bus_intf(cr_intf.clk_ir, cr_intf.rst_il);
-  syn_pcm_xfr_intf            wmdrvr2acache_pcm_intf(cr_intf.clk_ir,  cr_intf.rst_il);
-  syn_pcm_xfr_intf            acache2wmdrvr_pcm_intf(cr_intf.clk_ir,  cr_intf.rst_il);
+  syn_acortex_lb_bus_intf     acortex_lb_bus_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
+  syn_pcm_xfr_intf            wmdrvr2acache_pcm_intf(cr_intf.clk_ir,  cr_intf.rst_sync_l);
+  syn_pcm_xfr_intf            acache2wmdrvr_pcm_intf(cr_intf.clk_ir,  cr_intf.rst_sync_l);
 
 
 //----------------------- Start of Code -----------------------------------
@@ -125,7 +128,7 @@ module syn_acortex (
 
     .wm8731_intf      (wm8731_intf.cmux),
 
-    .clk_vec_ir       (clk_vec_ir)
+    .clk_vec_intf     (clk_vec_intf)
 
   );
 
@@ -157,7 +160,9 @@ module syn_acortex (
 
     .fgyrus_cr_intf         (fgyrus_cr_intf),
 
-    .fgyrus_mem_intf        (fgyrus_mem_intf),
+    .fgyrus_lchnnl_mem_intf (fgyrus_lchnnl_mem_intf),
+
+    .fgyrus_rchnnl_mem_intf (fgyrus_rchnnl_mem_intf),
 
     .fgyrus_pcm_data_rdy_oh (fgyrus_pcm_data_rdy_oh)
 

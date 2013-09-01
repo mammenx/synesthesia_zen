@@ -22,10 +22,9 @@
 /*
  --------------------------------------------------------------------------
  -- Project Code      : synesthesia
- -- Interface Name    : mem_intf
+ -- Component Name    : syn_pcm_mem_seqr
  -- Author            : mammenx
- -- Function          : This interface contains all the signals needed to
-                        read/write data from a RAM block.
+ -- Function          : PCM Memory Sequencer
  --------------------------------------------------------------------------
 */
 
@@ -40,39 +39,45 @@
  --------------------------------------------------------------------------
 */
 
-interface mem_intf  #(
-                      parameter RAM_DATA_W  = 32,
-                      parameter RAM_ADDR_W  = 7
-                    )
-                    
-                    (input logic clk_ir,  rst_il);
 
-  //Logic signals
-  logic [RAM_ADDR_W-1:0]  addr;
-  logic [RAM_DATA_W-1:0]  wdata;
-  logic                   wren;
-  logic                   rden;
-  logic [RAM_DATA_W-1:0]  rdata;
-  logic                   rd_valid;
+`ifndef __SYN_PCM_MEM_SEQR
+`define __SYN_PCM_MEM_SEQR
+
+class syn_pcm_mem_seqr #(type  PKT_TYPE  = syn_pcm_seq_item
+                        )
+                        extends ovm_sequencer #(PKT_TYPE,PKT_TYPE); //req, rsp
+
+    /*  Register with factory */
+    `ovm_component_param_utils(syn_pcm_mem_seqr#(PKT_TYPE))
+  
+    OVM_FILE  f;
 
 
-  //Modports
-  modport master  (
-                    output  addr,
-                    output  wdata,
-                    output  wren,
-                    output  rden,
-                    input   rdata,
-                    input   rd_valid
-                  );
+    /* Constructor  */
+    function new (string name = "syn_pcm_mem_seqr", ovm_component parent);
+        super.new(name, parent);
+    endfunction : new
 
-  modport slave   (
-                    input   addr,
-                    input   wdata,
-                    input   wren,
-                    input   rden,
-                    output  rdata,
-                    output  rd_valid
-                  );
 
-endinterface  //  mem_intf
+    /*  Build */
+    function  void  build();
+      super.build();
+
+      f = $fopen({"./logs/",get_full_name(),".log"},  "w");
+
+      set_report_default_file(f);
+      set_report_severity_action(OVM_INFO,  OVM_DISPLAY | OVM_LOG);
+      set_report_severity_action(OVM_WARNING, OVM_DISPLAY | OVM_LOG);
+      set_report_severity_action(OVM_ERROR,  OVM_COUNT | OVM_DISPLAY | OVM_LOG);
+      set_report_severity_action(OVM_FATAL,  OVM_EXIT | OVM_DISPLAY | OVM_LOG);
+
+      ovm_report_info(get_name(),"Start of build ",OVM_LOW);
+
+
+      ovm_report_info(get_name(),"End of build ",OVM_LOW);
+    endfunction : build
+
+ 
+endclass : syn_pcm_mem_seqr
+
+`endif

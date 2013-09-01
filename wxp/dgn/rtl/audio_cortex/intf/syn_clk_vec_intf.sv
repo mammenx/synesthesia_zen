@@ -22,10 +22,9 @@
 /*
  --------------------------------------------------------------------------
  -- Project Code      : synesthesia
- -- Interface Name    : mem_intf
+ -- Interface Name    : syn_clk_vec_intf
  -- Author            : mammenx
- -- Function          : This interface contains all the signals needed to
-                        read/write data from a RAM block.
+ -- Function          : This interface holds the set of clock lines.
  --------------------------------------------------------------------------
 */
 
@@ -40,39 +39,10 @@
  --------------------------------------------------------------------------
 */
 
-interface mem_intf  #(
-                      parameter RAM_DATA_W  = 32,
-                      parameter RAM_ADDR_W  = 7
-                    )
-                    
-                    (input logic clk_ir,  rst_il);
-
-  //Logic signals
-  logic [RAM_ADDR_W-1:0]  addr;
-  logic [RAM_DATA_W-1:0]  wdata;
-  logic                   wren;
-  logic                   rden;
-  logic [RAM_DATA_W-1:0]  rdata;
-  logic                   rd_valid;
-
+interface syn_clk_vec_intf  #(parameter P_NUM_CLOCKS  = 4) (input logic  [P_NUM_CLOCKS-1:0]  clk_vec); 
 
   //Modports
-  modport master  (
-                    output  addr,
-                    output  wdata,
-                    output  wren,
-                    output  rden,
-                    input   rdata,
-                    input   rd_valid
-                  );
+  modport dut (input  clk_vec);
 
-  modport slave   (
-                    input   addr,
-                    input   wdata,
-                    input   wren,
-                    input   rden,
-                    output  rdata,
-                    output  rd_valid
-                  );
 
-endinterface  //  mem_intf
+endinterface  //  syn_clk_vec_intf

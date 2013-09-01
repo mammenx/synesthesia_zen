@@ -44,9 +44,9 @@
 `define __ACORTEX_CODEC_ADC_MON
 
   class syn_acortex_codec_adc_mon   #(parameter REG_MAP_W = 9,
-                                      type  PKT_TYPE  = syn_pcm_seq_item,
-                                      type  INTF_TYPE = virtual syn_aud_codec_if.TB_ADC
-                                    ) extends ovm_component  #(PKT_TYPE);
+                                      parameter type  PKT_TYPE  = syn_pcm_seq_item,
+                                      parameter type  INTF_TYPE = virtual syn_aud_codec_if.TB_ADC
+                                    ) extends ovm_component;
 
     INTF_TYPE intf;
 
@@ -97,7 +97,7 @@
       begin
         ovm_report_info({get_name(),"[run]"},"Start of run ",OVM_LOW);
 
-        @(posedge intf.sys_rst);  //wait for reset
+        @(posedge intf.rst_il);  //wait for reset
 
         case(reg_map.get_field("iwl"))
 
@@ -121,7 +121,7 @@
 
           for(int i=bps;  i>0;  i--)
           begin
-            @(negedge intf.dac_bclk);
+            @(negedge intf.bclk);
             #12ns;
 
             pkt.pcm_data[0].lchnnl[i-1] = intf.adc_dat;
@@ -136,7 +136,7 @@
 
           for(int i=bps;  i>0;  i--)
           begin
-            @(negedge intf.dac_bclk);
+            @(negedge intf.bclk);
             #12ns;
 
             pkt.pcm_data[0].rchnnl[i-1] = intf.adc_dat;

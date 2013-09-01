@@ -86,13 +86,13 @@
 
 
     task run();
-      PKT_TYPE  pkt = new();
+      PKT_TYPE  pkt;
 
       ovm_report_info({get_name(),"[run]"},"Start of run ",OVM_LOW);
 
       drive_rst();
 
-      @(posedge intf.sys_rst);  //wait for reset
+      @(posedge intf.rst_il);  //wait for reset
 
       if(enable)
       begin
@@ -144,7 +144,7 @@
 
         for(int i=bps;  i>0;  i--)
         begin
-          @(negedge intf.dac_bclk);
+          @(negedge intf.bclk);
           #10ns;  //propagation delay given in spec
 
           intf.adc_dat  <=  ldata[i-1];
@@ -154,7 +154,7 @@
 
         for(int i=bps;  i>0;  i--)
         begin
-          @(negedge intf.dac_bclk);
+          @(negedge intf.bclk);
           #10ns;  //propagation delay given in spec
 
           intf.adc_dat  <=  rdata[i-1];

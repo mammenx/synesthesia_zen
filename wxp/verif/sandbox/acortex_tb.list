@@ -1,0 +1,42 @@
+//Sequence items
+`include  "syn_lb_seq_item.sv"
+`include  "syn_pcm_seq_item.sv"
+
+//RAL
+`include  "syn_reg_map.sv"
+
+//Agents
+`include  "syn_lb_drvr.sv"
+`include  "syn_lb_mon.sv"
+`include  "syn_lb_seqr.sv"
+`include  "syn_lb_agent.sv"
+
+`include  "syn_pcm_mem_drvr.sv"
+`include  "syn_pcm_mem_mon.sv"
+`include  "syn_pcm_mem_seqr.sv"
+`include  "syn_pcm_mem_agent.sv"
+
+`include  "syn_acortex_codec_adc_drvr.sv"
+`include  "syn_acortex_codec_adc_mon.sv"
+`include  "syn_acortex_codec_adc_seqr.sv"
+`include  "syn_acortex_codec_dac_mon.sv"
+`include  "syn_acortex_codec_i2c_slave.sv"
+`include  "syn_acortex_codec_i2c_mon.sv"
+`include  "syn_acortex_codec_agent.sv"
+
+//Sniffers
+
+//Scoreboards
+`include  "syn_adc_sb.sv"
+`include  "syn_dac_sb.sv"
+`include  "syn_i2c_sb.sv"
+
+//Environments
+`include  "syn_acortex_env.sv"
+
+
+//Sequences
+
+
+//Tests
+`include  "syn_acortex_base_test.sv"

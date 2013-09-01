@@ -107,6 +107,8 @@
 
       if(enable)
       begin
+        @(posedge intf.rst_il);
+
         forever
         begin
           ovm_report_info({get_name(),"[run]"},$psprintf("Waiting for LRC ..."),OVM_LOW);
@@ -136,14 +138,14 @@
 
           repeat(bps)
           begin
-            @(posedge intf.dac_bclk);
+            @(posedge intf.bclk);
             pkt.pcm_data[0].lchnnl  = (pkt.pcm_data[0].lchnnl <<  1)  + intf.dac_dat;
           end
 
 
           repeat(bps)
           begin
-            @(posedge intf.dac_bclk);
+            @(posedge intf.bclk);
             pkt.pcm_data[0].rchnnl  = (pkt.pcm_data[0].rchnnl <<  1)  + intf.dac_dat;
           end
 

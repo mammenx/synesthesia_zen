@@ -53,6 +53,7 @@
 
 ../../dgn/rtl/audio_cortex/intf/syn_acortex_lb_bus_intf.sv
 ../../dgn/rtl/audio_cortex/intf/syn_pcm_xfr_intf.sv
+../../dgn/rtl/audio_cortex/intf/syn_clk_vec_intf.sv
 
 
 //Vcortex

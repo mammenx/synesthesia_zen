@@ -5,16 +5,21 @@
 +incdir+../../verif/tb/agents/vcortex/vga_agent/
 +incdir+../../verif/tb/agents/acortex/
 +incdir+../../verif/tb/agents/acortex/codec/
++incdir+../../verif/tb/agents/pcm_mem/
 +incdir+../../verif/tb/env/
 +incdir+../../verif/tb/env/seq_items/
 +incdir+../../verif/tb/sb/
 +incdir+../../verif/tb/sb/vcortex/
++incdir+../../verif/tb/sb/acortex/
 +incdir+../../verif/tb/seq/
 +incdir+../../verif/tb/seq/vcortex/
++incdir+../../verif/tb/seq/acortex/
 +incdir+../../verif/tb/sniffers/
 +incdir+../../verif/tb/tests/
 +incdir+../../verif/tb/tests/vcortex/
++incdir+../../verif/tb/tests/acortex/
 +incdir+../../dgn/rtl/visual_cortex/
++incdir+../../dgn/rtl/audio_cortex/
 +incdir+../../dgn/rtl/cortex_top/
 
 //System Verilog DPI
@@ -27,6 +32,7 @@
 //Interfaces
 ../../verif/tb/env/interfaces/syn_lb_tb_intf.sv
 ../../verif/tb/env/interfaces/syn_pxl_xfr_tb_intf.sv
+../../verif/tb/env/interfaces/syn_pcm_mem_intf.sv
 
 //Packages
 ../../verif/tb/env/syn_math_pkg.sv
@@ -36,3 +42,4 @@
 
 //TB TOP
 ../../verif/tb/top/syn_vcortex_tb_top.sv
+../../verif/tb/top/syn_acortex_tb_top.sv

@@ -51,7 +51,7 @@
     rand  pcm_data_t  pcm_data[];
 
     //registering with factory
-    `ovm_object_param_utils_begin(syn_pcm_seq_item)
+    `ovm_object_utils_begin(syn_pcm_seq_item)
       `ovm_field_array_int(pcm_data,  OVM_ALL_ON | OVM_HEX);
     `ovm_object_utils_end
 

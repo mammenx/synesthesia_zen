@@ -22,10 +22,10 @@
 /*
  --------------------------------------------------------------------------
  -- Project Code      : synesthesia
- -- Interface Name    : mem_intf
+ -- Interface Name    : syn_pcm_mem_intf
  -- Author            : mammenx
- -- Function          : This interface contains all the signals needed to
-                        read/write data from a RAM block.
+ -- Function          : This interace contains all the signals required to
+                        transfer PCM data from Acortex to Fgyrus.
  --------------------------------------------------------------------------
 */
 
@@ -40,39 +40,38 @@
  --------------------------------------------------------------------------
 */
 
-interface mem_intf  #(
-                      parameter RAM_DATA_W  = 32,
-                      parameter RAM_ADDR_W  = 7
-                    )
-                    
-                    (input logic clk_ir,  rst_il);
+interface syn_pcm_mem_intf  #(DATA_W=32,ADDR_W=7) (input logic clk_ir,rst_il);
 
   //Logic signals
-  logic [RAM_ADDR_W-1:0]  addr;
-  logic [RAM_DATA_W-1:0]  wdata;
-  logic                   wren;
-  logic                   rden;
-  logic [RAM_DATA_W-1:0]  rdata;
-  logic                   rd_valid;
+  wire                     pcm_data_rdy;
+  wire [ADDR_W-1:0]        pcm_addr;
+  wire [DATA_W-1:0]        lpcm_wdata;
+  wire [DATA_W-1:0]        rpcm_wdata;
+  wire                     pcm_wren;
+  wire                     pcm_rden;
+  wire [DATA_W-1:0]        lpcm_rdata;
+  wire [DATA_W-1:0]        rpcm_rdata;
+  wire                     pcm_rd_valid;
+
+  //Clocking Blocks
+  clocking  cb  @(posedge clk_ir);
+    default input #2ns  output  #2ns;
+
+    inout   pcm_data_rdy;
+    inout   pcm_addr;
+    inout   lpcm_wdata;
+    inout   rpcm_wdata;
+    inout   pcm_wren;
+    inout   pcm_rden;
+    inout   lpcm_rdata;
+    inout   rpcm_rdata;
+    inout   pcm_rd_valid;
+
+  endclocking : cb
 
 
   //Modports
-  modport master  (
-                    output  addr,
-                    output  wdata,
-                    output  wren,
-                    output  rden,
-                    input   rdata,
-                    input   rd_valid
-                  );
+  modport TB  (input   clk_ir,rst_il, clocking  cb);
 
-  modport slave   (
-                    input   addr,
-                    input   wdata,
-                    input   wren,
-                    input   rden,
-                    output  rdata,
-                    output  rd_valid
-                  );
 
-endinterface  //  mem_intf
+endinterface  //  syn_pcm_mem_intf

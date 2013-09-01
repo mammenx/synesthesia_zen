@@ -46,7 +46,7 @@
 
 //Implicit port declarations
 `ovm_analysis_imp_decl(_i2c_pkt)
-`ovm_analysis_imp_decl(_lb_pkt)
+`ovm_analysis_imp_decl(_i2c_sb_lb_pkt)
 
   class syn_i2c_sb  #(parameter I2C_DATA_W= 16,
                       type  SENT_PKT_TYPE = syn_lb_seq_item,
@@ -57,15 +57,15 @@
  
 
     /*  Register with Factory */
-    `ovm_component_param_utils(syn_i2c_sb#(SENT_PKT_TYPE, RCVD_PKT_TYPE))
+    `ovm_component_param_utils(syn_i2c_sb#(I2C_DATA_W,  SENT_PKT_TYPE, RCVD_PKT_TYPE))
 
     //Queue to hold the sent pkts, till rcvd pkts come
     RCVD_PKT_TYPE sent_que[$];
     RCVD_PKT_TYPE rcvd_que[$];
 
     //Ports
-    ovm_analysis_imp_lb_pkt #(SENT_PKT_TYPE,syn_i2c_sb)   Mon_lb_2Sb_port;
-    ovm_analysis_imp_i2c_pkt #(RCVD_PKT_TYPE,syn_i2c_sb)  Mon_i2c_2Sb_port;
+    ovm_analysis_imp_i2c_sb_lb_pkt #(SENT_PKT_TYPE,syn_i2c_sb#(I2C_DATA_W,SENT_PKT_TYPE,RCVD_PKT_TYPE))   Mon_lb_2Sb_port;
+    ovm_analysis_imp_i2c_pkt #(RCVD_PKT_TYPE,syn_i2c_sb#(I2C_DATA_W,SENT_PKT_TYPE,RCVD_PKT_TYPE))  Mon_i2c_2Sb_port;
 
     OVM_FILE  f;
 
@@ -104,12 +104,12 @@
 
     /*
       * Write LB Pkt
-      * This function will be called each time a pkt is written into [ovm_analysis_imp_lb_pkt]Mon_lb_2Sb_port
+      * This function will be called each time a pkt is written into [ovm_analysis_imp_i2c_sb_lb_pkt]Mon_lb_2Sb_port
     */
-    virtual function void write_lb_pkt(input SENT_PKT_TYPE  pkt);
+    virtual function void write_i2c_sb_lb_pkt(input SENT_PKT_TYPE  pkt);
       RCVD_PKT_TYPE i2c_pkt;
 
-      ovm_report_info({get_name(),"[write_lb_pkt]"},$psprintf("Received pkt\n%s",pkt.sprint()),OVM_LOW);
+      ovm_report_info({get_name(),"[write_i2c_sb_lb_pkt]"},$psprintf("Received pkt\n%s",pkt.sprint()),OVM_LOW);
 
       if((pkt.lb_xtn  ==  WRITE)  ||  (pkt.lb_xtn ==  BURST_WRITE))
       begin
@@ -118,12 +118,12 @@
           if(pkt.addr[i]  ==  {ACORTEX_I2CM_CODE,ACORTEX_I2CM_ADDR_REG_ADDR})
           begin
             $cast({i2c_addr,i2c_rd_n_wr}, pkt.data[i]);
-            ovm_report_info({get_name(),"[write_lb_pkt]"},$psprintf("Updated i2c_addr[0x%x], i2c_rd_n_wr[0x%x]",i2c_addr,i2c_rd_n_wr),OVM_LOW);
+            ovm_report_info({get_name(),"[write_i2c_sb_lb_pkt]"},$psprintf("Updated i2c_addr[0x%x], i2c_rd_n_wr[0x%x]",i2c_addr,i2c_rd_n_wr),OVM_LOW);
           end
           else if(pkt.addr[i] ==  ACORTEX_I2CM_DATA_REG_ADDR)
           begin
             $cast(i2c_data, pkt.data[i]);
-            ovm_report_info({get_name(),"[write_lb_pkt]"},$psprintf("Updated i2c_data[0x%x]",i2c_data),OVM_LOW);
+            ovm_report_info({get_name(),"[write_i2c_sb_lb_pkt]"},$psprintf("Updated i2c_data[0x%x]",i2c_data),OVM_LOW);
           end
           else if(pkt.addr[i] ==  ACORTEX_I2CM_STATUS_REG_ADDR)
           begin
@@ -144,14 +144,14 @@
               i2c_pkt.lb_xtn  = WRITE;
 
             //Push packet into sent queue
-            ovm_report_info({get_name(),"[write_lb_pkt]"},$psprintf("Adding pkt to sent_que[$]\n%s",i2c_pkt.sprint()),OVM_LOW);
+            ovm_report_info({get_name(),"[write_i2c_sb_lb_pkt]"},$psprintf("Adding pkt to sent_que[$]\n%s",i2c_pkt.sprint()),OVM_LOW);
             sent_que.push_back(i2c_pkt);
           end
         end
       end
 
-      ovm_report_info({get_name(),"[write_lb_pkt]"},$psprintf("There are %d items in sent_que[$]",sent_que.size()),OVM_LOW);
-    endfunction : write_lb_pkt
+      ovm_report_info({get_name(),"[write_i2c_sb_lb_pkt]"},$psprintf("There are %d items in sent_que[$]",sent_que.size()),OVM_LOW);
+    endfunction : write_i2c_sb_lb_pkt
 
 
     /*
@@ -177,7 +177,7 @@
       begin
         //Wait for items to arrive in sent & rcvd queues
         ovm_report_info({get_name(),"[run]"},"Waiting on queues ...",OVM_LOW);
-        while(sent_que.size() &&  rcvd_que.size())  #1;
+        while(!sent_que.size() &&  !rcvd_que.size())  #1;
 
         expctd_pkt  = sent_que.pop_front();
         actual_pkt  = rcvd_que.pop_front();

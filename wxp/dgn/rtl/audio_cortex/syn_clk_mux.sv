@@ -45,7 +45,6 @@
 
 
 module syn_clk_mux (
-
   //--------------------- Interfaces --------------------
   syn_clk_rst_sync_intf           cr_intf,      //Clock Reset Interface
 
@@ -53,8 +52,7 @@ module syn_clk_mux (
 
   syn_wm8731_intf                 wm8731_intf,
 
-  //--------------------- Misc Ports (Logic)  -----------
-  clk_vec_ir    //Input Clock lines
+  syn_clk_vec_intf                clk_vec_intf    //Input Clock lines
 
                 );
 
@@ -70,7 +68,7 @@ module syn_clk_mux (
   localparam  P_CLK_SEL_W           = $clog2(P_NUM_CLOCKS);
 
 //----------------------- Input Declarations ------------------------------
-  input   logic [P_NUM_CLOCKS-1:0]  clk_vec_ir;
+
 
 //----------------------- Output Declarations -----------------------------
 
@@ -150,7 +148,7 @@ module syn_clk_mux (
   generate
     for(i=0;  i<P_NUM_CLOCKS;  i=i+1)
     begin : clk_sync_xeno
-      dd_sync dd_sync_clk_inst(.clk_ir    (clk_vec_ir[i]),
+      dd_sync dd_sync_clk_inst(.clk_ir    (clk_vec_intf.clk_vec[i]),
                                .rst_il    (cr_intf.rst_sync_l),
                                .signal_id (clk_en_vec_c[i]),
                                .signal_od (clk_en_vec_sync_w[i])
@@ -159,7 +157,7 @@ module syn_clk_mux (
       //Check if any of the other signals are still high!
       if(i==0)
       begin
-        assign  xeno_hot_chk_vec_c[i] = |(clk_en_vec_sync_w[P_NO_CLOCKS-1:i+1]);
+        assign  xeno_hot_chk_vec_c[i] = |(clk_en_vec_sync_w[P_NUM_CLOCKS-1:i+1]);
       end
       else if(i==P_NUM_CLOCKS-1)
       begin
@@ -167,13 +165,13 @@ module syn_clk_mux (
       end
       else
       begin
-        assign  xeno_hot_chk_vec_c[i] = |({clk_en_vec_sync_w[P_NO_CLOCKS-1:i+1],  clk_en_vec_sync_w[i-1:0]});
+        assign  xeno_hot_chk_vec_c[i] = |({clk_en_vec_sync_w[P_NUM_CLOCKS-1:i+1],  clk_en_vec_sync_w[i-1:0]});
       end
     end
   endgenerate
 
   //Gate the clocks with synced masks
-  assign  clk_gate_vec_c      = clk_vec_ir  & clk_en_vec_sync_w & ~xeno_hot_chk_vec_c;
+  assign  clk_gate_vec_c      = clk_vec_intf.clk_vec  & clk_en_vec_sync_w & ~xeno_hot_chk_vec_c;
 
   assign  wm8731_intf.mclk  = |(clk_gate_vec_c);
 

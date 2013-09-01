@@ -162,7 +162,7 @@ enum  logic [2:0] {
 
        ACORTEX_WMDRVR_CTRL_REG_ADDR   : lb_intf.wmdrvr_rd_data  <=  {{P_LB_DATA_W-3{1'b0}},bps_f,adc_en_f,dac_en_f};
 
-       ACORTEX_WMDRVR_STATUS_REG_ADDR : lb_intf.wmdrvr_rd_data  <=  
+       ACORTEX_WMDRVR_STATUS_REG_ADDR : lb_intf.wmdrvr_rd_data  <=  {{P_LB_DATA_W-1{1'b0}},drvr_fsm_idle_c};
 
        ACORTEX_WMDRVR_FS_DIV_REG_ADDR : lb_intf.wmdrvr_rd_data  <=  {{P_LB_DATA_W-P_FS_DIV_VAL_W{1'b0}},fs_div_val_f};
 
@@ -182,7 +182,7 @@ enum  logic [2:0] {
   begin : bclk_gen_logic
     if(~cr_intf.rst_sync_l)
     begin
-      aud_cache_intf.bclk     <=  0;
+      wm8731_intf.bclk     <=  0;
 
       bclk_gen_vec_f          <=  {{P_BCLK_GEN_VEC_W-1{1'b0}},  1'b1};  //one hot
     end
@@ -192,19 +192,19 @@ enum  logic [2:0] {
 
       if(~adc_en_f  & ~dac_en_f)
       begin
-        aud_cache_intf.bclk   <=  0;
+        wm8731_intf.bclk   <=  0;
       end
       else if(bclk_half_tck_w)
       begin
-        aud_cache_intf.bclk   <=  1'b1;
+        wm8731_intf.bclk   <=  1'b1;
       end
       else if(bclk_full_tck_w)
       begin
-        aud_cache_intf.bclk   <=  1'b0;
+        wm8731_intf.bclk   <=  1'b0;
       end
       else
       begin
-        aud_cache_intf.bclk   <=  aud_cache_intf.bclk;
+        wm8731_intf.bclk   <=  wm8731_intf.bclk;
       end
     end
   end
@@ -339,7 +339,7 @@ enum  logic [2:0] {
         rpcm_shift_reg_f      <=  (fsm_pstate ==  RCHANNEL_S) & bclk_half_tck_w ? {rpcm_shift_reg_f[P_32B_W-2:0],wm8731_intf.adc_dat} : rpcm_shift_reg_f;
       end
 
-      if((fsm_pstate  ==  LCHANNEL_S) | (fsm_pstate RCHANNEL_S))
+      if((fsm_pstate  ==  LCHANNEL_S) | (fsm_pstate == RCHANNEL_S))
       begin
         bit_idx_f             <=  bit_idx_f + bclk_full_tck_w;
       end

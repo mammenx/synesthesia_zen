@@ -106,12 +106,14 @@
 
       if(enable)
       begin
+        @(posedge intf.rst_il);
+
         forever
         begin
           ovm_report_info({get_name(),"[run]"},"Waiting for <Start> ...",OVM_LOW);
 
-          @(negedge intf.i2c_intf.sda);
-          @(negedge intf.i2c_intf.scl);
+          @(negedge intf.sda);
+          @(negedge intf.scl);
 
           ovm_report_info({get_name(),"[run]"},"<Start> detected ...",OVM_LOW);
 
@@ -122,19 +124,19 @@
 
           repeat(7)
           begin
-            @(posedge intf.i2c_intf.scl);
+            @(posedge intf.scl);
             #1;
 
-            addr  = (addr <<  1)  + intf.i2c_intf.sda; //sample address bits
+            addr  = (addr <<  1)  + intf.sda; //sample address bits
           end
 
           ovm_report_info({get_name(),"[run]"},$psprintf("Got address : 0x%x",addr),OVM_LOW);
           $cast(pkt.addr[0],  addr);
 
-          @(posedge intf.i2c_intf.scl);
+          @(posedge intf.scl);
           #1;
 
-          rd_n_wr = intf.i2c_intf.sda;   //sample RD/nWR bit
+          rd_n_wr = intf.sda;   //sample RD/nWR bit
 
           ovm_report_info({get_name(),"[run]"},$psprintf("Got Read/nWr : 0x%x",rd_n_wr),OVM_LOW);
 
@@ -144,7 +146,7 @@
             pkt.lb_xtn  = WRITE;
 
 
-          @(posedge intf.i2c_intf.scl)
+          @(posedge intf.scl)
           #2;
 
           data  = 'd0;
@@ -153,19 +155,19 @@
           begin
             repeat(8)
             begin
-              @(posedge intf.i2c_intf.scl);
+              @(posedge intf.scl);
               #1;
 
-              data  = (data <<  1)  + intf.i2c_intf.sda;
+              data  = (data <<  1)  + intf.sda;
             end
 
             $cast(pkt.data[i],  data);
             ovm_report_info({get_name(),"[run]"},$psprintf("Received data - 0x%x",pkt.data[i]),OVM_LOW);
 
-            @(posedge intf.i2c_intf.scl);
+            @(posedge intf.scl);
             #3;
 
-            if(intf.i2c_intf.sda)
+            if(intf.sda)
             begin
               ovm_report_info({get_name(),"[run]"},$psprintf("NACK Detected"),OVM_LOW);
               break;
@@ -175,11 +177,11 @@
               ovm_report_info({get_name(),"[run]"},$psprintf("ACK Detected"),OVM_LOW);
             end
 
-            @(negedge intf.i2c_intf.scl);
+            @(negedge intf.scl);
           end
 
-          @(posedge intf.i2c_intf.scl);
-          @(posedge intf.i2c_intf.sda);
+          @(posedge intf.scl);
+          @(posedge intf.sda);
           ovm_report_info({get_name(),"[run]"},$psprintf("<STOP> detected ...\n\n\n"),OVM_LOW);
           #1;
 

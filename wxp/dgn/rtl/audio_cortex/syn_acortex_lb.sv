@@ -59,9 +59,10 @@ module syn_acortex_lb (
 
 //----------------------- Global parameters Declarations ------------------
   `include  "syn_acortex_reg_map.sv"
+  import  syn_global_pkg::*;
 
   parameter   P_LB_DATA_W           = P_32B_W;
-  parameter   P_LB_ADDR_W           = P_12B_W;
+  parameter   P_LB_ADDR_W           = 12;
 
   parameter   P_ACORTEX_LB_DATA_W   = P_32B_W;
   parameter   P_ACORTEX_LB_ADDR_W   = P_8B_W;

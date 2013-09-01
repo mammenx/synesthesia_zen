@@ -30,9 +30,12 @@ rem set TEST_NAME=syn_vcortex_gpu_draw_line_test
 rem set TEST_NAME=syn_vcortex_gpu_draw_bezier_test
 rem set TEST_NAME=syn_vcortex_gpu_fill_test
 rem set TEST_NAME=syn_vcortex_host_acc_test
-set TEST_NAME=syn_vcortex_vga_test
+rem set TEST_NAME=syn_vcortex_vga_test
 
-set TB_TOP=syn_vcortex_tb_top
+set TEST_NAME=syn_acortex_base_test
+
+rem set TB_TOP=syn_vcortex_tb_top
+set TB_TOP=syn_acortex_tb_top
 
 set MSIM_DIR=C:\altera\11.1sp2\modelsim_ase
 set MSIM_INC_DIR=%MSIM_DIR%\include

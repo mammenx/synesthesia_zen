@@ -2,7 +2,6 @@
 `include  "syn_lb_seq_item.sv"
 `include  "syn_gpu_pxl_xfr_seq_item.sv"
 `include  "syn_vga_seq_item.sv"
-`include  "syn_pcm_seq_item.sv"
 
 //RAL
 `include  "syn_reg_map.sv"
@@ -20,13 +19,6 @@
 
 `include  "syn_vga_mon.sv"
 `include  "syn_vga_agent.sv"
-
-`include  "syn_acortex_codec_adc_drvr"
-`include  "syn_acortex_codec_adc_mon"
-`include  "syn_acortex_codec_adc_seqr"
-`include  "syn_acortex_codec_dac_mon"
-`include  "syn_acortex_codec_i2c_slave"
-`include  "syn_acortex_codec_agent"
 
 //Sniffers
 `include  "syn_gpu_pxlgw_sniffer.sv"
