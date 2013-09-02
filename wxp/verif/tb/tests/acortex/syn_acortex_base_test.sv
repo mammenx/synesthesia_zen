@@ -103,8 +103,6 @@ class syn_acortex_base_test extends ovm_test;
 
       ovm_report_info(get_full_name(),"Start of connect",OVM_LOW);
 
-      this.env.pcm_mem_agent.drvr.mode_master_n_slave  = 0;  //configure as slave
-
       //Make connections from DUT to TB components
       this.env.lb_agent.drvr.intf   = $root.syn_acortex_tb_top.lb_tb_intf;
       this.env.lb_agent.mon.intf    = $root.syn_acortex_tb_top.lb_tb_intf;

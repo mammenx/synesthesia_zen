@@ -147,6 +147,8 @@
 
       ovm_report_info(get_name(),"START of connect ",OVM_LOW);
 
+        this.pcm_mem_agent.drvr.mode_master_n_slave  = 0;  //configure as slave
+
         //Ports
         lb_agent.mon.Mon2Sb_port.connect(this.LB2Env_ff.analysis_export);
         this.Env2I2C_Sb_port.connect(i2c_sb.Mon_lb_2Sb_port);
