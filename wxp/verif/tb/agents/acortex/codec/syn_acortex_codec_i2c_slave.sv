@@ -48,7 +48,7 @@
                                       type  INTF_TYPE = virtual syn_wm8731_intf.TB_I2C
                                     ) extends ovm_component;
 
-    bit enable;
+    bit enable,update_reg_map_en;
 
     OVM_FILE  f;
 
@@ -62,6 +62,7 @@
     /*  Register with factory */
     `ovm_component_param_utils_begin(syn_acortex_codec_i2c_slave#(REG_MAP_W,DATA_W,INTF_TYPE))
       `ovm_field_int(enable,  OVM_ALL_ON);
+      `ovm_field_int(update_reg_map_en,  OVM_ALL_ON);
       `ovm_field_int(dev_addr,  OVM_ALL_ON);
     `ovm_component_utils_end
 
@@ -83,6 +84,7 @@
       ovm_report_info(get_name(),"Start of build ",OVM_LOW);
 
       enable  = 1;
+      update_reg_map_en  = 1;
       dev_addr  = 'h34;
 
       ovm_report_info(get_name(),"End of build ",OVM_LOW);
@@ -105,6 +107,11 @@
 
       ovm_report_info({get_name(),"[run]"},"Start of run ",OVM_LOW);
 
+      if(update_reg_map_en)
+        ovm_report_info({get_name(),"[run]"},"Update reg_map is enabled",OVM_LOW);
+      else
+        ovm_report_info({get_name(),"[run]"},"Update reg_map is disabled",OVM_LOW);
+
       if(enable)
       begin
         intf.sda_o      <= 1;
@@ -114,7 +121,7 @@
 
         forever
         begin
-          ovm_report_info({get_name(),"[run]"},"Waiting for <Start> ...",OVM_LOW);
+          ovm_report_info({get_name(),"[run]"},"\n\n\nWaiting for <Start> ...",OVM_LOW);
 
           @(negedge intf.sda);
           @(negedge intf.scl);
@@ -191,17 +198,23 @@
             intf.sda_tb_en  <=  0;
           end
 
+          ovm_report_info({get_name(),"[run]"},$psprintf("Got data : 0x%x",data),OVM_LOW);
+
           @(posedge intf.scl);
           @(posedge intf.sda);
-          ovm_report_info({get_name(),"[run]"},$psprintf("<STOP> detected ...\n\n\n"),OVM_LOW);
+          ovm_report_info({get_name(),"[run]"},$psprintf("<STOP> detected ..."),OVM_LOW);
 
-          if(reg_map.chk_addr_exist(data[DATA_W-1:REG_MAP_W]) ==  syn_reg_map#(REG_MAP_W)::SUCCESS)
+          if(update_reg_map_en)
           begin
-            reg_map.set_reg(data[DATA_W-1:REG_MAP_W], data[REG_MAP_W-1:0]);
-          end
-          else
-          begin
-            ovm_report_error({get_name(),"[run]"},$psprintf("Invalid DAC address 0x%x",data[DATA_W-1:REG_MAP_W]),OVM_LOW);
+            if(reg_map.chk_addr_exist(data[DATA_W-1:REG_MAP_W]) ==  syn_reg_map#(REG_MAP_W)::SUCCESS)
+            begin
+              reg_map.set_reg(data[DATA_W-1:REG_MAP_W], data[REG_MAP_W-1:0]);
+              ovm_report_info({get_name(),"[run]"},$psprintf("Configured reg_map addr[0x%x] to 0x%x",data[DATA_W-1:REG_MAP_W],data[REG_MAP_W-1:0]),OVM_LOW);
+            end
+            else
+            begin
+              ovm_report_error({get_name(),"[run]"},$psprintf("Invalid DAC address 0x%x",data[DATA_W-1:REG_MAP_W]),OVM_LOW);
+            end
           end
         end
       end

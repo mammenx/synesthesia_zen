@@ -122,6 +122,8 @@
           pkt.addr  = new[1];
           pkt.data  = new[DATA_W/8];  //in units of bytes
 
+          ovm_report_info({get_name(),"[run]"},$psprintf("pkt.addr.size = %1d, pkt.data.size = %1d",pkt.addr.size,pkt.data.size),OVM_LOW);
+
           repeat(7)
           begin
             @(posedge intf.scl);
@@ -151,7 +153,8 @@
 
           data  = 'd0;
 
-          foreach(pkt.data[i])
+          //foreach(pkt.data[i])
+          for(int i=0;  i<pkt.data.size;  i++)
           begin
             repeat(8)
             begin

@@ -97,9 +97,11 @@ module syn_audio_cache (
 //----------------------- Internal Register Declarations ------------------
   acache_mode_t               acache_mode_f;
   logic                       start_cap_f;
+  logic                       cap_done_f;
 
   logic [P_PCM_RAM_ADDR_W-1:0]  ingr_addr_f;
   logic [P_PCM_RAM_ADDR_W-1:0]  egr_addr_f;
+  logic                         cap_lpcm_n_rpcm_f;
   logic                         bffr_sel_1_n_2_f;
   logic                         ingr_addr_inc_en_f;
   logic                         egr_data_rdy_f;
@@ -108,6 +110,9 @@ module syn_audio_cache (
   logic [P_RAM_RD_DELAY-1:0]    rpcm_rd_del_f;
 
 //----------------------- Internal Wire Declarations ----------------------
+  logic                         host_rst_l_c;
+  logic                         local_rst_l_c;
+
   logic                         switch_bffrs_c;
 
   logic [P_PCM_RAM_ADDR_W-1:0]  pbffr_lchnnl_1a_addr_c;
@@ -150,6 +155,8 @@ module syn_audio_cache (
   logic                         pbffr_rchnnl_2b_wren_c;
   logic [P_PCM_RAM_DATA_W-1:0]  pbffr_rchnnl_2b_rdata_w;
 
+  logic [P_PCM_RAM_DATA_W-1:0]  cap_rdata_c;
+
 //----------------------- Internal Interface Declarations -----------------
 
 
@@ -167,6 +174,7 @@ module syn_audio_cache (
 
       acache_mode_f           <=  NORMAL;
       start_cap_f             <=  0;
+      cap_done_f              <=  0;
     end
     else
     begin
@@ -185,10 +193,31 @@ module syn_audio_cache (
 
       lb_intf.acache_wr_valid <=  lb_intf.acache_wr_en;
 
+      if(acache_mode_f  ==  CAPTURE)
+      begin
+        if(cap_done_f)
+        begin
+          cap_done_f          <=  ~start_cap_f;
+        end
+        else
+        begin
+          cap_done_f          <=  switch_bffrs_c;
+        end
+      end
+      else
+      begin
+        cap_done_f            <=  0;
+      end
 
       case(lb_intf.acache_addr)
 
         ACORTEX_ACACHE_CTRL_REG_ADDR  : lb_intf.acache_rd_data  <=  {{P_LB_DATA_W-1{1'b0}},  acache_mode_f};
+
+        ACORTEX_ACACHE_STATUS_REG_ADDR: lb_intf.acache_rd_data  <=  {{P_LB_DATA_W-1{1'b0}},  cap_done_f};
+
+        ACORTEX_ACACHE_CAP_NO_ADDR    : lb_intf.acache_rd_data  <=  {{P_LB_DATA_W-P_PCM_RAM_ADDR_W-1{1'b0}},  cap_lpcm_n_rpcm_f,  egr_addr_f};
+
+        ACORTEX_ACACHE_CAP_DATA_ADDR  : lb_intf.acache_rd_data  <=  cap_rdata_c;
 
         default  : lb_intf.acache_rd_data <=  'hdeadbabe;
       endcase
@@ -197,25 +226,46 @@ module syn_audio_cache (
     end
   end
 
+  //Host reset logic
+  assign  host_rst_l_c  = (lb_intf.acache_addr  ==  ACORTEX_ACACHE_HST_RST_ADDR)  ? ~lb_intf.acache_wr_en : 1'b1;
+
+  //combined reset logic
+  assign  local_rst_l_c = cr_intf.rst_sync_l  & host_rst_l_c;
+
   /*  Address logic */
-  always_ff@(posedge cr_intf.clk_ir, negedge cr_intf.rst_sync_l)
+  always_ff@(posedge cr_intf.clk_ir, negedge local_rst_l_c)
   begin : addr_logic
     if(~cr_intf.rst_sync_l)
     begin
       ingr_addr_f             <=  0;
       egr_addr_f              <=  0;
+      cap_lpcm_n_rpcm_f       <=  0;
 
       bffr_sel_1_n_2_f        <=  1'b1;  //Start with 1
       ingr_addr_inc_en_f      <=  1'b1;
       egr_data_rdy_f          <=  0;
 
       fgyrus_pcm_data_rdy_oh  <=  0;
+
+      wmdrvr_egr_intf.pcm_data_valid  <=  0;
     end
     else
     begin
       ingr_addr_f             <=  start_cap_f ? 'd0 : ingr_addr_f + (wmdrvr_ingr_intf.pcm_data_valid  & ingr_addr_inc_en_f);
 
-      egr_addr_f              <=  egr_addr_f  + (wmdrvr_egr_intf.ack  & egr_data_rdy_f);
+      if(acache_mode_f  ==  NORMAL)
+      begin
+        egr_addr_f            <=  egr_addr_f  + (wmdrvr_egr_intf.ack  & egr_data_rdy_f);
+      end
+      else  //CAPTURE
+      begin
+        if(lb_intf.acache_wr_en & (lb_intf.acache_addr  ==  ACORTEX_ACACHE_CAP_NO_ADDR))
+        begin
+          egr_addr_f          <=  lb_intf.acache_wr_data[P_PCM_RAM_ADDR_W-1:0];
+          cap_lpcm_n_rpcm_f   <=  lb_intf.acache_wr_data[P_PCM_RAM_ADDR_W];
+        end
+      end
+
 
       bffr_sel_1_n_2_f        <=  switch_bffrs_c  ? ~bffr_sel_1_n_2_f : bffr_sel_1_n_2_f;
 
@@ -245,12 +295,20 @@ module syn_audio_cache (
       end
 
       fgyrus_pcm_data_rdy_oh  <=  (acache_mode_f  ==  NORMAL) ? switch_bffrs_c  : 1'b0;
+
+      if(acache_mode_f  ==  NORMAL)
+      begin
+        wmdrvr_egr_intf.pcm_data_valid  <=  wmdrvr_egr_intf.pcm_data_valid  | switch_bffrs_c;
+      end
+      else  //CAPTURE
+      begin
+        wmdrvr_egr_intf.pcm_data_valid  <=  0;
+      end
     end
   end
 
   //Check when to switch buffers
   assign switch_bffrs_c = (ingr_addr_f  ==  {P_PCM_RAM_ADDR_W{1'b1}}) ? wmdrvr_ingr_intf.pcm_data_valid : 1'b0;
-
 
   //Mux Port A signals
   always_comb
@@ -278,7 +336,8 @@ module syn_audio_cache (
 
       wmdrvr_egr_intf.pcm_data.lchnnl =   pbffr_lchnnl_2a_rdata_w;
       wmdrvr_egr_intf.pcm_data.rchnnl =   pbffr_rchnnl_2a_rdata_w;
-      wmdrvr_egr_intf.pcm_data_valid  =   1'b1;
+
+      cap_rdata_c                     =   cap_lpcm_n_rpcm_f ? pbffr_lchnnl_2a_rdata_w : pbffr_rchnnl_2a_rdata_w;
     end
     else
     begin
@@ -303,7 +362,8 @@ module syn_audio_cache (
 
       wmdrvr_egr_intf.pcm_data.lchnnl =   pbffr_lchnnl_1a_rdata_w;
       wmdrvr_egr_intf.pcm_data.rchnnl =   pbffr_rchnnl_1a_rdata_w;
-      wmdrvr_egr_intf.pcm_data_valid  =   1'b1;
+
+      cap_rdata_c                     =   cap_lpcm_n_rpcm_f ? pbffr_lchnnl_1a_rdata_w : pbffr_rchnnl_1a_rdata_w;
     end
   end
 

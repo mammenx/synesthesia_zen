@@ -20,4 +20,7 @@ parameter ACORTEX_WMDRVR_FS_DIV_REG_ADDR= 8'd2;
 
 //Audio Cache register addresses
 parameter ACORTEX_ACACHE_CTRL_REG_ADDR  = 8'd0;
-parameter ACORTEX_ACACHE_DATA_BASE_ADDR = 8'h80;
+parameter ACORTEX_ACACHE_STATUS_REG_ADDR= 8'd1;
+parameter ACORTEX_ACACHE_CAP_NO_ADDR    = 8'h2;
+parameter ACORTEX_ACACHE_CAP_DATA_ADDR  = 8'h3;
+parameter ACORTEX_ACACHE_HST_RST_ADDR   = 8'h4;

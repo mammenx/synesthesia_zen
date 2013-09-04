@@ -188,7 +188,14 @@ enum  logic [2:0] {
     end
     else
     begin
-      bclk_gen_vec_f          <=  {bclk_gen_vec_f[P_BCLK_GEN_VEC_W-2:0],bclk_gen_vec_f[P_BCLK_GEN_VEC_W-1]};
+      if(drvr_fsm_idle_c)
+      begin
+        bclk_gen_vec_f        <=  {{P_BCLK_GEN_VEC_W-1{1'b0}},  1'b1};  //one hot
+      end
+      else
+      begin
+        bclk_gen_vec_f        <=  {bclk_gen_vec_f[P_BCLK_GEN_VEC_W-2:0],bclk_gen_vec_f[P_BCLK_GEN_VEC_W-1]};
+      end
 
       if(~adc_en_f  & ~dac_en_f)
       begin

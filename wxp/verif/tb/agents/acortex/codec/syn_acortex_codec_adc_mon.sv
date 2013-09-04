@@ -53,6 +53,7 @@
     OVM_FILE  f;
 
     shortint  enable;
+    int       num_samples;
 
     ovm_analysis_port #(PKT_TYPE) Mon2Sb_port;
 
@@ -62,12 +63,14 @@
     /*  Register with factory */
     `ovm_component_param_utils_begin(syn_acortex_codec_adc_mon#(REG_MAP_W,PKT_TYPE, INTF_TYPE))
       `ovm_field_int(enable,  OVM_ALL_ON);
+      `ovm_field_int(num_samples,  OVM_ALL_ON);
     `ovm_component_utils_end
 
     function new( string name = "syn_acortex_codec_adc_mon" , ovm_component parent = null) ;
       super.new( name , parent );
 
       enable    = 1;  //by default enabled; disable from test case
+      num_samples = 0;
     endfunction : new
 
     function  void  build();
@@ -152,6 +155,8 @@
 
           ovm_report_info({get_name(),"[run]"},$psprintf("Sending Packet to Scoreboard - \n%s\n\n\n", pkt.sprint()),OVM_LOW);
           Mon2Sb_port.write(pkt);
+
+          num_samples++;
         end
       end
       else

@@ -211,6 +211,19 @@
         return  FAIL_REG_N_EXIST;
     endfunction : chk_addr_exist
 
+    function  string  sprintTable();
+      string  res = $psprintf("\n%-20s%-10s%-10s%-10s","Field Name","Address","Start","End");
+
+      foreach(this.string2addr_arry[field])
+      begin
+        res = $psprintf("%s\n%-20s%-10d%-10d%-10d",res,field,string2addr_arry[field],bit_start_arry[field],bit_end_arry[field]);
+      end
+
+      res = {res, "\n"};
+
+      return  res;
+    endfunction : sprintTable
+
   endclass  : syn_reg_map
 
 `endif

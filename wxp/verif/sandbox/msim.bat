@@ -32,7 +32,9 @@ rem set TEST_NAME=syn_vcortex_gpu_fill_test
 rem set TEST_NAME=syn_vcortex_host_acc_test
 rem set TEST_NAME=syn_vcortex_vga_test
 
-set TEST_NAME=syn_acortex_base_test
+rem set TEST_NAME=syn_acortex_base_test
+rem set TEST_NAME=syn_acortex_i2c_test
+set TEST_NAME=syn_acortex_pcm_test
 
 rem set TB_TOP=syn_vcortex_tb_top
 set TB_TOP=syn_acortex_tb_top

@@ -113,7 +113,8 @@
 
       if((pkt.lb_xtn  ==  WRITE)  ||  (pkt.lb_xtn ==  BURST_WRITE))
       begin
-        foreach(pkt.addr[i])
+        //foreach(pkt.addr[i])
+        for(int i=0;  i<pkt.addr.size;  i++)
         begin
           if(pkt.addr[i]  ==  {ACORTEX_I2CM_CODE,ACORTEX_I2CM_ADDR_REG_ADDR})
           begin
@@ -177,10 +178,20 @@
       begin
         //Wait for items to arrive in sent & rcvd queues
         ovm_report_info({get_name(),"[run]"},"Waiting on queues ...",OVM_LOW);
-        while(!sent_que.size() &&  !rcvd_que.size())  #1;
+        while(!rcvd_que.size())  #1;
 
-        expctd_pkt  = sent_que.pop_front();
         actual_pkt  = rcvd_que.pop_front();
+
+        if(sent_que.size())
+        begin
+          expctd_pkt  = sent_que.pop_front();
+        end
+        else
+        begin
+          ovm_report_error({get_name(),"[run]"},"Unexpected xtn!",OVM_LOW);
+          continue;
+        end
+
 
         if(expctd_pkt.check(actual_pkt))
           ovm_report_info({get_name(),"[run]"},"I2C Transaction is correct",OVM_LOW);

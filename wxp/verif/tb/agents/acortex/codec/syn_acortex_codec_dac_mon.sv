@@ -50,11 +50,6 @@
                                       type  INTF_TYPE = virtual syn_wm8731_intf.TB_DAC
                                     ) extends ovm_component;
 
-    /*  Register with factory */
-    `ovm_component_param_utils_begin(syn_acortex_codec_dac_mon#(REG_MAP_W,PKT_TYPE,INTF_TYPE))
-      `ovm_field_int(enable,  OVM_ALL_ON);
-    `ovm_component_utils_end
-
     ovm_analysis_port #(PKT_TYPE) Mon2Sb_port;
 
     OVM_FILE  f;
@@ -62,6 +57,13 @@
     INTF_TYPE intf;
 
     shortint enable;
+    int      num_samples;
+
+    /*  Register with factory */
+    `ovm_component_param_utils_begin(syn_acortex_codec_dac_mon#(REG_MAP_W,PKT_TYPE,INTF_TYPE))
+      `ovm_field_int(enable,  OVM_ALL_ON);
+      `ovm_field_int(num_samples,  OVM_ALL_ON);
+    `ovm_component_utils_end
 
     /*  Register Map to hold DAC registers  */
     syn_reg_map#(REG_MAP_W)   reg_map;  //each register is 9b
@@ -70,6 +72,7 @@
       super.new(name, parent);
 
       enable  = 1;
+      num_samples = 0;
     endfunction: new
 
     function void build();
@@ -101,9 +104,7 @@
 
     task  run();
       PKT_TYPE  pkt;
-      int sample_no = 0;
       int bps = 16;
-
 
       if(enable)
       begin
@@ -117,7 +118,7 @@
           @(negedge intf.dac_lrc);
 
           ovm_report_info({get_name(),"[run]"},$psprintf("Detected LRC sync pulse..."),OVM_LOW);
-          pkt = new($psprintf("DAC sample[%d]",sample_no));
+          pkt = new($psprintf("DAC sample[%d]",num_samples));
           pkt.pcm_data  = new[1];
           pkt.pcm_data[0].lchnnl  = 0;
           pkt.pcm_data[0].rchnnl  = 0;
@@ -154,7 +155,7 @@
           ovm_report_info({get_name(),"[run]"},$psprintf("Sending Packet to Scoreboard - \n%s\n\n\n", pkt.sprint()),OVM_LOW);
           Mon2Sb_port.write(pkt);
 
-          sample_no++;
+          num_samples++;
         end
       end
       else

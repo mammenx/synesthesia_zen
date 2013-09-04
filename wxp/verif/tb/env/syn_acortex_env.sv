@@ -136,6 +136,7 @@
 
       wm8731_reg_map     = syn_reg_map#(REG_MAP_W)::type_id::create("wm8731_reg_map",this);
       build_wm8731_reg_map();
+      ovm_report_info(get_name(),$psprintf("WM8731 Reg Map Table%s",wm8731_reg_map.sprintTable()),OVM_LOW);
 
       ovm_report_info(get_name(),"End of build ",OVM_LOW);
     endfunction
@@ -169,7 +170,7 @@
 
     /*  Run */
     task  run();
-      LB_PKT_T  lb_pkt;
+      LB_PKT_T  lb_pkt,sb_pkt;
 
       ovm_report_info({get_name(),"[run]"},"START of run ...",OVM_LOW);
 
@@ -179,26 +180,33 @@
 
         foreach(lb_pkt.addr[i])
         begin
+          sb_pkt  = new();
+          sb_pkt.addr = new[1];
+          sb_pkt.data = new[1];
+          sb_pkt.addr[0]  = lb_pkt.addr[i];
+          sb_pkt.data[0]  = lb_pkt.data[i];
+          sb_pkt.lb_xtn   = lb_pkt.lb_xtn;
+
           case(lb_pkt.addr[i][11:8])
 
             ACORTEX_I2CM_CODE :
             begin
-              ovm_report_info({get_name(),"[run]"},$psprintf("Sending lb_pkt to I2C Scoreboard\n%s",lb_pkt.sprint()),OVM_LOW);
-              Env2I2C_Sb_port.put(lb_pkt);
+              ovm_report_info({get_name(),"[run]"},$psprintf("Sending lb_pkt to I2C Scoreboard\n%s",sb_pkt.sprint()),OVM_LOW);
+              Env2I2C_Sb_port.write(sb_pkt);
             end
 
             ACORTEX_WMDRVR_CODE :
             begin
-              ovm_report_info({get_name(),"[run]"},$psprintf("Sending lb_pkt to ADC/DAC Scoreboards\n%s",lb_pkt.sprint()),OVM_LOW);
-              Env2ADC_Sb_port.put(lb_pkt);
-              Env2DAC_Sb_port.put(lb_pkt);
+              ovm_report_info({get_name(),"[run]"},$psprintf("Sending lb_pkt to ADC/DAC Scoreboards\n%s",sb_pkt.sprint()),OVM_LOW);
+              Env2ADC_Sb_port.write(sb_pkt);
+              Env2DAC_Sb_port.write(sb_pkt);
             end
 
             ACORTEX_ACACHE_CODE :
             begin
-              ovm_report_info({get_name(),"[run]"},$psprintf("Sending lb_pkt to ADC/DAC Scoreboards\n%s",lb_pkt.sprint()),OVM_LOW);
-              Env2ADC_Sb_port.put(lb_pkt);
-              Env2DAC_Sb_port.put(lb_pkt);
+              ovm_report_info({get_name(),"[run]"},$psprintf("Sending lb_pkt to ADC/DAC Scoreboards\n%s",sb_pkt.sprint()),OVM_LOW);
+              Env2ADC_Sb_port.write(sb_pkt);
+              Env2DAC_Sb_port.write(sb_pkt);
             end
 
             default :
@@ -207,9 +215,6 @@
             end
 
           endcase
-
-
-          #1;
         end
       end
     endtask : run

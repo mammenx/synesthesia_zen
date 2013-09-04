@@ -36,7 +36,13 @@
 
 
 //Sequences
+`include  "syn_i2c_config_seq.sv"
+`include  "syn_codec_adc_load_seq.sv"
+`include  "syn_wm8731_drvr_config_seq.sv"
+`include  "syn_wm8731_drvr_poll_seq.sv"
 
 
 //Tests
 `include  "syn_acortex_base_test.sv"
+`include  "syn_acortex_i2c_test.sv"
+`include  "syn_acortex_pcm_test.sv"

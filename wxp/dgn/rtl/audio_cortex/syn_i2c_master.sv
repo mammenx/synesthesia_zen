@@ -288,7 +288,7 @@ enum  logic [2:0] {
      begin
        bit_idx_f              <=  bit_idx_f + wrap_prd_cntr_c;
      end
-     else
+     else if(fsm_pstate ==  STOP_S)
      begin
        bit_idx_f              <=  4'd0;
      end
@@ -361,7 +361,7 @@ enum  logic [2:0] {
 
         ADDR_S  :
         begin
-          sda_f               <=  i2c_bit_stream_w[bit_idx_f];
+          sda_f               <=  i2c_bit_stream_w[bit_idx_f[P_I2C_BIT_CNTR_W-2:0]];
           wm8731_intf.scl     <=  wm8731_intf.scl ? i2c_prd_by_2_tick_c | ~i2c_prd_by_4_tick_c
                                                   : i2c_prd_by_4_tick_c;
           release_sda_f       <=  i2c_phase_ovr_c;
@@ -369,7 +369,7 @@ enum  logic [2:0] {
 
         DATA_S  :
         begin
-          sda_f               <=  i2c_bit_stream_w[bit_idx_f];
+          sda_f               <=  i2c_bit_stream_w[bit_idx_f[P_I2C_BIT_CNTR_W-2:0]];
           wm8731_intf.scl     <=  wm8731_intf.scl ? i2c_prd_by_2_tick_c | ~i2c_prd_by_4_tick_c
                                                   : i2c_prd_by_4_tick_c;
           release_sda_f       <=  i2c_phase_ovr_c;
@@ -377,7 +377,8 @@ enum  logic [2:0] {
 
         ACK_S :
         begin
-          sda_f               <=  i2c_bit_stream_w[bit_idx_f];
+          //sda_f               <=  i2c_bit_stream_w[bit_idx_f[P_I2C_BIT_CNTR_W-2:0]];
+          sda_f               <=  0;
           wm8731_intf.scl     <=  wm8731_intf.scl ? i2c_prd_by_2_tick_c | ~i2c_prd_by_4_tick_c
                                                   : i2c_prd_by_4_tick_c;
           release_sda_f       <=  ~i2c_phase_ovr_c;
@@ -386,7 +387,8 @@ enum  logic [2:0] {
         STOP_S  :
         begin
           sda_f               <=  sda_f  | i2c_prd_by_2_tick_c;
-          wm8731_intf.scl     <=  1'b1;
+          //wm8731_intf.scl     <=  1'b1;
+          wm8731_intf.scl     <=  wm8731_intf.scl | i2c_prd_by_4_tick_c;
           release_sda_f       <=  1'b0;
         end
 

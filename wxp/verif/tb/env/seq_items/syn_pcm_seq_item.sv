@@ -44,6 +44,7 @@
 `define __SYN_PCM_SEQ_ITEM
 
   import  syn_audio_pkg::*;
+  import  syn_math_pkg::*;
 
   class syn_pcm_seq_item extends ovm_sequence_item;
 
@@ -83,6 +84,19 @@
       return  res;
 
     endfunction : check
+
+    /*  Function to fill self with Sine/Cosine values */
+    function  void  fill_sin(int num_samples,  int freq, int mag,  int fs=44100);
+
+      this.pcm_data = new[num_samples];
+
+      foreach(this.pcm_data[n])
+      begin
+        $cast(pcm_data[n].lchnnl,  mag*syn_sin((2*pi*freq*n)/fs));
+        $cast(pcm_data[n].rchnnl,  mag*syn_sin((2*pi*freq*n)/fs));
+      end
+
+    endfunction : fill_sin
 
 
   endclass  : syn_pcm_seq_item
