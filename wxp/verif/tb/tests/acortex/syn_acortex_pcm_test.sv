@@ -110,15 +110,22 @@ class syn_acortex_pcm_test extends syn_acortex_base_test;
 
       adc_load_seq.pcm_pkt.fill_sin(256,  1000, 10000,  44100);
       adc_load_seq.pcm_pkt.fill_sin(256,  1000, 10000,  44100);
-      adc_load_seq.start(super.env.codec_agent.adc_seqr);
-
-      #1;
 
       wm8731_drvr_config_seq.dac_en = 1;
       wm8731_drvr_config_seq.adc_en = 1;
       wm8731_drvr_config_seq.bps    = BPS_32;
-      wm8731_drvr_config_seq.fs_div_val = 10; //not as per fs
-      wm8731_drvr_config_seq.start(super.env.lb_agent.seqr);
+      wm8731_drvr_config_seq.fs_div_val = 70; //not as per fs
+
+      fork
+        begin
+          adc_load_seq.start(super.env.codec_agent.adc_seqr);
+        end
+
+        begin
+          #100;
+          wm8731_drvr_config_seq.start(super.env.lb_agent.seqr);
+        end
+      join_any
 
       do
       begin

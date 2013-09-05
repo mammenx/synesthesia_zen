@@ -121,11 +121,14 @@
       ovm_report_info({get_name(),"[write_dac_sb_lb_pkt]"},$psprintf("Received pkt\n%s",pkt.sprint()),OVM_LOW);
 
       if((pkt.lb_xtn  ==  WRITE)  ||  (pkt.lb_xtn ==  BURST_WRITE))
-      foreach(pkt.addr[i])
       begin
-        if(dac_reg_map.set_reg(pkt.addr[i][11:0],  pkt.data[i])  == syn_reg_map#(16)::SUCCESS)
-          ovm_report_info({get_name(),"[write_dac_sb_lb_pkt]"},$psprintf("Updated register [0x%x] to [0x%x]",pkt.addr[i][11:0],pkt.data[i]),OVM_LOW);
+        //foreach(pkt.addr[i])
+        for(int i=0; i<pkt.addr.size; i++)
+        begin
+          if(dac_reg_map.set_reg(pkt.addr[i][11:0],  pkt.data[i])  == syn_reg_map#(16)::SUCCESS)
+            ovm_report_info({get_name(),"[write_dac_sb_lb_pkt]"},$psprintf("Updated register [0x%x] to [0x%x]",pkt.addr[i][11:0],pkt.data[i]),OVM_LOW);
 
+        end
       end
 
     endfunction : write_dac_sb_lb_pkt

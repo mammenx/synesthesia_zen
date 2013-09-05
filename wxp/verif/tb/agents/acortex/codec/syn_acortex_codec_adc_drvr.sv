@@ -133,10 +133,11 @@
 
       endcase
 
-      foreach(pkt.pcm_data[i])
+      //foreach(pkt.pcm_data[i])
+      for(int i=0; i<pkt.pcm_data.size; i++)
       begin
-        $cast(ldata,  pkt.pcm_data[0].lchnnl);
-        $cast(rdata,  pkt.pcm_data[0].rchnnl);
+        $cast(ldata,  pkt.pcm_data[i].lchnnl);
+        $cast(rdata,  pkt.pcm_data[i].rchnnl);
 
         @(posedge intf.adc_lrc);
         //@(negedge intf.adc_lrc);
