@@ -103,8 +103,8 @@
       ovm_report_info({get_name(),"[run]"},"Start of run ",OVM_LOW);
 
       //Wait for reset  ...
-      @(posedge intf.rst_il);
-      #100ns;
+      //@(posedge intf.rst_il);
+      //#100ns;
 
       if(enable)
       begin

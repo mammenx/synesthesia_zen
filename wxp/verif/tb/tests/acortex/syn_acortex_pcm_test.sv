@@ -102,13 +102,10 @@ class syn_acortex_pcm_test extends syn_acortex_base_test;
 
       super.env.sprint();
 
-      #500;
-
       super.setup_codec(32);
 
-      #10;
+      #500;
 
-      adc_load_seq.pcm_pkt.fill_sin(256,  1000, 10000,  44100);
       adc_load_seq.pcm_pkt.fill_sin(256,  1000, 10000,  44100);
 
       wm8731_drvr_config_seq.dac_en = 1;

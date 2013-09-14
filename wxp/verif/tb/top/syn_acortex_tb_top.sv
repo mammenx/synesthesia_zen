@@ -80,9 +80,9 @@
 
     syn_wm8731_intf                   wm8731_intf(sys_rst);
 
-    mem_intf#(PCM_MEM_DATA_W,PCM_MEM_ADDR_W)  lpcm_mem_intf(sys_clk_100,rst_il);
-    mem_intf#(PCM_MEM_DATA_W,PCM_MEM_ADDR_W)  rpcm_mem_intf(sys_clk_100,rst_il);
-    syn_pcm_mem_intf#(PCM_MEM_DATA_W,PCM_MEM_ADDR_W)  pcm_mem_tb_intf(sys_clk_100,rst_il);
+    mem_intf#(PCM_MEM_DATA_W,PCM_MEM_ADDR_W)  lpcm_mem_intf(sys_clk_100,sys_rst);
+    mem_intf#(PCM_MEM_DATA_W,PCM_MEM_ADDR_W)  rpcm_mem_intf(sys_clk_100,sys_rst);
+    syn_pcm_mem_intf#(PCM_MEM_DATA_W,PCM_MEM_ADDR_W,2)  pcm_mem_tb_intf(sys_clk_100,sys_rst);
 
     syn_clk_vec_intf#(4)    clk_vec_intf(4'd0);
 

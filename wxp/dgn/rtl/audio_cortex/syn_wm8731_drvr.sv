@@ -307,7 +307,7 @@ enum  logic [2:0] {
     end
     else
     begin
-      if(drvr_fsm_idle_c)
+      if(drvr_fsm_idle_c  | end_of_fs_c)
       begin
         fs_cntr_f             <=  0;
       end
@@ -340,6 +340,7 @@ enum  logic [2:0] {
         lpcm_shift_reg_f      <=  aud_cache_ingr_intf.pcm_data.lchnnl;
         rpcm_shift_reg_f      <=  aud_cache_ingr_intf.pcm_data.rchnnl;
       end
+      //else if(aud_cache_ingr_intf.pcm_data_valid)
       else
       begin
         lpcm_shift_reg_f      <=  (fsm_pstate ==  LCHANNEL_S) & bclk_half_tck_w ? {lpcm_shift_reg_f[P_32B_W-2:0],wm8731_intf.adc_dat} : lpcm_shift_reg_f;
@@ -382,9 +383,9 @@ enum  logic [2:0] {
     begin
       wm8731_intf.adc_lrc     <=  (fsm_pstate ==  START_S)  ? adc_en_f  : 1'b0;
 
-      wm8731_intf.dac_lrc     <=  (fsm_pstate ==  START_S)  ? dac_en_f  : 1'b0;
+      wm8731_intf.dac_lrc     <=  (fsm_pstate ==  START_S)  ? dac_en_f  & aud_cache_ingr_intf.pcm_data_valid  : 1'b0;
 
-      if(bclk_full_tck_w)
+      if(aud_cache_ingr_intf.pcm_data_valid & bclk_full_tck_w)
       begin
         case(fsm_pstate)
 

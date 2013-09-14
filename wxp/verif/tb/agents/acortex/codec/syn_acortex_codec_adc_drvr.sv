@@ -133,6 +133,8 @@
 
       endcase
 
+      ovm_report_info({get_name(),"[drive]"},$psprintf("BPS is : %1d",bps),OVM_LOW);
+
       //foreach(pkt.pcm_data[i])
       for(int i=0; i<pkt.pcm_data.size; i++)
       begin
@@ -151,7 +153,7 @@
           intf.adc_dat  <=  ldata[i-1];
         end
 
-        ovm_report_info({get_name(),"[drive]"},$psprintf("Driven LChannel ADC data[%1d]",i),OVM_LOW);
+        ovm_report_info({get_name(),"[drive]"},$psprintf("Driven LChannel ADC data[%1d] : 0x%x",i,ldata),OVM_LOW);
 
         for(int i=bps;  i>0;  i--)
         begin
@@ -161,7 +163,7 @@
           intf.adc_dat  <=  rdata[i-1];
         end
 
-        ovm_report_info({get_name(),"[drive]"},$psprintf("Driven RChannel ADC data[%1d]",i),OVM_LOW);
+        ovm_report_info({get_name(),"[drive]"},$psprintf("Driven RChannel ADC data[%1d] : 0x%x",i,rdata),OVM_LOW);
       end
 
 

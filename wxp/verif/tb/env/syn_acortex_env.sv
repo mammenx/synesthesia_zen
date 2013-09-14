@@ -68,7 +68,7 @@
     parameter type  ADC_INTF_TYPE = virtual syn_wm8731_intf.TB_ADC;
 
     parameter       NUM_PCM_SAMPLES   = 128;
-    parameter type  PCM_MEM_INTF_TYPE = virtual syn_pcm_mem_intf#(32,7);
+    parameter type  PCM_MEM_INTF_TYPE = virtual syn_pcm_mem_intf#(32,7,2);
 
 
     /*  Register with factory */
@@ -158,6 +158,8 @@
         codec_agent.i2c_mon.Mon2Sb_port.connect(i2c_sb.Mon_i2c_2Sb_port);
         pcm_mem_agent.mon.Mon2Sb_port.connect(adc_sb.Mon_rcvd_2Sb_port);
         codec_agent.adc_mon.Mon2Sb_port.connect(adc_sb.Mon_sent_2Sb_port);
+        codec_agent.adc_mon.Mon2Sb_port.connect(dac_sb.Mon_sent_2Sb_port);
+        codec_agent.dac_mon.Mon2Sb_port.connect(dac_sb.Mon_rcvd_2Sb_port);
 
         //Reg Map
         codec_agent.adc_drvr.reg_map  = this.wm8731_reg_map;

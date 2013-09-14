@@ -87,7 +87,7 @@
       $cast(pkt.addr[0],  {ACORTEX_BLK,ACORTEX_WMDRVR_CODE,ACORTEX_WMDRVR_CTRL_REG_ADDR});
       pkt.data[0][0]  = dac_en;
       pkt.data[0][1]  = adc_en;
-      $cast(pkt.data[0][1], bps);
+      $cast(pkt.data[0][2], bps);
 
       $cast(pkt.addr[1],  {ACORTEX_BLK,ACORTEX_WMDRVR_CODE,ACORTEX_WMDRVR_FS_DIV_REG_ADDR});
       pkt.data[1] = fs_div_val;

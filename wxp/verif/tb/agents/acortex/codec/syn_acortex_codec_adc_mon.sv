@@ -113,6 +113,8 @@
 
         endcase
 
+        ovm_report_info({get_name(),"[run]"},$psprintf("BPS is : %1d",bps),OVM_LOW);
+
         forever
         begin
           ovm_report_info({get_name(),"[run]"},"Waiting for ADC LRC pulse",OVM_LOW);

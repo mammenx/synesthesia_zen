@@ -104,14 +104,14 @@
       if(enable)
       begin
         fork
-          begin //get delayed addresses
-            @(posedge intf.clk_ir);
-            lpcm_addr_2d = lpcm_addr_1d;
-            lpcm_addr_1d = intf.cb.pcm_addr;
+          //begin //get delayed addresses
+          //  @(posedge intf.clk_ir);
+          //  lpcm_addr_2d = lpcm_addr_1d;
+          //  lpcm_addr_1d = intf.cb.pcm_addr;
 
-            rpcm_addr_2d = rpcm_addr_1d;
-            rpcm_addr_1d = intf.cb.pcm_addr;
-          end
+          //  rpcm_addr_2d = rpcm_addr_1d;
+          //  rpcm_addr_1d = intf.cb.pcm_addr;
+          //end
 
           begin
             forever
@@ -130,12 +130,18 @@
               begin
                 @(posedge intf.clk_ir);
 
+                lpcm_addr_2d  = intf.cb.pcm_raddr;
+                rpcm_addr_2d  = intf.cb.pcm_raddr;
+
                 if(intf.cb.pcm_rd_valid)
                 begin
                   pkt.pcm_data[lpcm_addr_2d].lchnnl = intf.cb.lpcm_rdata;
                   pkt.pcm_data[rpcm_addr_2d].rchnnl = intf.cb.rpcm_rdata;
 
-                  if((lpcm_addr_2d  ==  NUM_SAMPLES-1)  ||  (rpcm_addr_2d ==  NUM_SAMPLES))
+                  ovm_report_info({get_name(),"[run]"},$psprintf("pkt.pcm_data[%1d].lchnnl = 0x%x",lpcm_addr_2d,pkt.pcm_data[lpcm_addr_2d].lchnnl),OVM_LOW);
+                  ovm_report_info({get_name(),"[run]"},$psprintf("pkt.pcm_data[%1d].rchnnl = 0x%x",rpcm_addr_2d,pkt.pcm_data[rpcm_addr_2d].rchnnl),OVM_LOW);
+
+                  if((lpcm_addr_2d  ==  NUM_SAMPLES-1)  ||  (rpcm_addr_2d ==  NUM_SAMPLES-1))
                     break;
                 end
               end

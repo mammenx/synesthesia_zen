@@ -40,7 +40,7 @@
  --------------------------------------------------------------------------
 */
 
-interface syn_pcm_mem_intf  #(DATA_W=32,ADDR_W=7) (input logic clk_ir,rst_il);
+interface syn_pcm_mem_intf  #(DATA_W=32,ADDR_W=7,RD_DELAY=2) (input logic clk_ir,rst_il);
 
   //Logic signals
   wire                     pcm_data_rdy;
@@ -52,6 +52,7 @@ interface syn_pcm_mem_intf  #(DATA_W=32,ADDR_W=7) (input logic clk_ir,rst_il);
   wire [DATA_W-1:0]        lpcm_rdata;
   wire [DATA_W-1:0]        rpcm_rdata;
   wire                     pcm_rd_valid;
+  wire [ADDR_W-1:0]        pcm_raddr;
 
   //Clocking Blocks
   clocking  cb  @(posedge clk_ir);
@@ -66,8 +67,26 @@ interface syn_pcm_mem_intf  #(DATA_W=32,ADDR_W=7) (input logic clk_ir,rst_il);
     inout   lpcm_rdata;
     inout   rpcm_rdata;
     inout   pcm_rd_valid;
+    input   pcm_raddr;  //to be used only by monitor
 
   endclocking : cb
+
+  /*  Read address delay logic  */
+  logic [(ADDR_W*RD_DELAY)-1:0]  pcm_raddr_del;
+
+  always_ff@(posedge clk_ir, negedge rst_il)
+  begin
+    if(~rst_il)
+    begin
+      pcm_raddr_del <=  0;
+    end
+    else
+    begin
+      pcm_raddr_del <=  {pcm_raddr_del[(ADDR_W*(RD_DELAY-1))-1:0],pcm_addr};
+    end
+  end
+
+  assign  pcm_raddr = pcm_raddr_del[(ADDR_W*(RD_DELAY-1)) +:  ADDR_W];
 
 
   //Modports
