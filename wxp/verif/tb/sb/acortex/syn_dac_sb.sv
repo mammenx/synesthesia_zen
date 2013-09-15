@@ -194,19 +194,25 @@
         sent_pkt  = sent_que.pop_front();
 
         //Process, compare, check etc.
-        if(dac_reg_map.get_field("bps") ==  1)  //16b
+        if(dac_reg_map.get_field("bps") ==  0)  //16b
         begin
+          ovm_report_info({get_name(),"[run]"},"Working with 16bps...",OVM_LOW);
+
           foreach(rcvd_pkt.pcm_data[i])
           begin
-            rcvd_pkt.pcm_data[i].lchnnl = {{16{rcvd_pkt.pcm_data[i].lchnnl[16]}}, rcvd_pkt.pcm_data[i].lchnnl[15:0]};
-            rcvd_pkt.pcm_data[i].rchnnl = {{16{rcvd_pkt.pcm_data[i].rchnnl[16]}}, rcvd_pkt.pcm_data[i].rchnnl[15:0]};
+            rcvd_pkt.pcm_data[i].lchnnl = {{16{rcvd_pkt.pcm_data[i].lchnnl[15]}}, rcvd_pkt.pcm_data[i].lchnnl[15:0]};
+            rcvd_pkt.pcm_data[i].rchnnl = {{16{rcvd_pkt.pcm_data[i].rchnnl[15]}}, rcvd_pkt.pcm_data[i].rchnnl[15:0]};
           end
 
           foreach(sent_pkt.pcm_data[i])
           begin
-            sent_pkt.pcm_data[i].lchnnl = {{16{sent_pkt.pcm_data[i].lchnnl[16]}}, sent_pkt.pcm_data[i].lchnnl[15:0]};
-            sent_pkt.pcm_data[i].rchnnl = {{16{sent_pkt.pcm_data[i].rchnnl[16]}}, sent_pkt.pcm_data[i].rchnnl[15:0]};
+            sent_pkt.pcm_data[i].lchnnl = {{16{sent_pkt.pcm_data[i].lchnnl[15]}}, sent_pkt.pcm_data[i].lchnnl[15:0]};
+            sent_pkt.pcm_data[i].rchnnl = {{16{sent_pkt.pcm_data[i].rchnnl[15]}}, sent_pkt.pcm_data[i].rchnnl[15:0]};
           end
+        end
+        else
+        begin
+          ovm_report_info({get_name(),"[run]"},"Working with 32bps...",OVM_LOW);
         end
 
         res = sent_pkt.check(rcvd_pkt);

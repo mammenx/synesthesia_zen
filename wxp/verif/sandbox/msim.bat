@@ -34,8 +34,8 @@ rem set TEST_NAME=syn_vcortex_vga_test
 
 rem set TEST_NAME=syn_acortex_base_test
 rem set TEST_NAME=syn_acortex_i2c_test
-rem set TEST_NAME=syn_acortex_pcm_test
-set TEST_NAME=syn_acortex_adc_cap_test
+set TEST_NAME=syn_acortex_pcm_test
+rem set TEST_NAME=syn_acortex_adc_cap_test
 
 rem set TB_TOP=syn_vcortex_tb_top
 set TB_TOP=syn_acortex_tb_top

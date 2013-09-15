@@ -102,7 +102,7 @@ class syn_acortex_pcm_test extends syn_acortex_base_test;
 
       super.env.sprint();
 
-      super.setup_codec(32);
+      super.setup_codec(16);
 
       #500;
 
@@ -110,7 +110,7 @@ class syn_acortex_pcm_test extends syn_acortex_base_test;
 
       wm8731_drvr_config_seq.dac_en = 1;
       wm8731_drvr_config_seq.adc_en = 1;
-      wm8731_drvr_config_seq.bps    = BPS_32;
+      wm8731_drvr_config_seq.bps    = BPS_16;
       wm8731_drvr_config_seq.fs_div_val = 70; //not as per fs
 
       fork
