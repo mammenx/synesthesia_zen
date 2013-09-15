@@ -191,7 +191,8 @@ interface syn_acortex_lb_bus_intf #(
     end
     else  //acache_rd_valid
     begin
-      lbm_rd_data = {{LB_MASTER_DATA_W-AUDIO_CACHE_DATA_W{1'b0}}, acache_rd_data};
+      //lbm_rd_data = {{LB_MASTER_DATA_W-AUDIO_CACHE_DATA_W{1'b0}}, acache_rd_data};
+      lbm_rd_data[AUDIO_CACHE_DATA_W-1:0] = acache_rd_data;
     end
   end
 
