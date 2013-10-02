@@ -22,10 +22,10 @@
 /*
  --------------------------------------------------------------------------
  -- Project Code      : synesthesia
- -- Package Name      : syn_fft_pkg
+ -- Interface Name    : syn_but_intf
  -- Author            : mammenx
- -- Description       : This package contains all the datatypes needed for
-                        FFT.
+ -- Function          : This interface contains all the signals needed to
+                        interact with the butterfly module.
  --------------------------------------------------------------------------
 */
 
@@ -40,20 +40,38 @@
  --------------------------------------------------------------------------
 */
 
-package syn_fft_pkg;
+interface syn_but_intf  #() (input logic clk_ir,rst_il)
 
-  `define COMPLEX_STRUCT_T_DEF(WIDTH, NAME) \
-    typedef struct  packed  { \
-      logic [WIDTH-1:0] re; \
-      logic [WIDTH-1:0] im; \
-    } ``NAME``;
+  import  syn_fft_pkg::*;
+
+  //Logic signals
+  fft_sample_t    sample_a;
+  fft_sample_t    sample_b;
+  fft_twdl_t      twdl;
+  logic           sample_rdy;
+  fft_sample_t    res;
+  logic           res_rdy;
 
 
-  parameter P_FFT_SAMPLE_W    = 32;
-  parameter P_FFT_TWDL_W      = 10;
+  //Modports
+  modport master  (
+                    output  sample_a,
+                    output  sample_b,
+                    output  twdl,
+                    output  sample_rdy,
 
-  `COMPLEX_STRUCT_T_DEF(P_FFT_SAMPLE_W, fft_sample_t)
+                    input   res,
+                    input   res_rdy
+                  );
 
-  `COMPLEX_STRUCT_T_DEF(P_FFT_TWDL_W, fft_twdl_t)
+  modport slave   (
+                    input   sample_a,
+                    input   sample_b,
+                    input   twdl,
+                    input   sample_rdy,
 
-endpackage  //  syn_fft_pkg
+                    output  res,
+                    output  res_rdy
+                  );
+
+endinterface  //  syn_but_intf
