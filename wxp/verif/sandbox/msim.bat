@@ -34,11 +34,15 @@ rem set TEST_NAME=syn_vcortex_vga_test
 
 rem set TEST_NAME=syn_acortex_base_test
 rem set TEST_NAME=syn_acortex_i2c_test
-set TEST_NAME=syn_acortex_pcm_test
+rem set TEST_NAME=syn_acortex_pcm_test
 rem set TEST_NAME=syn_acortex_adc_cap_test
 
+rem set TEST_NAME=syn_fgyrus_base_test
+set TEST_NAME=syn_fgyrus_data_paths_test
+
 rem set TB_TOP=syn_vcortex_tb_top
-set TB_TOP=syn_acortex_tb_top
+rem set TB_TOP=syn_acortex_tb_top
+set TB_TOP=syn_fgyrus_tb_top
 
 set MSIM_DIR=C:\altera\11.1sp2\modelsim_ase
 set MSIM_INC_DIR=%MSIM_DIR%\include

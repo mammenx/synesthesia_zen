@@ -106,4 +106,13 @@ interface syn_fft_cache_intf  #(parameter DATA_W=32,ADDR_W=8) (input logic  clk_
                     output  hst_rd_valid
                   );
 
+  //synthesis translate_off
+
+  logic [ADDR_W-2:0]  raddr_norm,waddr_norm;
+
+  assign  raddr_norm  = raddr[ADDR_W-2:0];
+  assign  waddr_norm  = waddr[ADDR_W-2:0];
+
+  //synthesis translate_on
+
 endinterface  //  syn_fft_cache_intf

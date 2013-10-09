@@ -72,7 +72,7 @@ module syn_fgyrus_fsm (
                 );
 
 //----------------------- Global parameters Declarations ------------------
-  import  syn_global_pkh::*;
+  import  syn_global_pkg::*;
   import  syn_fft_pkg::*;
 
   parameter P_LB_DATA_W         = P_32B_W;
@@ -87,10 +87,10 @@ module syn_fgyrus_fsm (
   parameter P_MEM_RD_DEL        = 2;
   parameter P_BUT_DEL           = 4;
   localparam  P_DEC_WIN_PIPE_L  = P_MEM_RD_DEL+1+P_BUT_DEL+1;
+  localparam  P_NUM_FFT_STAGES  = $clog2(P_NUM_SAMPLES);  //should be 7
 
   `include  "syn_fgyrus_reg_map.sv"
 
-  typedef enum  logic {NORMAL=0,CONFIG=1} fgyrus_mode_t;
 
 //----------------------- Input Declarations ------------------------------
 
@@ -110,12 +110,19 @@ module syn_fgyrus_fsm (
   logic [3:0]                 fgyrus_post_norm_f;
   logic [7:0]                 fgyrus_config_addr_f;
   logic [P_SAMPLE_CNTR_W-1:0] fgyrus_cache_addr_f;
+  logic                       but_bffr_ovrflow_f;
+  logic                       but_bffr_underflw_f;
+  logic [P_MEM_RD_DEL-1:0]    rchnnl_n_lchnnl_f;
 
   logic [P_PST_VEC_W-1:0]     pst_vec_f;
   logic                       wait_for_end_f;
   logic [P_SAMPLE_CNTR_W-1:0] sample_rcntr_f;
   logic [P_SAMPLE_CNTR_W-1:0] sample_wcntr_f;
 
+  logic [P_NUM_FFT_STAGES-1:0]  fft_stage_rd_f;
+  logic [P_SAMPLE_CNTR_W-1:0] fft_stage_rd_bound_f;
+  logic [P_NUM_FFT_STAGES-1:0]  fft_stage_wr_f;
+  logic [P_SAMPLE_CNTR_W-1:0] fft_stage_wr_bound_f;
 
   genvar  i;
 
@@ -125,6 +132,14 @@ module syn_fgyrus_fsm (
   logic [P_SAMPLE_CNTR_W-2:0] sample_rcntr_rev_w;
   logic                       decimate_ovr_c;
 
+  logic                       wrap_inc_fft_rcntr_c;
+  logic                       fft_stage_rd_ovr_c;
+  logic                       fft_rd_ovr_c;
+
+  logic                       wrap_inc_fft_wcntr_c;
+  logic                       fft_stage_wr_ovr_c;
+  logic                       fft_wr_ovr_c;
+
 //----------------------- Internal Interface Declarations -----------------
 
 
@@ -133,7 +148,7 @@ enum  logic [2:0] { IDLE_S=0,
                     DECIMATE_WINDOW_S,
                     FFT_S,
                     CORDIC_S,
-                    ABS_S,
+                    ABS_S
                   } fsm_pstate, next_state;
 
 
@@ -153,6 +168,8 @@ enum  logic [2:0] { IDLE_S=0,
       fgyrus_post_norm_f      <=  0;  //No normalization
       fgyrus_config_addr_f    <=  0;
       fgyrus_cache_addr_f     <=  0;
+      but_bffr_ovrflow_f      <=  0;
+      but_bffr_underflw_f     <=  0;
     end
     else
     begin
@@ -166,10 +183,13 @@ enum  logic [2:0] { IDLE_S=0,
 
         fgyrus_config_addr_f  <=  (lb_intf.addr ==  {FGYRUS_REG_CODE,FGYRUS_CONFIG_ADDR})       ? lb_intf.wr_data[7:0]: fgyrus_config_addr_f;
 
-        fgyrus_cache_addr_f   <=  (lb_intf.addr ==  {FGYRUS_REG_CODE,FGYRUS_FFT_CACHE_ADDR}     ? lb_intf.wr_data[P_SAMPLE_CNTR_W-1:0]  : fgyrus_cache_addr_f;
+        fgyrus_cache_addr_f   <=  (lb_intf.addr ==  {FGYRUS_REG_CODE,FGYRUS_FFT_CACHE_ADDR})    ? lb_intf.wr_data[P_SAMPLE_CNTR_W-1:0]  : fgyrus_cache_addr_f;
       end
 
       lb_intf.wr_valid        <=  lb_intf.wr_en;
+
+      but_bffr_ovrflow_f      <=  but_bffr_ovrflow_f  | but_intf.bffr_ovrflw;
+      but_bffr_underflw_f     <=  but_bffr_underflw_f | but_intf.bffr_underflw;
 
       case(lb_intf.addr[P_LB_ADDR_W-1  -:  4])
 
@@ -178,7 +198,7 @@ enum  logic [2:0] { IDLE_S=0,
           case(lb_intf.addr[7:0])
 
             FGYRUS_CONTROL_REG_ADDR   : lb_intf.rd_data <=  {{P_LB_DATA_W-2{1'b0}}, fgyrus_mode_f,fgyrus_en_f};
-            FGYRUS_STATUS_REG_ADDR    : lb_intf.rd_data <=  {{P_LB_DATA_W-1{1'b0}}, fgyrus_busy_c};
+            FGYRUS_STATUS_REG_ADDR    : lb_intf.rd_data <=  {{P_LB_DATA_W-3{1'b0}}, but_bffr_ovrflow_f,but_bffr_underflw_f,fgyrus_busy_c};
             FGYRUS_POST_NORM_REG_ADDR : lb_intf.rd_data <=  {{P_LB_DATA_W-4{1'b0}}, fgyrus_post_norm_f};
             FGYRUS_CONFIG_ADDR        : lb_intf.rd_data <=  {{P_LB_DATA_W-8{1'b0}}, fgyrus_config_addr_f};
             default                   : lb_intf.rd_data <=  'hdeadbabe;
@@ -190,8 +210,10 @@ enum  logic [2:0] { IDLE_S=0,
           lb_intf.rd_data     <=  cache_intf.hst_rd_data;
 
         FGYRUS_TWDLE_RAM_CODE :
+          lb_intf.rd_data     <=  twdl_ram_intf.rd_data;
 
         FGYRUS_CORDIC_RAM_CODE  :
+          lb_intf.rd_data     <=  {{P_16B_W{1'b0}}, cordic_ram_intf.rd_data};
 
         FGYRUS_WIN_RAM_CODE :
           lb_intf.rd_data     <=  win_ram_intf.rdata;
@@ -204,7 +226,7 @@ enum  logic [2:0] { IDLE_S=0,
   end
 
   //Check if FSM is busy or not
-  assign  fgyrus_busy_c = (fsm_pstate ==  IDLE_S) ? : 1'b0  : 1'b1;
+  assign  fgyrus_busy_c = (fsm_pstate ==  IDLE_S) ?1'b0  : 1'b1;
 
 
   /*  FSM Sequential Logic  */
@@ -245,7 +267,10 @@ enum  logic [2:0] { IDLE_S=0,
 
       FFT_S :
       begin
-
+        if(fft_wr_ovr_c)
+        begin
+          next_state  = CORDIC_S;
+        end
       end
 
       CORDIC_S  :
@@ -279,6 +304,11 @@ enum  logic [2:0] { IDLE_S=0,
         end
 
         DECIMATE_WINDOW_S :
+        begin
+          pst_vec_f[0]        <=  decimate_ovr_c  ? 1'b0  : ~pst_vec_f[0];
+        end
+
+        FFT_S :
         begin
           pst_vec_f[0]        <=  ~pst_vec_f[0];
         end
@@ -318,10 +348,44 @@ enum  logic [2:0] { IDLE_S=0,
           end
           else  //wait for last sample read
           begin
-            wait_for_end_f    <=  (&sample_rcntr_f) ? 1'b1  : 1'b0;
+            wait_for_end_f    <=  (&sample_rcntr_f) ? pst_vec_f[0]  : 1'b0;
           end
 
-          sample_wcntr_f      <=  sample_wcntr_f  + (but_intf.res_rdy & pst_vec_f[0]);  //to be checked !!!!!!!!!
+          sample_wcntr_f      <=  sample_wcntr_f  + cache_intf.wr_en;
+        end
+
+        FFT_S :
+        begin
+          if(wait_for_end_f)  //wait for decimate over signal
+          begin
+            wait_for_end_f    <=  ~fft_wr_ovr_c;
+          end
+          else  //wait for last sample read
+          begin
+            wait_for_end_f    <=  fft_rd_ovr_c;
+          end
+
+          sample_rcntr_f[P_SAMPLE_CNTR_W-2:0] <=  (fft_stage_rd_ovr_c | wait_for_end_f) ? 0
+                                                                      : sample_rcntr_f[P_SAMPLE_CNTR_W-2:0] +
+                                                                        fft_stage_rd_f +
+                                                                        wrap_inc_fft_rcntr_c;
+
+          sample_rcntr_f[P_SAMPLE_CNTR_W-1]   <=  ~fft_rd_ovr_c &
+                                                      (sample_rcntr_f[P_SAMPLE_CNTR_W-1]  |
+                                                        (fft_stage_rd_f[P_NUM_FFT_STAGES-1]  & fft_stage_rd_ovr_c));
+
+
+          if(cache_intf.wr_en)
+          begin
+            sample_wcntr_f[P_SAMPLE_CNTR_W-2:0] <=  fft_stage_wr_ovr_c  ? 0
+                                                                        : sample_wcntr_f[P_SAMPLE_CNTR_W-2:0] +
+                                                                          fft_stage_wr_f +
+                                                                          wrap_inc_fft_wcntr_c;
+
+            sample_wcntr_f[P_SAMPLE_CNTR_W-1]   <=  ~fft_wr_ovr_c &
+                                                        (sample_wcntr_f[P_SAMPLE_CNTR_W-1]  |
+                                                          (fft_stage_wr_f[P_NUM_FFT_STAGES-1]  & fft_stage_wr_ovr_c));
+          end
         end
 
       endcase
@@ -340,20 +404,86 @@ enum  logic [2:0] { IDLE_S=0,
   endgenerate
 
   /*  PCM Mem Interface Logic */
-  assign  pcm_rchnnl_intf.addr    = sample_rcntr_rev_w;
-  assign  pcm_rchnnl_intf.wr_data = 0;
+  assign  pcm_rchnnl_intf.addr    = (fsm_pstate ==  DECIMATE_WINDOW_S)  ? sample_rcntr_rev_w  : 0;
+  assign  pcm_rchnnl_intf.wdata   = 0;
   assign  pcm_rchnnl_intf.wren    = 0;
-  assign  pcm_rchnnl_intf.rd_en   = ~pst_vec_f[0];
-  assign  pcm_lchnnl_intf.addr    = sample_rcntr_rev_w;
-  assign  pcm_lchnnl_intf.wr_data = 0;
+  assign  pcm_rchnnl_intf.rden    = (fsm_pstate ==  DECIMATE_WINDOW_S)  ? ~pst_vec_f[0] & ~wait_for_end_f : 1'b0;
+  assign  pcm_lchnnl_intf.addr    = (fsm_pstate ==  DECIMATE_WINDOW_S)  ? sample_rcntr_rev_w  : 0;
+  assign  pcm_lchnnl_intf.wdata   = 0;
   assign  pcm_lchnnl_intf.wren    = 0;
-  assign  pcm_lchnnl_intf.rd_en   = ~pst_vec_f[0];
+  assign  pcm_lchnnl_intf.rden    = (fsm_pstate ==  DECIMATE_WINDOW_S)  ? ~pst_vec_f[0] & ~wait_for_end_f : 1'b0;
 
   /*  Window Mem Interface Logic  */
-  assign  win_ram_intf.addr       = (fgyrus_mode_f  ==  CONFIG) ? fgyrus_config_addr_f[6:0] : sample_rcntr_rev_w;
-  assign  win_ram_intf.wr_data    = lb_intf.wr_data;
-  assign  win_ram_intf.wren       = (lb_intf.addr[P_LB_ADDR_W-1 -= 4] ==  FGYRUS_WIN_RAM_CODE)  ? lb_intf.wr_en : 1'b0;
-  assign  win_ram_intf.rd_en      = ~pst_vec_f[0];
+  assign  win_ram_intf.addr       = (fgyrus_mode_f  ==  CONFIG) ? fgyrus_config_addr_f[6:0] :
+                                      ((fsm_pstate  ==  DECIMATE_WINDOW_S)  ? sample_rcntr_rev_w  : 0);
+  assign  win_ram_intf.wdata      = lb_intf.wr_data;
+  assign  win_ram_intf.wren       = (lb_intf.addr[P_LB_ADDR_W-1 -: 4] ==  FGYRUS_WIN_RAM_CODE)  ? lb_intf.wr_en : 1'b0;
+  assign  win_ram_intf.rden       = (fsm_pstate ==  DECIMATE_WINDOW_S)  ? ~pst_vec_f[0] : 1'b0;
+
+  /*  FFT Stage Counter Logic */
+  always_ff@(posedge cr_intf.clk_ir, negedge cr_intf.rst_sync_l)
+  begin : fft_stage_logic
+    if(~cr_intf.rst_sync_l)
+    begin
+      fft_stage_rd_f          <=  1;  //One hot
+      fft_stage_rd_bound_f    <=  (P_NUM_SAMPLES-1);
+      fft_stage_wr_f          <=  1;  //One hot
+      fft_stage_wr_bound_f    <=  (P_NUM_SAMPLES-1);
+    end
+    else
+    begin
+      if(fsm_pstate ==  FFT_S)
+      begin
+        if(fft_stage_rd_ovr_c)
+        begin
+          if(fft_stage_rd_f[P_NUM_FFT_STAGES-1])
+          begin
+            fft_stage_rd_f        <=  1;
+            fft_stage_rd_bound_f  <=  (P_NUM_SAMPLES-1);
+          end
+          else
+          begin
+            fft_stage_rd_f        <=  {fft_stage_rd_f[P_NUM_FFT_STAGES-2:0],1'b0};
+            fft_stage_rd_bound_f  <=  fft_stage_rd_bound_f  - fft_stage_rd_f;
+          end
+        end
+
+        if(fft_stage_wr_ovr_c)
+        begin
+          if(fft_stage_wr_f[P_NUM_FFT_STAGES-1])
+          begin
+            fft_stage_wr_f        <=  1;
+            fft_stage_wr_bound_f  <=  (P_NUM_SAMPLES-1);
+          end
+          else
+          begin
+            fft_stage_wr_f        <=  {fft_stage_wr_f[P_NUM_FFT_STAGES-2:0],1'b0};
+            fft_stage_wr_bound_f  <=  fft_stage_wr_bound_f  - fft_stage_wr_f;
+          end
+        end
+      end
+      else
+      begin
+        fft_stage_rd_f        <=  1;
+        fft_stage_rd_bound_f  <=  (P_NUM_SAMPLES-1);
+        fft_stage_wr_f        <=  1;
+        fft_stage_wr_bound_f  <=  (P_NUM_SAMPLES-1);
+      end
+    end
+  end
+
+  //Check when to wrap the FFT sample counter
+  assign  wrap_inc_fft_rcntr_c  = (sample_rcntr_f[P_SAMPLE_CNTR_W-2:0]  >=  fft_stage_rd_bound_f)  ? 1'b1  : 1'b0;
+  assign  wrap_inc_fft_wcntr_c  = (sample_wcntr_f[P_SAMPLE_CNTR_W-2:0]  >=  fft_stage_wr_bound_f)  ? cache_intf.wr_en  : 1'b0;
+
+  //Check for end of FFT stage
+  assign  fft_stage_rd_ovr_c    = &sample_rcntr_f[P_SAMPLE_CNTR_W-2:0];
+  assign  fft_stage_wr_ovr_c    = &sample_wcntr_f[P_SAMPLE_CNTR_W-2:0]  & cache_intf.wr_en;
+
+  //Check if all samples have been FFT'd
+  assign  fft_rd_ovr_c          = fft_stage_rd_ovr_c  & sample_rcntr_f[P_SAMPLE_CNTR_W-1] & fft_stage_rd_f[P_NUM_FFT_STAGES-1];
+  assign  fft_wr_ovr_c          = fft_stage_wr_ovr_c  & sample_wcntr_f[P_SAMPLE_CNTR_W-1] & fft_stage_wr_f[P_NUM_FFT_STAGES-1];
+
 
   /*  Butterfly Interface Logic */
   always_ff@(posedge cr_intf.clk_ir, negedge cr_intf.rst_sync_l)
@@ -367,6 +497,8 @@ enum  logic [2:0] { IDLE_S=0,
       but_intf.twdl.re        <=  0;
       but_intf.twdl.im        <=  0;
       but_intf.sample_rdy     <=  0;
+
+      rchnnl_n_lchnnl_f       <=  0;
     end
     else
     begin
@@ -375,20 +507,37 @@ enum  logic [2:0] { IDLE_S=0,
         IDLE_S  :
         begin
           but_intf.sample_rdy   <=  0;
+          rchnnl_n_lchnnl_f     <=  0;
         end
 
         DECIMATE_WINDOW_S :
         begin
+          rchnnl_n_lchnnl_f     <=  decimate_ovr_c  ? 1'b0  : {rchnnl_n_lchnnl_f[P_MEM_RD_DEL-2:0], sample_rcntr_f[P_SAMPLE_CNTR_W-1]};
+
           but_intf.sample_a.re  <=  0;
           but_intf.sample_a.im  <=  0;
 
-          but_intf.sample_b.re  <=  sample_wcntr_f[P_SAMPLE_CNTR_W-1] ? pcm_rchnnl_intf.rdata : pcm_lchnnl_intf.rdata;
+          but_intf.sample_b.re  <=  rchnnl_n_lchnnl_f ? pcm_rchnnl_intf.rdata : pcm_lchnnl_intf.rdata;
           but_intf.sample_b.im  <=  0;
 
-          but_intf.twdl.re      <=  win_ram_intf.rdata;
+          but_intf.twdl.re      <=  win_ram_intf.rdata[P_FFT_TWDL_W-1:0];
           but_intf.twdl.im      <=  0;
 
           but_intf.sample_rdy   <=  win_ram_intf.rd_valid & pcm_lchnnl_intf.rd_valid  & pcm_rchnnl_intf.rd_valid;
+        end
+
+        FFT_S :
+        begin
+          but_intf.sample_a.re  <=  but_intf.sample_b.re;
+          but_intf.sample_a.im  <=  but_intf.sample_b.im;
+
+          but_intf.sample_b.re  <=  cache_intf.rd_sample.re;
+          but_intf.sample_b.im  <=  cache_intf.rd_sample.im;
+
+          but_intf.twdl.re      <=  twdl_ram_intf.rdata[P_16B_W +:  P_FFT_TWDL_W];
+          but_intf.twdl.im      <=  twdl_ram_intf.rdata[P_FFT_TWDL_W-1:0];
+
+          but_intf.sample_rdy   <=  twdl_ram_intf.rd_valid  & cache_intf.rd_valid & ~pst_vec_f[0];
         end
 
       endcase
@@ -397,11 +546,13 @@ enum  logic [2:0] { IDLE_S=0,
 
   /*  FFT Cache Interface Logic */
   always_ff@(posedge cr_intf.clk_ir, negedge cr_intf.rst_sync_l)
-  begin : but_intf_logic
+  begin : fft_cache_intf_logic
     if(~cr_intf.rst_sync_l)
     begin
       cache_intf.wr_en        <=  0;
       cache_intf.rd_en        <=  0;
+      cache_intf.wr_sample.re <=  0;
+      cache_intf.wr_sample.im <=  0;
     end
     else
     begin
@@ -415,13 +566,23 @@ enum  logic [2:0] { IDLE_S=0,
 
         DECIMATE_WINDOW_S :
         begin
-          cache_intf.wr_en    <=  but_intf.res_rdy  & pst_vec_f[0]; //check!!!!!!!!!!!
+          cache_intf.wr_en    <=  but_intf.res_rdy  & ~pst_vec_f[0];
+          cache_intf.wr_sample<=  but_intf.res;
+
+          cache_intf.rd_en    <=  decimate_ovr_c;
+        end
+
+        FFT_S :
+        begin
+          cache_intf.rd_en    <=  cache_intf.rd_en  & ~fft_rd_ovr_c;
+
+          cache_intf.wr_en    <=  but_intf.res_rdy;
+          cache_intf.wr_sample<=  but_intf.res;
         end
       endcase
     end
   end
 
-  assign  cache_intf.wr_sample  = but_intf.res;
   assign  cache_intf.waddr      = sample_wcntr_f;
   assign  cache_intf.raddr      = sample_rcntr_f;
 
@@ -429,6 +590,50 @@ enum  logic [2:0] { IDLE_S=0,
   assign  cache_intf.hst_wr_data= lb_intf.wr_data;
   assign  cache_intf.hst_wr_en  = (lb_intf.addr[P_LB_ADDR_W-1 -:  4]  ==  FGYRUS_FFT_CACHE_RAM_CODE)  ? lb_intf.wr_en : 1'b0;
   assign  cache_intf.hst_rd_en  = 0;
+  assign  cache_intf.fft_done   = 0;
 
+
+  /*  Twiddle RAM Address Logic */
+  always_ff@(posedge cr_intf.clk_ir, negedge cr_intf.rst_sync_l)
+  begin : twdl_ram_addr_logic
+    if(~cr_intf.rst_sync_l)
+    begin
+      twdl_ram_intf.addr      <= 1;
+    end
+    else
+    begin
+      if(fgyrus_mode_f  ==  CONFIG)
+      begin
+        twdl_ram_intf.addr    <=  fgyrus_config_addr_f[6:0];
+      end
+      else
+      begin
+        case(fsm_pstate)
+
+          FFT_S :
+          begin
+            twdl_ram_intf.addr  <=  (fft_stage_rd_ovr_c & fft_stage_rd_f[P_NUM_FFT_STAGES-1]) ? 1
+                                      : twdl_ram_intf.addr  + wrap_inc_fft_rcntr_c;
+          end
+
+          default :
+          begin
+            twdl_ram_intf.addr  <=  1;
+          end
+
+        endcase
+      end
+    end
+  end
+
+  assign  twdl_ram_intf.rden  = (fsm_pstate ==  FFT_S)  ? ~wait_for_end_f : 1'b0;
+  assign  twdl_ram_intf.wren  = (lb_intf.addr[P_LB_ADDR_W-1 -:  4]  ==  FGYRUS_TWDLE_RAM_CODE)  ? lb_intf.wr_en : 1'b0;
+  assign  twdl_ram_intf.wdata = lb_intf.wr_data;
+
+
+  assign  cordic_ram_intf.addr  = 0;
+  assign  cordic_ram_intf.wdata = 0;
+  assign  cordic_ram_intf.wren  = 0;
+  assign  cordic_ram_intf.rden  = 0;
 
 endmodule // syn_fgyrus_fsm

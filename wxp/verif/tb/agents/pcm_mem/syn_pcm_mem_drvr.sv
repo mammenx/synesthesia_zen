@@ -26,8 +26,8 @@
  -- Author            : mammenx
  -- Function          : This class is responsible for issuing/responding to
                         PCM read xtns from Acortex to Fgyrus. It can act as
-                        either master or slave, depending on where it is
-                        located.                        
+                        either master or slave, depending on how it is
+                        configured.                        
  --------------------------------------------------------------------------
 */
 
@@ -127,13 +127,14 @@
       pcm_data_t  pcm_data[];
       bit [31:0]  lpcm_rdata_1d,lpcm_rdata_2d;
       bit         pcm_rd_valid_1d,pcm_rd_valid_2d;
+      int         pcm_addr_1d;
 
-      ovm_report_info({get_name(),"[run_master]"},"Start of run",OVM_LOW);
+      ovm_report_info({get_name(),"[run_master]"},"Start of run_master",OVM_LOW);
 
       //Reset signals
       intf.cb.pcm_data_rdy  <= 0;
       intf.cb.lpcm_rdata    <= 0;
-      intf.cb.lpcm_rdata    <= 0;
+      intf.cb.rpcm_rdata    <= 0;
       intf.cb.pcm_rd_valid  <= 0;
 
       //Wait for reset ...
@@ -146,10 +147,10 @@
         begin //wait for next seq items & update PCM data
           forever
           begin
-            ovm_report_info({get_name(),"[run]"},"Waiting for seq_item",OVM_LOW);
+            ovm_report_info({get_name(),"[run_master]"},"Waiting for seq_item",OVM_LOW);
             seq_item_port.get_next_item(pkt);
 
-            ovm_report_info({get_name(),"[run]"},$psprintf("Got seq_item - \n%s",pkt.sprint()),OVM_LOW);
+            ovm_report_info({get_name(),"[run_master]"},$psprintf("Got seq_item - \n%s",pkt.sprint()),OVM_LOW);
 
             //update pcm data
             foreach(pcm_data[i])
@@ -159,6 +160,9 @@
             end
 
             //send pcm_data_rdy pulse
+            ovm_report_info({get_name(),"[run_master]"},$psprintf("Sending PCM Data Ready pulse"),OVM_LOW);
+            @(posedge intf.clk_ir);
+
             intf.cb.pcm_data_rdy  <=  1;
             @(posedge intf.clk_ir);
             intf.cb.pcm_data_rdy  <=  0;
@@ -179,18 +183,16 @@
               pcm_data[intf.cb.pcm_addr].rchnnl = intf.cb.rpcm_wdata;
             end
 
-            pcm_rd_valid_1d = pcm_data[intf.cb.pcm_addr].lchnnl;
-            pcm_rd_valid_1d = pcm_data[intf.cb.pcm_addr].rchnnl;
+            //intf.cb.lpcm_rdata  <=  pcm_data[intf.cb.pcm_raddr];
+            //intf.cb.rpcm_rdata  <=  pcm_data[intf.cb.pcm_raddr];
+            intf.cb.lpcm_rdata  <=  pcm_data[pcm_addr_1d].lchnnl;
+            intf.cb.rpcm_rdata  <=  pcm_data[pcm_addr_1d].rchnnl;
+            pcm_addr_1d = intf.cb.pcm_addr;
 
+            //intf.cb.pcm_rd_valid  <=  pcm_rd_valid_2d;
+            intf.cb.pcm_rd_valid  <=  pcm_rd_valid_1d;
             pcm_rd_valid_2d = pcm_rd_valid_1d;
-            pcm_rd_valid_2d = pcm_rd_valid_1d;
-
-            intf.cb.lpcm_rdata  <=  pcm_rd_valid_2d;
-            intf.cb.rpcm_rdata  <=  pcm_rd_valid_2d;
-
             pcm_rd_valid_1d = intf.cb.pcm_rden;
-            pcm_rd_valid_2d = pcm_rd_valid_1d;
-            intf.cb.pcm_rd_valid  <=  pcm_rd_valid_2d;
           end
         end
       join
@@ -201,7 +203,7 @@
 
     /*  Run Slave Behaviour */
     task  run_slave  ();
-      ovm_report_info({get_name(),"[run_slave]"},"Start of run",OVM_LOW);
+      ovm_report_info({get_name(),"[run_slave]"},"Start of run_slave",OVM_LOW);
 
       //Reset signals
       intf.cb.pcm_addr    <=  0;

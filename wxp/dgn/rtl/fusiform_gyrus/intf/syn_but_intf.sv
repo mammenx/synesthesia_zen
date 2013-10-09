@@ -40,7 +40,7 @@
  --------------------------------------------------------------------------
 */
 
-interface syn_but_intf  #() (input logic clk_ir,rst_il)
+interface syn_but_intf  #() (input logic clk_ir,rst_il);
 
   import  syn_fft_pkg::*;
 
@@ -51,6 +51,8 @@ interface syn_but_intf  #() (input logic clk_ir,rst_il)
   logic           sample_rdy;
   fft_sample_t    res;
   logic           res_rdy;
+  logic           bffr_ovrflw;
+  logic           bffr_underflw;
 
 
   //Modports
@@ -61,7 +63,10 @@ interface syn_but_intf  #() (input logic clk_ir,rst_il)
                     output  sample_rdy,
 
                     input   res,
-                    input   res_rdy
+                    input   res_rdy,
+
+                    input   bffr_ovrflw,
+                    input   bffr_underflw
                   );
 
   modport slave   (
@@ -71,7 +76,10 @@ interface syn_but_intf  #() (input logic clk_ir,rst_il)
                     input   sample_rdy,
 
                     output  res,
-                    output  res_rdy
+                    output  res_rdy,
+
+                    output  bffr_ovrflw,
+                    output  bffr_underflw
                   );
 
 endinterface  //  syn_but_intf

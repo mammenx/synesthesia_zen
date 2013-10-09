@@ -62,7 +62,13 @@ module syn_fgyrus (
                 );
 
 //----------------------- Global parameters Declarations ------------------
+  import  syn_global_pkg::*;
+  import  syn_fft_pkg::*;
 
+  parameter P_LB_DATA_W         = P_32B_W;
+  parameter P_LB_ADDR_W         = 12;
+
+  parameter P_MEM_RD_DEL        = 2;
 
 //----------------------- Input Declarations ------------------------------
 
@@ -77,7 +83,9 @@ module syn_fgyrus (
 
 
 //----------------------- Internal Register Declarations ------------------
-
+  logic [P_MEM_RD_DEL-1:0]    win_ram_rdel_vec_f;
+  logic [P_MEM_RD_DEL-1:0]    twdl_ram_rdel_vec_f;
+  logic [P_MEM_RD_DEL-1:0]    cordic_ram_rdel_vec_f;
 
 //----------------------- Internal Wire Declarations ----------------------
 
@@ -94,6 +102,28 @@ module syn_fgyrus (
 
 
 //----------------------- Start of Code -----------------------------------
+
+
+  always_ff@(posedge cr_intf.clk_ir, negedge cr_intf.rst_sync_l)
+  begin : rd_rdy_logic
+    if(~cr_intf.rst_sync_l)
+    begin
+      win_ram_rdel_vec_f      <=  0;
+      twdl_ram_rdel_vec_f     <=  0;
+      cordic_ram_rdel_vec_f   <=  0;
+    end
+    else
+    begin
+      win_ram_rdel_vec_f      <=  {win_ram_rdel_vec_f[P_MEM_RD_DEL-2:0],  win_ram_intf.rden};
+      twdl_ram_rdel_vec_f     <=  {twdl_ram_rdel_vec_f[P_MEM_RD_DEL-2:0], twdl_ram_intf.rden};
+      cordic_ram_rdel_vec_f   <=  {cordic_ram_rdel_vec_f[P_MEM_RD_DEL-2:0], cordic_ram_intf.rden};
+    end
+  end
+
+  assign  win_ram_intf.rd_valid     = win_ram_rdel_vec_f[P_MEM_RD_DEL-1];
+  assign  twdl_ram_intf.rd_valid    = twdl_ram_rdel_vec_f[P_MEM_RD_DEL-1];
+  assign  cordic_ram_intf.rd_valid  = cordic_ram_rdel_vec_f[P_MEM_RD_DEL-1];
+
 
   syn_fgyrus_fsm  syn_fgyrus_fsm_inst
   (

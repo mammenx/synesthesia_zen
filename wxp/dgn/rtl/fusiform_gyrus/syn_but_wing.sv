@@ -60,7 +60,7 @@ module syn_but_wing (
   
 
   /*  not exposed outside */
-  localparam  P_PST_W         = P_MUL_LAT + 1;
+  localparam  P_PST_W         = P_MUL_LAT + 2;
   localparam  P_DIV           = P_FFT_TWDL_W  - 2;
 
 //----------------------- Input Declarations ------------------------------
@@ -96,7 +96,10 @@ module syn_but_wing (
   logic   [P_FFT_SAMPLE_W+1:0]     data_1_im_c;
 
   logic   [(P_FFT_SAMPLE_W*2)-1:0] bffr_rd_data_w;
+  logic   [(P_FFT_SAMPLE_W*2)-1:0] bffr_wr_data_w;
   fft_sample_t                     bffr_sample_a_w;
+  logic                            bffr_full_w;
+  logic                            bffr_empty_w;
 
 
 //----------------------- Start of Code -----------------------------------
@@ -167,10 +170,10 @@ module syn_but_wing (
   end
 
   //Final Stage sum
-  assign  data_0_real_c = {{2{bffr_sample_a.re[P_FFT_SAMPLE_W-1]}},bffr_sample_a.re}  + {{2{mul_res_norm_real_f[P_FFT_SAMPLE_W]}},mul_res_norm_real_f[P_FFT_SAMPLE_W-1:0]};
-  assign  data_0_im_c   = {{2{bffr_sample_a.im[P_FFT_SAMPLE_W-1]}},bffr_sample_a.im}  + {{2{mul_res_norm_im_f[P_FFT_SAMPLE_W]}},mul_res_norm_im_f[P_FFT_SAMPLE_W-1:0]};
-  assign  data_1_real_c = {{2{bffr_sample_a.re[P_FFT_SAMPLE_W-1]}},bffr_sample_a.re}  + {{2{mul_res_inv_real_f[P_FFT_SAMPLE_W]}},mul_res_inv_real_f[P_FFT_SAMPLE_W-1:0]};
-  assign  data_1_im_c   = {{2{bffr_sample_a.im[P_FFT_SAMPLE_W-1]}},bffr_sample_a.im}  + {{2{mul_res_inv_im_f[P_FFT_SAMPLE_W]}},mul_res_inv_im_f[P_FFT_SAMPLE_W-1:0]};
+  assign  data_0_real_c = {{2{bffr_sample_a_w.re[P_FFT_SAMPLE_W-1]}},bffr_sample_a_w.re}  + {{2{mul_res_norm_real_f[P_FFT_SAMPLE_W]}},mul_res_norm_real_f[P_FFT_SAMPLE_W-1:0]};
+  assign  data_0_im_c   = {{2{bffr_sample_a_w.im[P_FFT_SAMPLE_W-1]}},bffr_sample_a_w.im}  + {{2{mul_res_norm_im_f[P_FFT_SAMPLE_W]}},mul_res_norm_im_f[P_FFT_SAMPLE_W-1:0]};
+  assign  data_1_real_c = {{2{bffr_sample_a_w.re[P_FFT_SAMPLE_W-1]}},bffr_sample_a_w.re}  + {{2{mul_res_inv_real_f[P_FFT_SAMPLE_W]}},mul_res_inv_real_f[P_FFT_SAMPLE_W-1:0]};
+  assign  data_1_im_c   = {{2{bffr_sample_a_w.im[P_FFT_SAMPLE_W-1]}},bffr_sample_a_w.im}  + {{2{mul_res_inv_im_f[P_FFT_SAMPLE_W]}},mul_res_inv_im_f[P_FFT_SAMPLE_W-1:0]};
 
 
   /*
@@ -187,18 +190,18 @@ module syn_but_wing (
     end
     else
     begin
-      if(pst_vec_f[P_MUL_LAT-1])
+      if(pst_vec_f[P_MUL_LAT])
       begin
         but_intf.res.re       <=  data_0_real_c[P_FFT_SAMPLE_W-1:0];
         but_intf.res.im       <=  data_0_im_c[P_FFT_SAMPLE_W-1:0];
       end
-      else if(pst_vec_f[P_MUL_LAT])
+      else if(pst_vec_f[P_MUL_LAT+1])
       begin
         but_intf.res.re       <=  data_1_real_c[P_FFT_SAMPLE_W-1:0];
         but_intf.res.im       <=  data_1_im_c[P_FFT_SAMPLE_W-1:0];
       end
 
-      but_intf.res_rdy        <=  |(pst_vec_f[P_MUL_LAT:P_MUL_LAT-1]);
+      but_intf.res_rdy        <=  |(pst_vec_f[P_MUL_LAT+1:P_MUL_LAT]);
     end
   end
 
@@ -225,16 +228,22 @@ module syn_but_wing (
   (
 	  .aclr         (~cr_intf.rst_sync_l),
 	  .clock        (cr_intf.clk_ir),
-	  .data         ({but_intf.sample_a.re, but_intf.sample_a.im}),
+	  .data         (bffr_wr_data_w),
 	  .rdreq        (pst_vec_f[P_MUL_LAT]),
 	  .wrreq        (but_intf.sample_rdy),
-	  .empty        (),
-	  .full         (),
+	  .empty        (bffr_empty_w),
+	  .full         (bffr_full_w),
 	  .q            (bffr_rd_data_w),
 	  .usedw        ()
   );
 
-  assign  {bffr_sample_a_w.re,  bffr_sample_a_w.im} = bffr_rd_data_w;
+  assign  bffr_wr_data_w      = {but_intf.sample_a.re,  but_intf.sample_a.im};
 
+  assign  bffr_sample_a_w.re  = bffr_rd_data_w[(P_FFT_SAMPLE_W*2)-1:P_FFT_SAMPLE_W];
+  assign  bffr_sample_a_w.im  = bffr_rd_data_w[P_FFT_SAMPLE_W-1:0];
+
+  //Generate Over/Under flow conditions
+  assign  but_intf.bffr_ovrflw    = but_intf.sample_rdy & bffr_full_w;
+  assign  but_intf.bffr_underflw  = pst_vec_f[P_MUL_LAT]  & bffr_empty_w;
 
 endmodule // syn_but_wing

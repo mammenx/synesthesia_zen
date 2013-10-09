@@ -58,7 +58,7 @@ module syn_fgyrus_fft_cache (
                 );
 
 //----------------------- Global parameters Declarations ------------------
-  import  syn_global_pkh::*;
+  import  syn_global_pkg::*;
   import  syn_fft_pkg::*;
 
   parameter P_BFFR_DATA_W       = 32;

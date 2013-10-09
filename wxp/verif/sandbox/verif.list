@@ -11,15 +11,19 @@
 +incdir+../../verif/tb/sb/
 +incdir+../../verif/tb/sb/vcortex/
 +incdir+../../verif/tb/sb/acortex/
++incdir+../../verif/tb/sb/fgyrus/
 +incdir+../../verif/tb/seq/
 +incdir+../../verif/tb/seq/vcortex/
 +incdir+../../verif/tb/seq/acortex/
++incdir+../../verif/tb/seq/fgyrus/
 +incdir+../../verif/tb/sniffers/
 +incdir+../../verif/tb/tests/
 +incdir+../../verif/tb/tests/vcortex/
 +incdir+../../verif/tb/tests/acortex/
++incdir+../../verif/tb/tests/fgyrus/
 +incdir+../../dgn/rtl/visual_cortex/
 +incdir+../../dgn/rtl/audio_cortex/
++incdir+../../dgn/rtl/fusiform_gyrus/
 +incdir+../../dgn/rtl/cortex_top/
 
 //System Verilog DPI
@@ -43,3 +47,4 @@
 //TB TOP
 ../../verif/tb/top/syn_vcortex_tb_top.sv
 ../../verif/tb/top/syn_acortex_tb_top.sv
+../../verif/tb/top/syn_fgyrus_tb_top.sv

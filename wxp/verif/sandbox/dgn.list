@@ -10,6 +10,8 @@
 +incdir+../../dgn/rtl/visual_cortex/vga_drvr/intf/
 +incdir+../../dgn/rtl/audio_cortex/
 +incdir+../../dgn/rtl/audio_cortex/intf/
++incdir+../../dgn/rtl/fusiform_gyrus/
++incdir+../../dgn/rtl/fusiform_gyrus/intf/
 
 //Compile Altera Components
 ../../dgn/rtl/altera/220model.v
@@ -24,11 +26,17 @@
 ../../dgn/rtl/altera/ram_1xM4K_16bW_dualport.v
 ../../dgn/rtl/altera/ram_4xM4K_8bW_16bW_dualport.v
 ../../dgn/rtl/altera/pcm_sample_ram.v
+../../dgn/rtl/altera/complex_mult.v
+../../dgn/rtl/altera/cordic_ram.v
+../../dgn/rtl/altera/ram_2xM4K_32bW_256D.v
+../../dgn/rtl/altera/twiddle_ram.v
+../../dgn/rtl/altera/win_ram.v
 
 //Packages
 ../../dgn/rtl/pkg/syn_global_pkg.sv
 ../../dgn/rtl/pkg/syn_gpu_pkg.sv
 ../../dgn/rtl/pkg/syn_audio_pkg.sv
+../../dgn/rtl/pkg/syn_fft_pkg.sv
 
 //Interfaces
 ../../dgn/rtl/intf/ff_intf.sv
@@ -54,6 +62,9 @@
 ../../dgn/rtl/audio_cortex/intf/syn_acortex_lb_bus_intf.sv
 ../../dgn/rtl/audio_cortex/intf/syn_pcm_xfr_intf.sv
 ../../dgn/rtl/audio_cortex/intf/syn_clk_vec_intf.sv
+
+../../dgn/rtl/fusiform_gyrus/intf/syn_but_intf.sv
+../../dgn/rtl/fusiform_gyrus/intf/syn_fft_cache_intf.sv
 
 
 //Vcortex
@@ -83,3 +94,10 @@
 ../../dgn/rtl/audio_cortex/syn_wm8731_drvr.sv
 ../../dgn/rtl/audio_cortex/syn_audio_cache.sv
 ../../dgn/rtl/audio_cortex/syn_acortex.sv
+
+//FGyrus
+../../dgn/rtl/fusiform_gyrus/syn_but_wing.sv
+../../dgn/rtl/fusiform_gyrus/syn_fgyrus_fft_cache.sv
+../../dgn/rtl/fusiform_gyrus/syn_fgyrus_fsm.sv
+../../dgn/rtl/fusiform_gyrus/syn_fgyrus.sv
+

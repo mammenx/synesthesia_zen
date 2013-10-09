@@ -98,6 +98,17 @@
 
     endfunction : fill_sin
 
+    /*  Function to fill self with incremental pattern  */
+    function  void  fill_inc(int num_samples, int start=0, int step=1);
+      this.pcm_data = new[num_samples];
+
+      foreach(this.pcm_data[n])
+      begin
+        $cast(pcm_data[n].lchnnl, start + (n*step));
+        $cast(pcm_data[n].rchnnl, start + (n*step) + num_samples);
+      end
+
+    endfunction : fill_inc
 
   endclass  : syn_pcm_seq_item
 
