@@ -90,7 +90,7 @@ endmodule
 // 2 bits per tick (radix 4) version
 ////////////////////////////////////////////////////
 
-module divider_rad4 (clk,rst,load,n,d,q,r,ready);
+module divider_rad4 (clk,rst,load,n,d,q,r,ready,almost_done);
 
 `include "log2.inc"
 
@@ -107,10 +107,13 @@ input [WIDTH_D-1:0] d;		// denominator
 output [WIDTH_N-1:0] q;		// quotient
 output [WIDTH_D-1:0] r;		// remainder
 output ready;				// Q and R are valid now.
+output almost_done;
 
 reg [WIDTH_N + MIN_ND + 1 : 0] working;
 reg [WIDTH_D-1 : 0] denom;
 reg [WIDTH_D+1 : 0] triple_denom;
+reg ready;
+reg almost_done;
 
 wire [WIDTH_N-1:0] lower_working = working [WIDTH_N-1:0];
 wire [MIN_ND + 1:0] upper_working = working [WIDTH_N + MIN_ND + 1: WIDTH_N];
@@ -130,7 +133,7 @@ wire [WIDTH_D + 2:0] appro_minus =
 
 reg [LOG2_WIDTH_N:0] cntr;
 wire cntr_zero = ~|cntr;
-assign ready = cntr_zero;
+//assign ready = cntr_zero;
 
 always @(posedge clk or posedge rst) begin
 	if (rst) begin
@@ -138,6 +141,8 @@ always @(posedge clk or posedge rst) begin
 		denom <= 0;
 		triple_denom <= 0;
 		cntr <= 0;
+    ready <= 0;
+    almost_done <=  0;
 	end
 	else begin
 		if (load) begin
@@ -151,6 +156,9 @@ always @(posedge clk or posedge rst) begin
 				cntr <= cntr - 1;
 				working <= {appro_minus[WIDTH_D-1:0],lower_working,quot_bits};
 			end
+
+      ready <=  (cntr ==  1)  ? 1'b1  : 1'b0;
+      almost_done <=  (cntr ==  4)  ? 1'b1  : 1'b0;
 		end
 	end
 end

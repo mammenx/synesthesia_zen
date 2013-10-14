@@ -162,10 +162,10 @@ module syn_but_wing (
     end
     else
     begin
-      mul_res_norm_im_f       <=  mul_res_norm_im_w[P_FFT_SAMPLE_W:0];
-      mul_res_norm_real_f     <=  mul_res_norm_real_w[P_FFT_SAMPLE_W:0];
-      mul_res_inv_im_f        <=  mul_res_inv_im_c;
-      mul_res_inv_real_f      <=  mul_res_inv_real_c;
+      mul_res_norm_im_f       <=  pst_vec_f[P_MUL_LAT-1]  ? mul_res_norm_im_w[P_FFT_SAMPLE_W:0] : mul_res_norm_im_f;
+      mul_res_norm_real_f     <=  pst_vec_f[P_MUL_LAT-1]  ? mul_res_norm_real_w[P_FFT_SAMPLE_W:0] : mul_res_norm_real_f;
+      mul_res_inv_im_f        <=  pst_vec_f[P_MUL_LAT-1]  ? mul_res_inv_im_c  : mul_res_inv_im_f;
+      mul_res_inv_real_f      <=  pst_vec_f[P_MUL_LAT-1]  ? mul_res_inv_real_c  : mul_res_inv_real_f;
     end
   end
 
@@ -229,7 +229,7 @@ module syn_but_wing (
 	  .aclr         (~cr_intf.rst_sync_l),
 	  .clock        (cr_intf.clk_ir),
 	  .data         (bffr_wr_data_w),
-	  .rdreq        (pst_vec_f[P_MUL_LAT]),
+	  .rdreq        (pst_vec_f[P_MUL_LAT+1]),
 	  .wrreq        (but_intf.sample_rdy),
 	  .empty        (bffr_empty_w),
 	  .full         (bffr_full_w),
