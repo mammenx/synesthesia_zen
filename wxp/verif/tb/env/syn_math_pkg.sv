@@ -42,6 +42,8 @@
 
 package syn_math_pkg;
 
+  import  syn_fft_pkg::*;
+
   //import dpi task      C Name = SV function name
   import "DPI-C" pure function real syn_cos (input real rTheta);
   import "DPI-C" pure function real syn_sin (input real rTheta);
@@ -53,6 +55,7 @@ package syn_math_pkg;
   import "DPI-C" pure function real syn_log10 (input real rVal);
   import "DPI-C" pure function void syn_calc_abs(input int size, inout real arry_real[], input real arry_im[]);
   import "DPI-C" pure function real syn_sqrt(input real rVal);
+  import "DPI-C" pure function int syn_abs(int num);
 
   const real  pi  = 3.1416;
 

@@ -102,8 +102,14 @@ syn_sqrt(
   return  sqrt(rVal);
 }
 
+int
+syn_abs(
+    int num){
+  return abs(num);
+}
+
 /*  Complex data type  */
-typedef struct {double re; double im;} complex_t;
+typedef struct {int re; int im;} complex_t;
 
 //function for calculating absaloute value of a complex array
 void  syn_calc_abs(int size, const svOpenArrayHandle complex_arry_real, const svOpenArrayHandle complex_arry_im)
@@ -126,6 +132,7 @@ void  syn_calc_abs(int size, const svOpenArrayHandle complex_arry_real, const sv
 
   return;
 }
+
 
 //dump_ppm wrapper
 int syn_dump_ppm(

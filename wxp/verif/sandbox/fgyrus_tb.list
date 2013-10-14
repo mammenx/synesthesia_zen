@@ -1,6 +1,7 @@
 //Sequence items
 `include  "syn_lb_seq_item.sv"
 `include  "syn_pcm_seq_item.sv"
+`include  "syn_but_seq_item.sv"
 
 //RAL
 `include  "syn_reg_map.sv"
@@ -17,8 +18,10 @@
 `include  "syn_pcm_mem_agent.sv"
 
 //Sniffers
+`include  "syn_but_sniffer.sv"
 
 //Scoreboards
+`include  "syn_but_sb.sv"
 
 //Environments
 `include  "syn_fgyrus_env.sv"

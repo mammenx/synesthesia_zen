@@ -58,6 +58,9 @@
     parameter       NUM_PCM_SAMPLES   = 128;
     parameter type  PCM_MEM_INTF_TYPE = virtual syn_pcm_mem_intf#(32,7,2);
 
+    parameter type  BUT_PKT_TYPE  = syn_but_seq_item;
+    parameter type  BUT_INTF_TYPE = virtual syn_but_intf;
+
     /*  Register with factory */
     `ovm_component_utils(syn_fgyrus_env)
 
@@ -65,6 +68,8 @@
     //Declare agents, scoreboards
     syn_lb_agent#(LB_DATA_W,LB_ADDR_W,LB_PKT_T,LB_DRVR_INTF_T,LB_MON_INTF_T)  lb_agent;
     syn_pcm_mem_agent#(NUM_PCM_SAMPLES,PCM_PKT_TYPE,PCM_MEM_INTF_TYPE)        pcm_mem_agent;
+    syn_but_sniffer#(BUT_PKT_TYPE,BUT_INTF_TYPE)                              but_sniffer;
+    syn_but_sb#(BUT_PKT_TYPE,BUT_PKT_TYPE)                                    but_sb;
 
 
     OVM_FILE  f;
@@ -92,6 +97,8 @@
 
       lb_agent      = syn_lb_agent#(LB_DATA_W,LB_ADDR_W,LB_PKT_T,LB_DRVR_INTF_T,LB_MON_INTF_T)::type_id::create("lb_agent",  this);
       pcm_mem_agent = syn_pcm_mem_agent#(NUM_PCM_SAMPLES,PCM_PKT_TYPE,PCM_MEM_INTF_TYPE)::type_id::create("pcm_mem_agent",  this);
+      but_sniffer   = syn_but_sniffer#(BUT_PKT_TYPE,BUT_INTF_TYPE)::type_id::create("but_sniffer",  this);
+      but_sb        = syn_but_sb#(BUT_PKT_TYPE,BUT_PKT_TYPE)::type_id::create("but_sb",  this);
 
       ovm_report_info(get_name(),"End of build ",OVM_LOW);
     endfunction
@@ -104,6 +111,9 @@
       ovm_report_info(get_name(),"START of connect ",OVM_LOW);
 
         this.pcm_mem_agent.drvr.mode_master_n_slave  = 1;  //configure as master
+
+        but_sniffer.SnifferIngr2Sb_port.connect(but_sb.Mon_sent_2Sb_port);
+        but_sniffer.SnifferEgr2Sb_port.connect(but_sb.Mon_rcvd_2Sb_port);
 
       ovm_report_info(get_name(),"END of connect ",OVM_LOW);
     endfunction

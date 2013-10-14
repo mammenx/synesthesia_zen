@@ -114,10 +114,20 @@ class syn_fgyrus_data_paths_test extends syn_fgyrus_base_test;
 
       #100ns;
 
+      //  pcm_mem_load_seq.pcm_pkt.pcm_data = new[128];
+      //  pcm_mem_load_seq.pcm_pkt.pcm_data[0].lchnnl = $random;
+      //  pcm_mem_load_seq.pcm_pkt.pcm_data[0].rchnnl = $random;
+
+      //  foreach(pcm_mem_load_seq.pcm_pkt.pcm_data[i])
+      //  begin
+      //    pcm_mem_load_seq.pcm_pkt.pcm_data[i].lchnnl = pcm_mem_load_seq.pcm_pkt.pcm_data[0].lchnnl;
+      //    pcm_mem_load_seq.pcm_pkt.pcm_data[i].rchnnl = pcm_mem_load_seq.pcm_pkt.pcm_data[0].rchnnl;
+      //  end
+
       pcm_mem_load_seq.pcm_pkt.fill_inc(128,0,1);
       pcm_mem_load_seq.start(super.env.pcm_mem_agent.seqr);
 
-      #40us;
+      #150us;
 
       ovm_report_info(get_name(),"Calling global_stop_request().....",OVM_LOW);
       global_stop_request();
