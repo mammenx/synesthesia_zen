@@ -44,8 +44,8 @@
 `define __SYN_BUT_SB
 
 //Implicit port declarations
-`ovm_analysis_imp_decl(_rcvd_pkt)
-`ovm_analysis_imp_decl(_sent_pkt)
+`ovm_analysis_imp_decl(_rcvd_but_pkt)
+`ovm_analysis_imp_decl(_sent_but_pkt)
 
   import  syn_math_pkg::*;
 
@@ -61,8 +61,8 @@
     SENT_PKT_TYPE rcvd_que[$];
 
     //Ports
-    ovm_analysis_imp_sent_pkt #(SENT_PKT_TYPE,syn_but_sb)  Mon_sent_2Sb_port;
-    ovm_analysis_imp_rcvd_pkt #(RCVD_PKT_TYPE,syn_but_sb)  Mon_rcvd_2Sb_port;
+    ovm_analysis_imp_sent_but_pkt #(SENT_PKT_TYPE,syn_but_sb)  Mon_sent_2Sb_port;
+    ovm_analysis_imp_rcvd_but_pkt #(RCVD_PKT_TYPE,syn_but_sb)  Mon_rcvd_2Sb_port;
 
     OVM_FILE  f;
 
@@ -97,30 +97,30 @@
 
     /*
       * Write Sent Pkt
-      * This function will be called each time a pkt is written into [ovm_analysis_imp_sent_pkt]Mon_sent_2Sb_port
+      * This function will be called each time a pkt is written into [ovm_analysis_imp_sent_but_pkt]Mon_sent_2Sb_port
     */
-    virtual function void write_sent_pkt(input SENT_PKT_TYPE  pkt);
-      ovm_report_info({get_name(),"[write_sent_pkt]"},$psprintf("Received pkt\n%s",pkt.sprint()),OVM_LOW);
+    virtual function void write_sent_but_pkt(input SENT_PKT_TYPE  pkt);
+      ovm_report_info({get_name(),"[write_sent_but_pkt]"},$psprintf("Received pkt\n%s",pkt.sprint()),OVM_LOW);
 
       //Push packet into sent queue
       sent_que.push_back(pkt);
 
-      ovm_report_info({get_name(),"[write_sent_pkt]"},$psprintf("There are %d items in sent_que[$]",sent_que.size()),OVM_LOW);
-    endfunction : write_sent_pkt
+      ovm_report_info({get_name(),"[write_sent_but_pkt]"},$psprintf("There are %d items in sent_que[$]",sent_que.size()),OVM_LOW);
+    endfunction : write_sent_but_pkt
 
 
     /*
       * Write Rcvd Pkt
-      * This function will be called each time a pkt is written into [ovm_analysis_imp_rcvd_pkt]Mon_rcvd_2Sb_port
+      * This function will be called each time a pkt is written into [ovm_analysis_imp_rcvd_but_pkt]Mon_rcvd_2Sb_port
     */
-    virtual function void write_rcvd_pkt(input RCVD_PKT_TYPE pkt);
-      ovm_report_info({get_name(),"[write_rcvd_pkt]"},$psprintf("Received pkt\n%s",pkt.sprint()),OVM_LOW);
+    virtual function void write_rcvd_but_pkt(input RCVD_PKT_TYPE pkt);
+      ovm_report_info({get_name(),"[write_rcvd_but_pkt]"},$psprintf("Received pkt\n%s",pkt.sprint()),OVM_LOW);
 
       //Push packet into rcvd queue
       rcvd_que.push_back(pkt);
 
-      ovm_report_info({get_name(),"[write_rcvd_pkt]"},$psprintf("There are %d items in rcvd_que[$]",rcvd_que.size()),OVM_LOW);
-    endfunction : write_rcvd_pkt
+      ovm_report_info({get_name(),"[write_rcvd_but_pkt]"},$psprintf("There are %d items in rcvd_que[$]",rcvd_que.size()),OVM_LOW);
+    endfunction : write_rcvd_but_pkt
 
 
     /*  Run */
@@ -140,16 +140,16 @@
         sent_pkt  = sent_que.pop_front();
 
         exp_pkt1  = new();
-        exp_pkt1.sample_a = complex_mul(sent_pkt.sample_b,  sent_pkt.twdl);
-        exp_pkt1.sample_a = complex_add(exp_pkt1.sample_a,  sent_pkt.sample_a);
+        exp_pkt1.sample_a = syn_complex_mul(sent_pkt.sample_b,  sent_pkt.twdl);
+        exp_pkt1.sample_a = syn_complex_add(exp_pkt1.sample_a,  sent_pkt.sample_a);
         exp_pkt1.sample_b.re  = 0;
         exp_pkt1.sample_b.im  = 0;
         exp_pkt1.twdl.re  = 0;
         exp_pkt1.twdl.im  = 0;
 
         exp_pkt2  = new();
-        exp_pkt2.sample_a = complex_mul(sent_pkt.sample_b,  sent_pkt.twdl);
-        exp_pkt2.sample_a = complex_sub(sent_pkt.sample_a,  exp_pkt2.sample_a);
+        exp_pkt2.sample_a = syn_complex_mul(sent_pkt.sample_b,  sent_pkt.twdl);
+        exp_pkt2.sample_a = syn_complex_sub(sent_pkt.sample_a,  exp_pkt2.sample_a);
         exp_pkt2.sample_b.re  = 0;
         exp_pkt2.sample_b.im  = 0;
         exp_pkt2.twdl.re  = 0;
@@ -191,65 +191,6 @@
 
     endtask : run
 
-    /*  Function to perform complex multiplication  */
-    function  fft_sample_t complex_mul(input fft_sample_t a, input fft_twdl_t t);
-      fft_sample_t res;
-      int a_re,a_im,t_re,t_im,res_re,res_im;
-
-      $cast(a_re, a.re);
-      $cast(a_im, a.im);
-      $cast(t_re, {{32-P_FFT_TWDL_W{t.re[P_FFT_TWDL_W-1]}}, t.re});
-      $cast(t_im, {{32-P_FFT_TWDL_W{t.im[P_FFT_TWDL_W-1]}}, t.im});
-
-      res_re  = ((a_re * t_re) - (a_im * t_im)) / 256;
-      res_im  = ((a_re * t_im) + (a_im * t_re)) / 256;
-
-      $cast(res.re, res_re);
-      $cast(res.im, res_im);
-
-      return res;
-
-    endfunction : complex_mul
-
-    /*  Function to perform complex addition  */
-    function  fft_sample_t  complex_add(input fft_sample_t a,b);
-      fft_sample_t  res;
-      int a_re,a_im,b_re,b_im,res_re,res_im;
-
-      $cast(a_re,a.re);
-      $cast(a_im,a.im);
-      $cast(b_re,b.re);
-      $cast(b_im,b.im);
-
-      res_re  = a_re  + b_re;
-      res_im  = a_im  + b_im;
-
-      $cast(res.re, res_re);
-      $cast(res.im, res_im);
-
-      return  res;
-
-    endfunction : complex_add
-
-    /*  Function to perform complex subtraction */
-    function  fft_sample_t  complex_sub(input fft_sample_t a,b);
-      fft_sample_t  res;
-      int a_re,a_im,b_re,b_im,res_re,res_im;
-
-      $cast(a_re,a.re);
-      $cast(a_im,a.im);
-      $cast(b_re,b.re);
-      $cast(b_im,b.im);
-
-      res_re  = a_re  - b_re;
-      res_im  = a_im  - b_im;
-
-      $cast(res.re, res_re);
-      $cast(res.im, res_im);
-
-      return  res;
-
-    endfunction : complex_sub
 
     /*  Report  */
     virtual function void report();

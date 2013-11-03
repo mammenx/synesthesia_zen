@@ -49,6 +49,7 @@ class syn_fgyrus_data_paths_test extends syn_fgyrus_base_test;
     //Sequences
     syn_pcm_mem_load_seq#(super.PCM_SEQ_ITEM_T,super.PCM_SEQR_T)  pcm_mem_load_seq;
     syn_fgyrus_config_seq#(super.LB_SEQ_ITEM_T,super.LB_SEQR_T)   fgyrus_config_seq;
+    syn_fgyrus_fft_poll_seq#(super.LB_SEQ_ITEM_T,super.LB_SEQR_T) fft_poll_seq;
 
 
     OVM_FILE  f;
@@ -75,6 +76,7 @@ class syn_fgyrus_data_paths_test extends syn_fgyrus_base_test;
       ovm_report_info(get_full_name(),"Start of build",OVM_LOW);
 
       fgyrus_config_seq = syn_fgyrus_config_seq#(super.LB_SEQ_ITEM_T,super.LB_SEQR_T)::type_id::create("fgyrus_config_seq");
+      fft_poll_seq      = syn_fgyrus_fft_poll_seq#(super.LB_SEQ_ITEM_T,super.LB_SEQR_T)::type_id::create("fft_poll_seq");
       pcm_mem_load_seq  = syn_pcm_mem_load_seq#(super.PCM_SEQ_ITEM_T,super.PCM_SEQR_T)::type_id::create("pcm_mem_load_seq");
 
       ovm_report_info(get_full_name(),"End of build",OVM_LOW);
@@ -95,6 +97,9 @@ class syn_fgyrus_data_paths_test extends syn_fgyrus_base_test;
     /*  End of Elaboration  */
     function void end_of_elaboration();
       super.end_of_elaboration();
+
+      super.env.but_sniffer.enable  = 0;
+      super.env.fft_cache_sniffer.enable  = 0;
     endfunction
 
 
@@ -124,10 +129,18 @@ class syn_fgyrus_data_paths_test extends syn_fgyrus_base_test;
       //    pcm_mem_load_seq.pcm_pkt.pcm_data[i].rchnnl = pcm_mem_load_seq.pcm_pkt.pcm_data[0].rchnnl;
       //  end
 
-      pcm_mem_load_seq.pcm_pkt.fill_inc(128,0,1);
+      //pcm_mem_load_seq.pcm_pkt.fill_inc(128,0,1);
+      pcm_mem_load_seq.pcm_pkt.fill_sin(128,  1000, 1000,  44100);
+
+      ovm_report_info(get_name(),$psprintf("Generated PCM Data:\n%s",pcm_mem_load_seq.pcm_pkt.get_graph()),OVM_LOW);
+
       pcm_mem_load_seq.start(super.env.pcm_mem_agent.seqr);
 
-      #150us;
+      #100ns;
+
+      fft_poll_seq.start(super.env.lb_agent.seqr);
+
+      #100ns;
 
       ovm_report_info(get_name(),"Calling global_stop_request().....",OVM_LOW);
       global_stop_request();

@@ -47,6 +47,7 @@
 #include "syn_dpi.h"
 #include "ppm.h"
 #include "raw.h"
+#include "fft.h"
 
 double
 syn_cos(
@@ -112,7 +113,7 @@ syn_abs(
 typedef struct {int re; int im;} complex_t;
 
 //function for calculating absaloute value of a complex array
-void  syn_calc_abs(int size, const svOpenArrayHandle complex_arry_real, const svOpenArrayHandle complex_arry_im)
+void  syn_calc_complex_abs(int size, const svOpenArrayHandle complex_arry_real, const svOpenArrayHandle complex_arry_im)
 {
   int i;
   double  * c_arry_re_ptr;
@@ -241,4 +242,46 @@ double  syn_calc_shade(
   printf("res : %f\n",res);
 
   return  res;
+}
+
+/*  Wrapper for calculating FFT */
+//  SV Data Types -     int                             real[]                                real[]                              real[]
+void syn_calc_fft(int num_samples,  const svOpenArrayHandle data_in_arry, const svOpenArrayHandle data_out_re_arry, const svOpenArrayHandle data_out_im_arry)
+{
+  int i;
+  double (*x)[2];   /* pointer to time-domain samples */
+  double (*X)[2];   /* pointer to frequency-domain samples */
+
+
+  x = malloc(2 * num_samples  * sizeof(double));
+  X = malloc(2 * num_samples  * sizeof(double));
+
+
+
+  printf("\n \n Data In Array Left %d, Data In Array Right %d \n\n", svLeft(data_in_arry,1), svRight(data_in_arry, 1) );
+  for (i= svLeft(data_in_arry,1); i <= svRight(data_in_arry,1); i++) {  //packing to double type
+      x[i][0] = *(double*)svGetArrElemPtr1(data_in_arry, i);
+      x[i][1] = 0;
+
+      //printf("[syn_calc_fft - C] i :%d\treal : %f\tim : %f\n",i,x[i][0],x[i][1]);
+  }
+
+  /* Calculate FFT. */
+  fft(num_samples, x, X);
+
+  printf("\n \n Data Out Real Array Left %d, Data Out Real Array Right %d \n\n", svLeft(data_out_re_arry,1), svRight(data_out_re_arry, 1) );
+  for(i= svLeft(data_out_re_arry,1); i <= svRight(data_out_re_arry,1); i++) { //packing real arry
+    *(double*)svGetArrElemPtr1(data_out_re_arry, i) = X[i][0];
+  }
+
+  printf("\n \n Data Out Imaginary Array Left %d, Data Out Imaginary Array Right %d \n\n", svLeft(data_out_im_arry,1), svRight(data_out_im_arry, 1) );
+  for(i= svLeft(data_out_im_arry,1); i <= svRight(data_out_im_arry,1); i++) { //packing im arry
+    *(double*)svGetArrElemPtr1(data_out_im_arry, i) = X[i][1];
+  }
+
+  //    for(i=0;i<num_samples;i++)  {
+  //      printf("[syn_calc_fft - C] i :%d\treal : %f\tim : %f\n",i,X[i][0],X[i][1]);
+  //    }
+
+  return;
 }

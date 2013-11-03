@@ -43,17 +43,19 @@
 `define __SYN_FFT_CACHE_SEQ_ITEM
 
   import  syn_fft_pkg::*;
+  import  syn_math_pkg::*;
 
   class syn_fft_cache_seq_item extends ovm_sequence_item;
 
     //fields
-    fft_sample_t  sample[];
-    int           addr[];
+    fft_sample_t  sample;
+    int           addr;
 
     //registering with factory
     `ovm_object_utils_begin(syn_fft_cache_seq_item)
-      `ovm_field_array_int(sample,  OVM_ALL_ON | OVM_HEX);
-      `ovm_field_array_int(addr,  OVM_ALL_ON | OVM_HEX);
+      `ovm_field_int(sample.re,  OVM_ALL_ON | OVM_HEX);
+      `ovm_field_int(sample.im,  OVM_ALL_ON | OVM_HEX);
+      `ovm_field_int(addr,  OVM_ALL_ON | OVM_HEX);
     `ovm_object_utils_end
 
     /*  Constructor */
@@ -66,29 +68,30 @@
 
 
     /*  Function to check a pkt of same type */
-    function  string  check (input  syn_fft_cache_seq_item  item);
+    function  string  check (input  syn_fft_cache_seq_item  item, int dev=0);
       string  res = "";
+      int exp_re,exp_im,act_re,act_im,this_dev;
 
-      if(item.addr.size !=  this.addr.size)
-        res = {res,$psprintf("Mismatch in addr.size, expected [%1d] actual [%1d]",this.addr.size,item.addr.size)};
+      $cast(exp_re, this.sample.re);
+      $cast(exp_im, this.sample.im);
+      $cast(act_re, item.sample.re);
+      $cast(act_im, item.sample.im);
 
-      if(item.sample.size !=  this.sample.size)
-        res = {res,$psprintf("Mismatch in sample.size, expected [%1d] actual [%1d]",this.sample.size,item.sample.size)};
 
-      foreach(this.sample[i])
-      begin
-        if(this.sample[i].re  !=  item.sample[i].re)
-          res = {res,$psprintf("Mismatch in sample[%1d].re, expected [0x%x] actual [0x%x]",i,this.sample[i].re,item.sample[i].re)};
+      if(this.addr !=  item.addr)
+        res = {res,$psprintf("\nMismatch in addr, expected [0x%x] actual [0x%x]",this.addr,item.addr)};
 
-        if(this.sample[i].im  !=  item.sample[i].im)
-          res = {res,$psprintf("Mismatch in sample[%1d].im, expected [0x%x] actual [0x%x]",i,this.sample[i].im,item.sample[i].im)};
-      end
+      this_dev  = syn_abs(exp_re - act_re);
 
-      foreach(this.addr[i])
-      begin
-        if(this.addr[i] !=  item.addr[i])
-          res = {res,$psprintf("Mismatch in addr[%1d], expected [0x%x] actual [0x%x]",i,this.addr[i],item.addr[i])};
-      end
+      if(this_dev > dev)
+        res = {res,$psprintf("\nMismatch in sample.re, expected [0x%x][%1d] actual [0x%x][%1d] dev:%1d",this.sample.re,exp_re,item.sample.re,act_re,this_dev)};
+
+
+      this_dev  = syn_abs(exp_im - act_im);
+
+      if(this_dev > dev)
+        res = {res,$psprintf("\nMismatch in sample.im, expected [0x%x][%1d] actual [0x%x][%1d] dev:%1d",this.sample.im,exp_im,item.sample.im,act_im,this_dev)};
+
 
       return  res;
 

@@ -19,16 +19,33 @@
  --------------------------------------------------------------------------
 */
 
+/*
+ --------------------------------------------------------------------------
+ -- Project Code      : synesthesia
+ -- Package Name      : syn_dsp_pkg
+ -- Author            : mammenx
+ -- Description       : This package contains DPI functions related to DSP
+                        transforms.
+ --------------------------------------------------------------------------
+*/
 
-//Block Code
-parameter FGYRUS_REG_CODE           = 4'd0;
-parameter FGYRUS_FFT_CACHE_RAM_CODE = 4'd1;
-parameter FGYRUS_TWDLE_RAM_CODE     = 4'd2;
-parameter FGYRUS_CORDIC_RAM_CODE    = 4'd3;
-parameter FGYRUS_WIN_RAM_CODE       = 4'd4;
+/*
+ --------------------------------------------------------------------------
 
-//REG Addresses
-parameter FGYRUS_CONTROL_REG_ADDR   = 8'h00;
-parameter FGYRUS_STATUS_REG_ADDR    = 8'h01;
-parameter FGYRUS_POST_NORM_REG_ADDR = 8'h02;
-parameter FGYRUS_FFT_CACHE_ADDR     = 8'h03;
+ -- $Header$
+ 
+
+ -- $Log$
+
+ --------------------------------------------------------------------------
+*/
+
+package syn_dsp_pkg;
+
+  import  syn_math_pkg::*;
+
+  //import dpi task      C Name = SV function name
+  import "DPI-C" pure function void syn_calc_fft(input int num_samples,input real data_in_arry[], inout real data_out_re_arry[], inout real data_out_im_arry[]);
+
+
+endpackage : syn_dsp_pkg

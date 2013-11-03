@@ -56,6 +56,8 @@
     int string2addr_arry[string]; //returns idx to reg_arry
     int bit_start_arry[string];   //returns starting idx of field
     int bit_end_arry[string];     //returns end idx of field
+    int string2base_arry[string]; //returns the base addr of the space
+    int string2numlocs_arry[string];  //returns the num of locs of the space
 
     /*  Return  Codes */
     static int SUCCESS             = 0;
@@ -75,7 +77,7 @@
     function void build();
       super.build();
 
-      f = $fopen({"./logs/",get_full_name(),".log"},  "w");
+      f = $fopen({"./logs/",get_full_name(),".log"});
 
       set_report_default_file(f);
       set_report_severity_action(OVM_INFO,  OVM_DISPLAY | OVM_LOG);
@@ -95,6 +97,22 @@
 
     endfunction : create_field
 
+    function  void  create_space(string name, int base, int num_locs);
+      int addr;
+
+      ovm_report_info({get_name(),"[create_space]"},$psprintf("name=%s, base=0x%x, num_locs=%1d",name,base,num_locs),OVM_LOW);
+
+      for(int i=0; i<num_locs; i++)
+      begin
+        addr  = base  + i;
+        //ovm_report_info({get_name(),"[create_space]"},$psprintf("%s_space[%1d] | base:0x%x",name,i,addr),OVM_LOW);
+        create_field($psprintf("%s_space[%1d]",name,i), addr, 0,  REG_W-1);
+      end
+
+      string2base_arry[name]    = base;
+      string2numlocs_arry[name] = num_locs;
+
+    endfunction : create_space
 
     function  int set_field(string name, int val);
        bit[REG_W-1:0]  temp = 0;
@@ -212,11 +230,18 @@
     endfunction : chk_addr_exist
 
     function  string  sprintTable();
-      string  res = $psprintf("\n%-20s%-10s%-10s%-10s","Field Name","Address","Start","End");
+      string  res = $psprintf("\n%-20s%-20s%-10s%-10s","Field Name","Address","Start","End");
 
       foreach(this.string2addr_arry[field])
       begin
-        res = $psprintf("%s\n%-20s%-10d%-10d%-10d",res,field,string2addr_arry[field],bit_start_arry[field],bit_end_arry[field]);
+        res = $psprintf("%s\n%-20s%-20s%-10d%-10d",res,field,$psprintf("0x%x",string2addr_arry[field]),bit_start_arry[field],bit_end_arry[field]);
+      end
+
+      res = $psprintf("%s\n\n%-20s%-20s%-10s",res,"Space Name","Base Address","Num Locs");
+
+      foreach(this.string2base_arry[space])
+      begin
+        res = $psprintf("%s\n%-20s%-20d%-10d",res,space,string2base_arry[space],string2numlocs_arry[space]);
       end
 
       res = {res, "\n"};

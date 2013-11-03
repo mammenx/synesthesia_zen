@@ -92,6 +92,7 @@
     /*  Run */
     task run();
       PKT_TYPE  ingr_pkt,egr_pkt;
+      bit sample_rdy_1d;
 
       ovm_report_info({get_name(),"[run]"},"Start of run ",OVM_LOW);
 
@@ -101,6 +102,21 @@
       if(enable)
       begin
         fork
+          begin //sample_rdy chk logic
+            sample_rdy_1d = 0;
+
+            forever
+            begin
+              @(posedge intf.clk_ir);
+              #1;
+
+              if(intf.sample_rdy  &&  sample_rdy_1d)
+                ovm_report_info({get_name(),"[run-sample-rdy-chk]"},$psprintf("Illegal Consecutive assertion of sample_rdy"),OVM_LOW);
+
+              sample_rdy_1d = intf.sample_rdy;
+            end
+          end
+
           begin
             forever //Ingr monitor logic
             begin

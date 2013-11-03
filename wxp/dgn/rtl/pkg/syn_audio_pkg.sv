@@ -42,10 +42,12 @@
 
 package syn_audio_pkg;
 
+  parameter PCM_DATA_W  = 32;
+
   //PCM Data structure
   typedef struct  packed  {
-    logic [31:0]  lchnnl;
-    logic [31:0]  rchnnl;
+    logic [PCM_DATA_W-1:0]  lchnnl;
+    logic [PCM_DATA_W-1:0]  rchnnl;
   } pcm_data_t;
 
   //Bits Per Sample data type

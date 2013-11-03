@@ -108,13 +108,11 @@
               if(intf.wr_en)
               begin
                 pkt = new();
-                pkt.sample  = new[1];
-                pkt.addr    = new[1];
 
                 $cast(pkt.addr,   intf.waddr);
                 $cast(pkt.sample, intf.wr_sample);
 
-                ovm_report_info({get_name(),"[run]"},$psprintf("Got sample{0x%x,0x%x} @ 0x%x",pkt.sample[0].re,pkt.sample[0].im,pkt.addr[0]),OVM_LOW);
+                ovm_report_info({get_name(),"[run]"},$psprintf("Got sample{0x%x,0x%x} @ 0x%x",pkt.sample.re,pkt.sample.im,pkt.addr),OVM_LOW);
 
                 Sniffer2Sb_port.write(pkt);
               end

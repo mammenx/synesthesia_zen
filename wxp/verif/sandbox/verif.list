@@ -41,6 +41,7 @@
 //Packages
 ../../verif/tb/env/syn_math_pkg.sv
 ../../verif/tb/env/syn_image_pkg.sv
+../../verif/tb/env/syn_dsp_pkg.sv
 ../../verif/tb/env/syn_env_pkg.sv
 
 

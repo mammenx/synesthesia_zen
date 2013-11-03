@@ -2,6 +2,7 @@
 `include  "syn_lb_seq_item.sv"
 `include  "syn_pcm_seq_item.sv"
 `include  "syn_but_seq_item.sv"
+`include  "syn_fft_cache_seq_item.sv"
 
 //RAL
 `include  "syn_reg_map.sv"
@@ -19,9 +20,12 @@
 
 //Sniffers
 `include  "syn_but_sniffer.sv"
+`include  "syn_fft_cache_sniffer.sv"
 
 //Scoreboards
 `include  "syn_but_sb.sv"
+`include  "syn_fft_sb.sv"
+`include  "syn_fft_cache_sb.sv"
 
 //Environments
 `include  "syn_fgyrus_env.sv"
@@ -30,6 +34,7 @@
 //Sequences
 `include  "syn_fgyrus_config_seq.sv"
 `include  "syn_pcm_mem_load_seq.sv"
+`include  "syn_fgyrus_fft_poll_seq.sv"
 
 //Tests
 `include  "syn_fgyrus_base_test.sv"

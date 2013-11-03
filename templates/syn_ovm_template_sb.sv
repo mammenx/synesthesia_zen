@@ -128,7 +128,7 @@
       begin
         //Wait for items to arrive in sent & rcvd queues
         ovm_report_info({get_name(),"[run]"},"Waiting on queues ...",OVM_LOW);
-        while(sent_que.size() &&  rcvd_que.size())  #1;
+        while(!sent_que.size() &&  !rcvd_que.size())  #1;
 
         //Extract pkts from front of queues
 

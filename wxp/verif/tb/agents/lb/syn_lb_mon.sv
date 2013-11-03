@@ -150,6 +150,8 @@
               end
               else  //READ
               begin
+                @(posedge intf.cb.rd_valid);  //wait for read valid
+
                 while(intf.cb.rd_valid)
                 begin
                   data.push_back(intf.cb.rd_data);

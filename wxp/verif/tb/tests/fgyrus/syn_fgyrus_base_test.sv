@@ -114,6 +114,8 @@ class syn_fgyrus_base_test extends ovm_test;
 
       this.env.but_sniffer.intf     = $root.syn_fgyrus_tb_top.syn_fgyrus_inst.but_intf;
 
+      this.env.fft_cache_sniffer.intf = $root.syn_fgyrus_tb_top.syn_fgyrus_inst.fft_cache_intf;
+
       ovm_report_info(get_full_name(),"End of connect",OVM_LOW);
     endfunction : connect
 
