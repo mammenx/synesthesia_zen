@@ -35,7 +35,9 @@
 `include  "syn_fgyrus_config_seq.sv"
 `include  "syn_pcm_mem_load_seq.sv"
 `include  "syn_fgyrus_fft_poll_seq.sv"
+`include  "syn_fgyrus_mem_acc_seq.sv"
 
 //Tests
 `include  "syn_fgyrus_base_test.sv"
 `include  "syn_fgyrus_data_paths_test.sv"
+`include  "syn_fgyrus_mem_acc_test.sv"

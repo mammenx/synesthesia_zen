@@ -104,6 +104,39 @@
 
     endfunction : check
 
+    function  string  checkString (input  syn_lb_seq_item#(DATA_W,ADDR_W) item);
+      string  res = "";
+
+      if(this.addr.size !=  item.addr.size)
+      begin
+        $psprintf("%s\nExpected addr.size[%1d], Actual addr.size[%1d]",res,this.addr.size,item.addr.size);
+      end
+      else
+      begin
+        for(int i=0;  i<this.addr.size; i++)
+        begin
+          if(this.addr[i] !=  item.addr[i]) res = $psprintf("%s\nExpected addr[%1d]:0x%x, Actual addr[%1d]:0x%x",res,i,this.addr[i],i,item.addr[i]);
+        end
+      end
+
+      if(this.data.size !=  item.data.size)
+      begin
+        $psprintf("%s\nExpected data.size[%1d], Actual data.size[%1d]",res,this.data.size,item.data.size);
+      end
+      else
+      begin
+        for(int k=0;  k<this.data.size; k++)
+        begin
+          if(this.data[k] !=  item.data[k]) res = $psprintf("%s\nExpected data[%1d]:0x%x, Actual data[%1d]:0x%x",res,k,this.data[k],k,item.data[k]);
+        end
+      end
+
+      if(this.lb_xtn  !=  item.lb_xtn)      res = $psprintf("%s\nExpected lb_xtn[%s], Actual lb_xtn[%s]",res,this.lb_xtn.name,item.lb_xtn.name);
+
+      return  res;
+
+    endfunction : checkString
+
 
   endclass  : syn_lb_seq_item
 

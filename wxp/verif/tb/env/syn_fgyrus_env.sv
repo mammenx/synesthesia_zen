@@ -183,8 +183,9 @@
         begin
           foreach(lb_pkt.addr[i])
           begin
-            if(fgyrus_reg_map.set_reg(lb_pkt.addr[i], lb_pkt.data[i]) !=  syn_reg_map#(LB_DATA_W)::SUCCESS)
-              ovm_report_fatal({get_name(),"[run]"},$psprintf("Addr 0x%x does not exist",lb_pkt.addr[i]),OVM_LOW);
+            if(lb_pkt.addr[i][11:8] ==  FGYRUS_REG_CODE)
+              if(fgyrus_reg_map.set_reg(lb_pkt.addr[i], lb_pkt.data[i]) !=  syn_reg_map#(LB_DATA_W)::SUCCESS)
+                ovm_report_fatal({get_name(),"[run]"},$psprintf("Addr 0x%x does not exist",lb_pkt.addr[i]),OVM_LOW);
           end
         end
         else  //read
