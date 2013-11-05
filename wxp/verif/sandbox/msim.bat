@@ -38,8 +38,8 @@ rem set TEST_NAME=syn_acortex_pcm_test
 rem set TEST_NAME=syn_acortex_adc_cap_test
 
 rem set TEST_NAME=syn_fgyrus_base_test
-rem set TEST_NAME=syn_fgyrus_data_paths_test
-set TEST_NAME=syn_fgyrus_mem_acc_test
+set TEST_NAME=syn_fgyrus_data_paths_test
+rem set TEST_NAME=syn_fgyrus_mem_acc_test
 
 rem set TB_TOP=syn_vcortex_tb_top
 rem set TB_TOP=syn_acortex_tb_top

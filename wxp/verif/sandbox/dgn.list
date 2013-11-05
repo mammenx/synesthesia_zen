@@ -101,3 +101,5 @@
 ../../dgn/rtl/fusiform_gyrus/syn_fgyrus_fsm.sv
 ../../dgn/rtl/fusiform_gyrus/syn_fgyrus.sv
 
+//Cortex
+../../dgn/rtl/cortex_top/syn_cortex.sv
