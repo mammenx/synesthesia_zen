@@ -56,6 +56,6 @@ package syn_fft_pkg;
 
   `COMPLEX_STRUCT_T_DEF(P_FFT_TWDL_W, fft_twdl_t)
 
-  typedef enum  logic {NORMAL=0,CONFIG=1} fgyrus_mode_t;
+  typedef enum  logic {NORMAL=1'b0,CONFIG=1'b1} fgyrus_mode_t;
 
 endpackage  //  syn_fft_pkg

@@ -52,12 +52,12 @@ package syn_audio_pkg;
 
   //Bits Per Sample data type
   typedef enum  logic {
-                        BPS_16=0,
+                        BPS_16=1'b0,
                         BPS_32
                       } bps_t;
 
   typedef enum  logic {
-                        NORMAL=0,
+                        NORMAL=1'b0,
                         CAPTURE
                       } acache_mode_t;
 

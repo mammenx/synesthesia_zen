@@ -167,7 +167,7 @@ module syn_fgyrus_fsm (
 
 
 //----------------------- FSM Declarations --------------------------------
-enum  logic [2:0] { IDLE_S=0,
+enum  logic [2:0] { IDLE_S  = 3'd0,
                     DECIMATE_WINDOW_S,
                     FFT_S,
                     CORDIC_S,
