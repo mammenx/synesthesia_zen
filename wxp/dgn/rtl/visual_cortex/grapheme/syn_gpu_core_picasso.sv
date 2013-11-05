@@ -95,7 +95,7 @@ module syn_gpu_core_picasso (
 
 //----------------------- FSM Declarations --------------------------------
 enum  logic [2:0] {
-                    IDLE_S  = 'd0,
+                    IDLE_S  = 3'd0,
                     INIT_GPU_FF_S,
                     WRITE_P0,
                     READ_P1,

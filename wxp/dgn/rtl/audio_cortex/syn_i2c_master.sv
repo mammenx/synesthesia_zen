@@ -121,7 +121,7 @@ module syn_i2c_master (
 
 //----------------------- FSM Declarations --------------------------------
 enum  logic [2:0] {
-                    IDLE_S    = 'd0,
+                    IDLE_S    = 3'd0,
                     START_S,
                     ADDR_S,
                     DATA_S,

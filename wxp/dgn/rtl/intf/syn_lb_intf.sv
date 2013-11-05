@@ -42,7 +42,7 @@
 */
 
 
-interface syn_lb_intf #(DATA_W  = 32, ADDR_W  = 12) (input logic  clk_ir, rst_il);
+interface syn_lb_intf #(parameter DATA_W  = 32, ADDR_W  = 12) (input logic  clk_ir, rst_il);
 
   //parameter DATA_W  = 32;
   //parameter ADDR_W  = 8;
