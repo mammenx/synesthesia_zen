@@ -40,7 +40,7 @@
  --------------------------------------------------------------------------
 */
 
-interface syn_but_intf  (input logic clk_ir,rst_il);
+interface syn_but_intf  #() (input logic clk_ir,rst_il);
 
   import  syn_fft_pkg::*;
 

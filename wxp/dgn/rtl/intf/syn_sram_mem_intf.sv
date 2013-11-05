@@ -54,6 +54,12 @@ interface syn_sram_mem_intf (input  logic clk_ir, rst_il);
   // Bi-Directional
   wire  [15:0]  SRAM_DQ;  // SRAM Data bus 16 Bits
 
+  //For TB
+  bit         tb_dq_sel;
+  bit [15:0]  tb_dq;
+
+  assign  SRAM_DQ = tb_dq_sel ? tb_dq : 16'dz;
+
   //Modports
   modport mp  (
                 output  SRAM_ADDR,
@@ -65,13 +71,6 @@ interface syn_sram_mem_intf (input  logic clk_ir, rst_il);
 
                 inout   SRAM_DQ
               );
-
-  `ifdef  SIMULATION
-  //For TB
-  bit         tb_dq_sel;
-  bit [15:0]  tb_dq;
-
-  assign  SRAM_DQ = tb_dq_sel ? tb_dq : 16'dz;
 
   /*  Verif */
   modport TB  (
@@ -90,6 +89,5 @@ interface syn_sram_mem_intf (input  logic clk_ir, rst_il);
 
                 inout   SRAM_DQ
               );
-    `endif
 
 endinterface  //  syn_sram_mem_intf

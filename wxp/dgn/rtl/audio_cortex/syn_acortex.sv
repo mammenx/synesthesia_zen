@@ -131,7 +131,6 @@ module syn_acortex (
     .clk_vec_intf     (clk_vec_intf)
 
   );
-  defparam  syn_clk_mux_inst.P_NUM_CLOCKS = P_NUM_CLOCKS;
 
   syn_wm8731_drvr         syn_wm8731_drvr_inst
   (

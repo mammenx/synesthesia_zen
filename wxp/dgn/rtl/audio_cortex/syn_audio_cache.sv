@@ -235,7 +235,7 @@ module syn_audio_cache (
   /*  Address logic */
   always_ff@(posedge cr_intf.clk_ir, negedge local_rst_l_c)
   begin : addr_logic
-    if(~local_rst_l_c)
+    if(~cr_intf.rst_sync_l)
     begin
       ingr_addr_f             <=  0;
       egr_addr_f              <=  0;

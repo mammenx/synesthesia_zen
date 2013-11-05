@@ -117,7 +117,7 @@ module syn_wm8731_drvr (
 
 //----------------------- FSM Declarations --------------------------------
 enum  logic [2:0] {
-                    IDLE_S  = 3'd0,
+                    IDLE_S=0,
                     START_S,
                     LCHANNEL_S,
                     RCHANNEL_S,
