@@ -42,6 +42,7 @@
 
 
 import  syn_env_pkg::*;
+import  syn_image_pkg::*;
 
 class syn_vcortex_base_test extends ovm_test;
 
@@ -139,11 +140,33 @@ class syn_vcortex_base_test extends ovm_test;
 
     /*  Run */
     virtual task run ();
+      pxl_hsi_t pxl_hsi;
+      pxl_rgb_t pxl_rgb;
+
       ovm_report_info(get_full_name(),"Start of run",OVM_LOW);
 
       env.sprint();
 
       #1000;
+
+      for(pxl_rgb.red=0; pxl_rgb.red  <= 15; pxl_rgb.red++)
+      begin
+        for(pxl_rgb.green=0; pxl_rgb.green <= 15; pxl_rgb.green++)
+        begin
+          for(pxl_rgb.blue=0; pxl_rgb.blue <= 15; pxl_rgb.blue++)
+          begin
+            pxl_hsi = convert_rgb2hsi(pxl_rgb);
+            ovm_report_info(get_full_name(),$psprintf("R:%1d, G:%1d, B:%1d -> H:%1d, S:%1d, I:%1d",pxl_rgb.red,pxl_rgb.green,pxl_rgb.blue,pxl_hsi.h,pxl_hsi.s,pxl_hsi.i),OVM_LOW);
+
+            if(pxl_rgb.blue == 15) break;
+          end
+
+          if(pxl_rgb.green == 15) break;
+        end
+
+        if(pxl_rgb.red  == 15) break;
+      end
+
 
       global_stop_request();
 

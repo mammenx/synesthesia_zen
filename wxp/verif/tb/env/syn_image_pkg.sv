@@ -202,6 +202,7 @@ package syn_image_pkg;
     real    r,g,b;
     real    h,s,i;
     real    min_rgb;
+    int     h_int,s_int,i_int;
 
     //normalize RGB
     r = pxl_in.red    / (pxl_in.red + pxl_in.green  + pxl_in.blue);
@@ -239,8 +240,7 @@ package syn_image_pkg;
 
     s = 1 - (3*min_rgb);
 
-    i = (pxl_in.red + pxl_in.green  + pxl_in.blue)  / (3*15);
-
+    i = (pxl_in.red + pxl_in.green  + pxl_in.blue)  / (3.255 * 15);
 
     //normalize HSI
     h = (h  * 4)/pi;
@@ -248,9 +248,13 @@ package syn_image_pkg;
     i = i * 7;
 
     //pack into hsi pxl struct
-    $cast(pxl_out.h,  h);
-    $cast(pxl_out.s,  s);
-    $cast(pxl_out.i,  i);
+    $cast(h_int,  h);
+    $cast(s_int,  s);
+    $cast(i_int,  i);
+
+    $cast(pxl_out.h,  h_int);
+    $cast(pxl_out.s,  s_int);
+    $cast(pxl_out.i,  i_int);
 
     return  pxl_out;
 

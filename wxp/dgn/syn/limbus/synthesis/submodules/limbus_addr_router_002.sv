@@ -34,12 +34,12 @@ module limbus_addr_router_002_default_decode
      parameter DEFAULT_CHANNEL = 0,
                DEFAULT_DESTID = 0 
    )
-  (output [67 - 67 : 0] default_destination_id,
+  (output [69 - 69 : 0] default_destination_id,
    output [1-1 : 0] default_src_channel
   );
 
   assign default_destination_id = 
-    DEFAULT_DESTID[67 - 67 : 0];
+    DEFAULT_DESTID[69 - 69 : 0];
   generate begin : default_decode
     if (DEFAULT_CHANNEL == -1)
       assign default_src_channel = '0;
@@ -62,7 +62,7 @@ module limbus_addr_router_002
     // Command Sink (Input)
     // -------------------
     input                       sink_valid,
-    input  [69-1 : 0]    sink_data,
+    input  [71-1 : 0]    sink_data,
     input                       sink_startofpacket,
     input                       sink_endofpacket,
     output                      sink_ready,
@@ -71,7 +71,7 @@ module limbus_addr_router_002
     // Command Source (Output)
     // -------------------
     output                          src_valid,
-    output reg [69-1    : 0] src_data,
+    output reg [71-1    : 0] src_data,
     output reg [1-1 : 0] src_channel,
     output                          src_startofpacket,
     output                          src_endofpacket,
@@ -81,16 +81,16 @@ module limbus_addr_router_002
     // -------------------------------------------------------
     // Local parameters and variables
     // -------------------------------------------------------
-    localparam PKT_ADDR_H = 53;
+    localparam PKT_ADDR_H = 55;
     localparam PKT_ADDR_L = 36;
-    localparam PKT_DEST_ID_H = 67;
-    localparam PKT_DEST_ID_L = 67;
-    localparam ST_DATA_W = 69;
+    localparam PKT_DEST_ID_H = 69;
+    localparam PKT_DEST_ID_L = 69;
+    localparam ST_DATA_W = 71;
     localparam ST_CHANNEL_W = 1;
     localparam DECODER_TYPE = 0;
 
-    localparam PKT_TRANS_WRITE = 56;
-    localparam PKT_TRANS_READ  = 57;
+    localparam PKT_TRANS_WRITE = 58;
+    localparam PKT_TRANS_READ  = 59;
 
     localparam PKT_ADDR_W = PKT_ADDR_H-PKT_ADDR_L + 1;
     localparam PKT_DEST_ID_W = PKT_DEST_ID_H-PKT_DEST_ID_L + 1;
@@ -102,14 +102,14 @@ module limbus_addr_router_002
     // Figure out the number of bits to mask off for each slave span
     // during address decoding
     // -------------------------------------------------------
-    localparam PAD0 = log2ceil(32'h40000 - 32'h0);
+    localparam PAD0 = log2ceil(32'h100000 - 32'h0);
 
     // -------------------------------------------------------
     // Work out which address bits are significant based on the
     // address range of the slaves. If the required width is too
     // large or too small, we use the address field width instead.
     // -------------------------------------------------------
-    localparam ADDR_RANGE = 32'h40000;
+    localparam ADDR_RANGE = 32'h100000;
     localparam RANGE_ADDR_WIDTH = log2ceil(ADDR_RANGE);
     localparam OPTIMIZED_ADDR_H = (RANGE_ADDR_WIDTH > PKT_ADDR_W) ||
                                   (RANGE_ADDR_WIDTH == 0) ?
@@ -147,7 +147,7 @@ module limbus_addr_router_002
         // Sets the channel and destination ID based on the address
         // --------------------------------------------------
 	
-        // ( 0 .. 40000 )
+        // ( 0 .. 100000 )
         src_channel = 1'b1;
         src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 0;
 	

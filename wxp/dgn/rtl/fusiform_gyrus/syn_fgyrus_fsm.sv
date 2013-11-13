@@ -384,7 +384,7 @@ enum  logic [2:0] { IDLE_S  = 3'd0,
 
         DECIMATE_WINDOW_S :
         begin
-          sample_rcntr_f      <=  wait_for_end_f  ? 0 : sample_rcntr_f + pst_vec_f[0];
+          sample_rcntr_f      <=  wait_for_end_f  ? 'd0 : sample_rcntr_f + pst_vec_f[0];
 
           if(wait_for_end_f)  //wait for decimate over signal
           begin

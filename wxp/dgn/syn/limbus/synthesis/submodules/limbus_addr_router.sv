@@ -103,14 +103,14 @@ module limbus_addr_router
     // during address decoding
     // -------------------------------------------------------
     localparam PAD0 = log2ceil(32'h2000000 - 32'h1800000);
-    localparam PAD1 = log2ceil(32'h2005000 - 32'h2004800);
+    localparam PAD1 = log2ceil(32'h2011000 - 32'h2010800);
 
     // -------------------------------------------------------
     // Work out which address bits are significant based on the
     // address range of the slaves. If the required width is too
     // large or too small, we use the address field width instead.
     // -------------------------------------------------------
-    localparam ADDR_RANGE = 32'h2005000;
+    localparam ADDR_RANGE = 32'h2011000;
     localparam RANGE_ADDR_WIDTH = log2ceil(ADDR_RANGE);
     localparam OPTIMIZED_ADDR_H = (RANGE_ADDR_WIDTH > PKT_ADDR_W) ||
                                   (RANGE_ADDR_WIDTH == 0) ?
@@ -155,8 +155,8 @@ module limbus_addr_router
             src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 1;
         end
 
-        // ( 0x2004800 .. 0x2005000 )
-        if ( {address[RG:PAD1],{PAD1{1'b0}}} == 'h2004800 ) begin
+        // ( 0x2010800 .. 0x2011000 )
+        if ( {address[RG:PAD1],{PAD1{1'b0}}} == 'h2010800 ) begin
             src_channel = 9'b01;
             src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 0;
         end

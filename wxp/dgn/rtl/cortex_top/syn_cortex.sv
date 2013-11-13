@@ -112,12 +112,12 @@ module syn_cortex (
 
   assign  acortex_lb_intf.rd_en   = cortex_lb_intf.rd_en  & acortex_addr_dec_c;
   assign  acortex_lb_intf.wr_en   = cortex_lb_intf.wr_en  & acortex_addr_dec_c;
-  assign  acortex_lb_intf.addr    = cortex_lb_intf.addr[12:0];
+  assign  acortex_lb_intf.addr    = cortex_lb_intf.addr[11:0];
   assign  acortex_lb_intf.wr_data = cortex_lb_intf.wr_data;
 
   assign  vcortex_lb_intf.rd_en   = cortex_lb_intf.rd_en  & vcortex_addr_dec_c;
   assign  vcortex_lb_intf.wr_en   = cortex_lb_intf.wr_en  & vcortex_addr_dec_c;
-  assign  vcortex_lb_intf.addr    = cortex_lb_intf.addr[12:0];
+  assign  vcortex_lb_intf.addr    = cortex_lb_intf.addr[11:0];
   assign  vcortex_lb_intf.wr_data = cortex_lb_intf.wr_data;
 
   assign  cortex_lb_intf.wr_valid = acortex_lb_intf.wr_valid  | vcortex_lb_intf.wr_valid;

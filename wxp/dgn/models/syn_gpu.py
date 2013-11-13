@@ -161,6 +161,7 @@ def plot_hsi_cube():
 	pi = 3.142
 	fig = plt.figure()
 	ax = fig.add_subplot(111, projection='3d')
+	file = open("hsi2rgb.txt", "w")
 	
 	for h in range (0, 8):
 		for s in range (0, 4):
@@ -212,7 +213,13 @@ def plot_hsi_cube():
 				elif(b > 255):
 					b = 255
 				
+				val= (int(r/16) * 256) + (int(g/16) * 16) + int(b/16);
+				
+				file.write('h:'+str(h)+' s:'+str(s)+' i:'+str(i)+' -> r:'+str(int(r/16))+' g:'+str(int(g/16))+' b:'+str(int(b/16))+' | val:'+str(int(val))+'\n')
+				
 				ax.scatter(h,s,i, c=color_rgb(r,g,b), marker='o', s=200)
+	
+	file.close()
 	
 	ax.set_xlabel('H')
 	ax.set_ylabel('S')
@@ -463,22 +470,26 @@ def draw_curve_bezier(x0,y0,x1,y1,x2,y2,w):
 
 
 "	Work Area	-	Write code to test models here ..."
-win = GraphWin('syn_canvas ' + str(canvas_w) + 'x' + str(canvas_h),canvas_w,canvas_h)
+#win = GraphWin('syn_canvas ' + str(canvas_w) + 'x' + str(canvas_h),canvas_w,canvas_h)
 
-pt = Point(200,200)
-pt.draw(win)
+#pt = Point(200,200)
+#pt.draw(win)
 
 "draw_conic(45,52,45,300,384,320,240,win)"
 
-draw_line_bezier(0,0,600,400,win)
-draw_line(0,50,600,450,win)
+#draw_line_bezier(0,0,600,400,win)
+#draw_line(0,50,600,450,win)
 
-draw_curve_bezier(0,0,100,0,100,50,win)
-draw_curve_bezier(100,50,100,300,200,300,win)
-draw_curve_bezier(200,300,600,300,600,400,win)
+#draw_curve_bezier(0,0,100,0,100,50,win)
+#draw_curve_bezier(100,50,100,300,200,300,win)
+#draw_curve_bezier(200,300,600,300,600,400,win)
 
-" plot_ycbcr_cube()"
-"plot_hsi_cube()"
+"plot_ycbcr_cube()"
+plot_hsi_cube()
+
+file = open("test.txt", "w")
+file.write("Hello\n")
+file.close()
 
 
 input("waiting ...")

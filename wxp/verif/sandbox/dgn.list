@@ -31,6 +31,7 @@
 ../../dgn/rtl/altera/ram_2xM4K_32bW_256D.v
 ../../dgn/rtl/altera/twiddle_ram.v
 ../../dgn/rtl/altera/win_ram.v
+../../dgn/rtl/altera/hsi2rgb_ram.v
 
 //Packages
 ../../dgn/rtl/pkg/syn_global_pkg.sv

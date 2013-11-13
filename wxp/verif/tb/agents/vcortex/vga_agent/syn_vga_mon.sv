@@ -151,7 +151,8 @@
 
               hpkt.pxl_arry = new[LINE_LENGTH];
 
-              foreach(hpkt.pxl_arry[i]) //get pixels
+              //foreach(hpkt.pxl_arry[i]) //get pixels
+              for(int i=0; i<hpkt.pxl_arry.size; i++) //get pixels
               begin
                 $cast(hpkt.pxl_arry[i], {intf.r,intf.g,intf.b});
                 @(posedge intf.clk_ir);

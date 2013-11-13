@@ -103,7 +103,7 @@ module syn_gpu_div (
       if(div_req_valid_c)
       begin
         dividend_f            <=  mulbry_bus_intf.div_req_data[(P_16B_W*2)-1:P_16B_W];
-        divisor_f             <=  mulbry_bus_intf.div_req_data[P_16B_W:0];
+        divisor_f             <=  mulbry_bus_intf.div_req_data[P_16B_W-1:0];
         div_req_mid_f         <=  mulbry_bus_intf.div_req_mid;
       end
 

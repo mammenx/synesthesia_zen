@@ -256,7 +256,7 @@ enum  logic [2:0] {
           else
           begin
             pst_vec_f[4:0]        <=  (gpu_ff_wr_valid_c  | pxlgw_intf.ready) ? {pst_vec_f[3:0],1'b0}
-                                                                              : pst_vec_f;
+                                                                              : pst_vec_f[4:0];
           end
 
           //Write seed point to SRAM memory @ wptr + 0,1,2,3

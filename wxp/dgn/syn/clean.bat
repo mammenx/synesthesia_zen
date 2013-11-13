@@ -22,8 +22,8 @@ if exist incremental_db (
 del /f /q *.rpt
 del /f /q *.log
 del /f /q *.summary
-del /f /q *.jdi
-del /f /q *.sof
-del /f /q *.pof
+rem del /f /q *.jdi
+rem del /f /q *.sof
+rem del /f /q *.pof
 del /f /q *.done
 del /f /q *.smsg

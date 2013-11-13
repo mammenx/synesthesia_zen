@@ -180,8 +180,8 @@ applicable agreement for further details.
 	(port
 		(pt 0 544)
 		(output)
-		(text "cortex_mm_slave_address[15..0]" (rect 0 0 212 12)(font "Arial" (font_size 8)))
-		(text "cortex_mm_slave_address[15..0]" (rect 4 533 184 544)(font "Arial" (font_size 8)))
+		(text "cortex_mm_slave_address[17..0]" (rect 0 0 212 12)(font "Arial" (font_size 8)))
+		(text "cortex_mm_slave_address[17..0]" (rect 4 533 184 544)(font "Arial" (font_size 8)))
 		(line (pt 0 544)(pt 208 544)(line_width 3))
 	)
 	(port
@@ -215,8 +215,8 @@ applicable agreement for further details.
 	(port
 		(pt 0 704)
 		(output)
-		(text "fft_cache_mm_slave_address[11..0]" (rect 0 0 233 12)(font "Arial" (font_size 8)))
-		(text "fft_cache_mm_slave_address[11..0]" (rect 4 693 202 704)(font "Arial" (font_size 8)))
+		(text "fft_cache_mm_slave_address[13..0]" (rect 0 0 233 12)(font "Arial" (font_size 8)))
+		(text "fft_cache_mm_slave_address[13..0]" (rect 4 693 202 704)(font "Arial" (font_size 8)))
 		(line (pt 0 704)(pt 208 704)(line_width 3))
 	)
 	(port

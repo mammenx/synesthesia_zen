@@ -82,6 +82,8 @@ module syn_vga_fsm (
   localparam  P_VGA_VTOTAL_W      = P_VGA_VVALID_W  + P_VGA_VFP_W + P_VGA_VSYNC_W + P_VGA_VBP_W;
   localparam  P_VGA_VCNTR_W       = $clog2(P_VGA_VTOTAL_W);
 
+  localparam  P_RGB_BLANK_DELAY   = 2;
+
 //----------------------- Input Declarations ------------------------------
 
 
@@ -106,6 +108,8 @@ module syn_vga_fsm (
   logic [P_RAM_ACC_DELAY:0]   hsync_del_f;
   logic [P_RAM_ACC_DELAY:0]   vsync_del_f;
 
+  logic [P_RGB_BLANK_DELAY-1:0] rgb_blank_vec_f;
+
 //----------------------- Internal Wire Declarations ----------------------
   logic                       hcntr_en_c;
   logic                       hcntr_wrap_c;
@@ -122,6 +126,7 @@ module syn_vga_fsm (
   logic                       valid_pxl_range_c;
 
   logic [P_16B_W-1:0]         ycbcr2rgb_ram_rd_data_w;
+
 
 //----------------------- FSM Declarations --------------------------------
 typedef enum  logic [3:0] {IDLE_S,  FP_S, SYNC_S, BP_S, VALID_S}  vga_fsm_t;
@@ -335,6 +340,8 @@ vga_fsm_t   vfsm_pstate,  vfsm_nstate;
       vga_intf.b              <=  0;
       vga_intf.hsync_n        <=  1;
       vga_intf.vsync_n        <=  1;
+
+      rgb_blank_vec_f         <=  0;
     end
     else
     begin
@@ -348,7 +355,22 @@ vga_fsm_t   vfsm_pstate,  vfsm_nstate;
       vsync_del_f             <=  {vsync_del_f[P_RAM_ACC_DELAY-1:0],  (vfsm_pstate  ==  SYNC_S)};
       vga_intf.vsync_n        <=  ~vsync_del_f[P_RAM_ACC_DELAY];
 
-      if(pst_f[P_RAM_ACC_DELAY])
+      if(vga_tck_gen_f)
+      begin
+        rgb_blank_vec_f       <=  {rgb_blank_vec_f[P_RGB_BLANK_DELAY-2:0],~valid_pxl_range_c};
+      end
+      else
+      begin
+        rgb_blank_vec_f       <=  rgb_blank_vec_f;
+      end
+
+      if(rgb_blank_vec_f[P_RGB_BLANK_DELAY-1])
+      begin
+        vga_intf.r            <=  0;
+        vga_intf.g            <=  0;
+        vga_intf.b            <=  0;
+      end
+      else if(pst_f[P_RAM_ACC_DELAY])
       begin
         vga_intf.r            <=  ycbcr2rgb_ram_rd_data_w[11:8];
         vga_intf.g            <=  ycbcr2rgb_ram_rd_data_w[7:4];
@@ -358,7 +380,8 @@ vga_fsm_t   vfsm_pstate,  vfsm_nstate;
   end
 
   /*  Instantiation of YCBCR2RGB RAM  */
-  ram_1xM4K_16bW_dualport   ycbcr2rgb_ram_inst
+  //ram_1xM4K_16bW_dualport   ycbcr2rgb_ram_inst
+  hsi2rgb_ram               hsi2rgb_ram_inst
   (
     .address_a              (ycbcr2rgb_ram_raddr_f),
     .address_b              ('d0),

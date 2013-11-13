@@ -102,22 +102,22 @@ module limbus_addr_router_001
     // Figure out the number of bits to mask off for each slave span
     // during address decoding
     // -------------------------------------------------------
-    localparam PAD0 = log2ceil(32'h40000 - 32'h0);
+    localparam PAD0 = log2ceil(32'h100000 - 32'h0);
     localparam PAD1 = log2ceil(32'h2000000 - 32'h1800000);
-    localparam PAD2 = log2ceil(32'h2004000 - 32'h2000000);
-    localparam PAD3 = log2ceil(32'h2005000 - 32'h2004800);
-    localparam PAD4 = log2ceil(32'h2005020 - 32'h2005000);
-    localparam PAD5 = log2ceil(32'h2005040 - 32'h2005020);
-    localparam PAD6 = log2ceil(32'h2005060 - 32'h2005040);
-    localparam PAD7 = log2ceil(32'h2005068 - 32'h2005060);
-    localparam PAD8 = log2ceil(32'h2005070 - 32'h2005068);
+    localparam PAD2 = log2ceil(32'h2010000 - 32'h2000000);
+    localparam PAD3 = log2ceil(32'h2011000 - 32'h2010800);
+    localparam PAD4 = log2ceil(32'h2011020 - 32'h2011000);
+    localparam PAD5 = log2ceil(32'h2011040 - 32'h2011020);
+    localparam PAD6 = log2ceil(32'h2011060 - 32'h2011040);
+    localparam PAD7 = log2ceil(32'h2011068 - 32'h2011060);
+    localparam PAD8 = log2ceil(32'h2011070 - 32'h2011068);
 
     // -------------------------------------------------------
     // Work out which address bits are significant based on the
     // address range of the slaves. If the required width is too
     // large or too small, we use the address field width instead.
     // -------------------------------------------------------
-    localparam ADDR_RANGE = 32'h2005070;
+    localparam ADDR_RANGE = 32'h2011070;
     localparam RANGE_ADDR_WIDTH = log2ceil(ADDR_RANGE);
     localparam OPTIMIZED_ADDR_H = (RANGE_ADDR_WIDTH > PKT_ADDR_W) ||
                                   (RANGE_ADDR_WIDTH == 0) ?
@@ -156,7 +156,7 @@ module limbus_addr_router_001
         // Sets the channel and destination ID based on the address
         // --------------------------------------------------
 
-        // ( 0x0 .. 0x40000 )
+        // ( 0x0 .. 0x100000 )
         if ( {address[RG:PAD0],{PAD0{1'b0}}} == 'h0 ) begin
             src_channel = 9'b000010000;
             src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 4;
@@ -168,44 +168,44 @@ module limbus_addr_router_001
             src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 1;
         end
 
-        // ( 0x2000000 .. 0x2004000 )
+        // ( 0x2000000 .. 0x2010000 )
         if ( {address[RG:PAD2],{PAD2{1'b0}}} == 'h2000000 ) begin
             src_channel = 9'b100000000;
             src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 8;
         end
 
-        // ( 0x2004800 .. 0x2005000 )
-        if ( {address[RG:PAD3],{PAD3{1'b0}}} == 'h2004800 ) begin
+        // ( 0x2010800 .. 0x2011000 )
+        if ( {address[RG:PAD3],{PAD3{1'b0}}} == 'h2010800 ) begin
             src_channel = 9'b000000001;
             src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 0;
         end
 
-        // ( 0x2005000 .. 0x2005020 )
-        if ( {address[RG:PAD4],{PAD4{1'b0}}} == 'h2005000 ) begin
+        // ( 0x2011000 .. 0x2011020 )
+        if ( {address[RG:PAD4],{PAD4{1'b0}}} == 'h2011000 ) begin
             src_channel = 9'b000000100;
             src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 2;
         end
 
-        // ( 0x2005020 .. 0x2005040 )
-        if ( {address[RG:PAD5],{PAD5{1'b0}}} == 'h2005020 ) begin
+        // ( 0x2011020 .. 0x2011040 )
+        if ( {address[RG:PAD5],{PAD5{1'b0}}} == 'h2011020 ) begin
             src_channel = 9'b000001000;
             src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 3;
         end
 
-        // ( 0x2005040 .. 0x2005060 )
-        if ( {address[RG:PAD6],{PAD6{1'b0}}} == 'h2005040 ) begin
+        // ( 0x2011040 .. 0x2011060 )
+        if ( {address[RG:PAD6],{PAD6{1'b0}}} == 'h2011040 ) begin
             src_channel = 9'b010000000;
             src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 7;
         end
 
-        // ( 0x2005060 .. 0x2005068 )
-        if ( {address[RG:PAD7],{PAD7{1'b0}}} == 'h2005060 ) begin
+        // ( 0x2011060 .. 0x2011068 )
+        if ( {address[RG:PAD7],{PAD7{1'b0}}} == 'h2011060 ) begin
             src_channel = 9'b000100000;
             src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 5;
         end
 
-        // ( 0x2005068 .. 0x2005070 )
-        if ( {address[RG:PAD8],{PAD8{1'b0}}} == 'h2005068 ) begin
+        // ( 0x2011068 .. 0x2011070 )
+        if ( {address[RG:PAD8],{PAD8{1'b0}}} == 'h2011068 ) begin
             src_channel = 9'b001000000;
             src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 6;
         end

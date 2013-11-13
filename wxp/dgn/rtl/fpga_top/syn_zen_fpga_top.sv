@@ -225,8 +225,13 @@ module syn_zen_fpga_top
   logic                       cortex_clk_w;
   logic                       fft_cache_clk_w;
   logic                       cortex_rst_l_w;
+  logic                       cortex_rst_w;
   logic                       fft_cache_rst_l_w;
+  logic                       fft_cache_rst_w;
   logic [P_CORTEX_NUM_CLKS-1:0] cortex_clk_vec_w;
+
+  logic [P_CORTEX_LB_AWIDTH+1:0]    cortex_mm_slv_addr_w;
+  logic [P_FFT_CACHE_LB_AWIDTH+1:0] fft_cache_mm_slv_addr_w;
 
 //----------------------- Internal Interfaces Declarations ----------------
   syn_clk_rst_sync_intf       cortex_cr_intf(cortex_clk_w,cortex_rst_l_w);
@@ -291,21 +296,21 @@ module syn_zen_fpga_top
     .sdram_ras_n                        (DRAM_RAS_N),
     .sdram_we_n                         (DRAM_WE_N),
 
-    .cortex_mm_slave_address            (cortex_lb_intf.addr),
+    .cortex_mm_slave_address            (cortex_mm_slv_addr_w),
     .cortex_mm_slave_read               (cortex_lb_intf.rd_en),
     .cortex_mm_slave_readdata           (cortex_lb_intf.rd_data),
     .cortex_mm_slave_write              (cortex_lb_intf.wr_en),
     .cortex_mm_slave_writedata          (cortex_lb_intf.wr_data),
     .cortex_mm_slave_readdatavalid      (cortex_lb_intf.rd_valid),
-    .cortex_mm_slave_reset_reset        (cortex_rst_l_w),
+    .cortex_mm_slave_reset_reset        (cortex_rst_w),
 
-    .fft_cache_mm_slave_address         (fft_cache_lb_intf.addr),
+    .fft_cache_mm_slave_address         (fft_cache_mm_slv_addr_w),
     .fft_cache_mm_slave_read            (fft_cache_lb_intf.rd_en),
     .fft_cache_mm_slave_readdata        (fft_cache_lb_intf.rd_data),
     .fft_cache_mm_slave_write           (fft_cache_lb_intf.wr_en),
     .fft_cache_mm_slave_writedata       (fft_cache_lb_intf.wr_data),
     .fft_cache_mm_slave_readdatavalid   (fft_cache_lb_intf.rd_valid),
-    .fft_cache_mm_slave_reset_reset     (fft_cache_rst_l_w),
+    .fft_cache_mm_slave_reset_reset     (fft_cache_rst_w),
 
     .sdcard_spi_MISO                    (SD_DAT),
     .sdcard_spi_MOSI                    (SD_CMD),
@@ -317,6 +322,12 @@ module syn_zen_fpga_top
 
   );
 
+  //Discard lower two bits of the system address
+  assign  cortex_lb_intf.addr     = cortex_mm_slv_addr_w[P_CORTEX_LB_AWIDTH+1:2];
+  assign  fft_cache_lb_intf.addr  = fft_cache_mm_slv_addr_w[P_FFT_CACHE_LB_AWIDTH+1:2];
+
+  assign  cortex_rst_l_w    = ~cortex_rst_w;
+  assign  fft_cache_rst_l_w = ~fft_cache_rst_w;
 
   /*  Instantiating Cortex Block  */
   syn_cortex            cortex_inst
@@ -368,6 +379,9 @@ module syn_zen_fpga_top
   assign  VGA_R               = vga_intf.r;
   assign  VGA_G               = vga_intf.g;
   assign  VGA_B               = vga_intf.b;
+  //assign  VGA_R               = 'd15;
+  //assign  VGA_G               = 'd0;
+  //assign  VGA_B               = 'd0;
 
   //LED Status
   assign  LEDR[9] = ~sys_rst_lw;
