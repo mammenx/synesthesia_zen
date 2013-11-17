@@ -25,6 +25,7 @@
 
 //Scoreboards
 `include  "syn_frm_bffr_sb.sv"
+`include  "syn_vga_sb.sv"
 
 //Environments
 `include  "syn_vcortex_env.sv"

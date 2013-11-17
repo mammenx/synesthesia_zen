@@ -43,6 +43,7 @@
 
 //Field Masks
 #define	VCORTEX_VGA_EN_MSK				0x1
+#define	VCORTEX_VGA_MODE_MSK			0x2
 #define	VCORTEX_VGA_BFFR_OVRFLW_MSK		0x1
 #define	VCORTEX_VGA_BFFR_UNDRFLW_MSK	0x2
 
@@ -57,8 +58,13 @@
 #define	IOWR_VCORTEX_VGA_CONTROL(data)			\
 		IOWR_32DIRECT(CORTEX_MM_SLAVE_BASE, VCORTEX_VGA_CONTROL_REG_ADDR, data)
 
+typedef enum {
+	NORMAL=0,
+	TEST_PATTERN=2 //since its bit 1
+}VGA_MODE_T;
 
 void vga_en();
 void vga_disable();
+void set_vga_mode(VGA_MODE_T mode);
 
 #endif /* VGA_H_ */

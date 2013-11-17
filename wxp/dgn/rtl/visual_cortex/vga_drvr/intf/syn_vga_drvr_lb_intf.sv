@@ -45,23 +45,27 @@ interface syn_vga_drvr_lb_intf  (input logic clk_ir, rst_il);
   logic   vga_drvr_en;
   logic   bffr_overflow;
   logic   bffr_underflow;
+  logic   vga_mode;
 
 
   //Modports
   modport line_bffr (
                       input   vga_drvr_en,
                       output  bffr_overflow,
-                      output  bffr_underflow
+                      output  bffr_underflow,
+                      input   vga_mode
                     );
 
   modport fsm       (
-                      input   vga_drvr_en
+                      input   vga_drvr_en,
+                      input   vga_mode
                     );
 
   modport lb        (
                       output  vga_drvr_en,
                       input   bffr_overflow,
-                      input   bffr_underflow
+                      input   bffr_underflow,
+                      output  vga_mode
                     );
 
 

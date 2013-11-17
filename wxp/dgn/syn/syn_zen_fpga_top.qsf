@@ -112,6 +112,7 @@ set_global_assignment -name VERILOG_FILE ../rtl/altera/cordic_ram.v
 set_global_assignment -name VERILOG_FILE ../rtl/altera/complex_mult.v
 set_global_assignment -name VERILOG_FILE ../rtl/altera/syn_sys_pll.v
 set_global_assignment -name VERILOG_FILE ../rtl/altera/mclk_pll.v
+set_global_assignment -name VERILOG_FILE ../rtl/altera/vga_testp_ram.v
 
 # Search Directories
 set_global_assignment -name SEARCH_PATH ../rtl/cortex_top

@@ -119,7 +119,11 @@ int main()
 
   alt_putstr("Enabling VGA\n");
 
+  set_vga_mode(TEST_PATTERN);
   vga_en();
+
+  alt_printf("VGA Control Reg:0x%x\n",IORD_VCORTEX_VGA_CONTROL);
+
 
   /* Event loop never exits. */
   while (1);

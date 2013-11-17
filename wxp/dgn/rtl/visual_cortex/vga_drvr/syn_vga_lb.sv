@@ -78,6 +78,7 @@ module syn_vga_lb (
   logic                       vga_drvr_en_f;
   logic                       bffr_overflow_f;
   logic                       bffr_underflow_f;
+  logic                       vga_mode_f; //0->Normal, 1->Test Pattern
 
 //----------------------- Internal Wire Declarations ----------------------
 
@@ -96,6 +97,7 @@ module syn_vga_lb (
       vga_drvr_en_f           <=  0;
       bffr_overflow_f         <=  0;
       bffr_underflow_f        <=  0;
+      vga_mode_f              <=  0;  //default is normal
 
       lb_intf.wr_valid        <=  0;
       lb_intf.rd_valid        <=  0;
@@ -110,6 +112,7 @@ module syn_vga_lb (
           VCORTEX_VGA_CONTROL_REG_ADDR  :
           begin
             vga_drvr_en_f     <=  lb_intf.wr_data[0];
+            vga_mode_f        <=  lb_intf.wr_data[1];
           end
 
         endcase
@@ -140,7 +143,7 @@ module syn_vga_lb (
       begin
         case(lb_intf.addr)
 
-          VCORTEX_VGA_CONTROL_REG_ADDR  : lb_intf.rd_data <=  {{P_32B_W-1{1'd0}}, vga_drvr_en_f};
+          VCORTEX_VGA_CONTROL_REG_ADDR  : lb_intf.rd_data <=  {{P_32B_W-2{1'd0}}, vga_mode_f, vga_drvr_en_f};
 
           VCORTEX_VGA_STATUS_REG_ADDR   : lb_intf.rd_data <=  {{P_32B_W-2{1'd0}}, bffr_underflow_f, bffr_overflow_f};
 
@@ -154,5 +157,6 @@ module syn_vga_lb (
   end
 
   assign  vga_lb_intf.vga_drvr_en = vga_drvr_en_f;
+  assign  vga_lb_intf.vga_mode    = vga_mode_f;
 
 endmodule // syn_vga_lb

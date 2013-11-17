@@ -63,7 +63,7 @@
     parameter type  PXLGW_SNIFF_PKT_T = syn_gpu_pxl_xfr_seq_item#(syn_gpu_pkg::pxl_hsi_t);
     parameter type  PXLGW_SNIFF_INTF_T= virtual syn_pxl_xfr_tb_intf#(syn_gpu_pkg::pxl_hsi_t,syn_gpu_pkg::P_X_W,syn_gpu_pkg::P_Y_W);
 
-    parameter type  VGA_PKT_TYPE      = syn_vga_seq_item;
+    parameter type  VGA_PKT_TYPE      = syn_vga_seq_item#(syn_gpu_pkg::pxl_rgb_t);
     parameter type  VGA_INTF_TYPE     = virtual syn_vga_intf;
     parameter       VGA_W             = syn_gpu_pkg::P_CANVAS_W;
     parameter       VGA_H             = syn_gpu_pkg::P_CANVAS_H;
@@ -79,6 +79,7 @@
     syn_frm_bffr_sb#(LB_PKT_T,SRAM_PKT_T,PXLGW_SNIFF_PKT_T)           frm_bffr_sb;
     syn_gpu_pxlgw_sniffer#(PXLGW_SNIFF_PKT_T,PXLGW_SNIFF_INTF_T) pxlgw_sniffer;
     syn_vga_agent#(VGA_W,VGA_H,VGA_PKT_TYPE,VGA_INTF_TYPE)   vga_agent;
+    syn_vga_sb#(SRAM_DATA_W,VGA_PKT_TYPE)                     vga_sb;
 
     OVM_FILE  f;
 
@@ -108,6 +109,7 @@
       frm_bffr_sb = syn_frm_bffr_sb#(LB_PKT_T,SRAM_PKT_T,PXLGW_SNIFF_PKT_T)::type_id::create("frm_bffr_sb", this);
       pxlgw_sniffer  = syn_gpu_pxlgw_sniffer#(PXLGW_SNIFF_PKT_T,PXLGW_SNIFF_INTF_T)::type_id::create("pxlgw_sniffer",this);
       vga_agent   = syn_vga_agent#(VGA_W,VGA_H,VGA_PKT_TYPE,VGA_INTF_TYPE)::type_id::create("vga_agent",  this);
+      vga_sb      = syn_vga_sb#(SRAM_DATA_W,VGA_PKT_TYPE)::type_id::create("vga_sb",  this);
 
       ovm_report_info(get_name(),"End of build ",OVM_LOW);
     endfunction
@@ -123,6 +125,9 @@
       sram_agent.mon.Mon2Sb_port.connect(frm_bffr_sb.SramMon2SB_Port);
       pxlgw_sniffer.SnifferIngr2Sb_port.connect(frm_bffr_sb.PxlGwSinfferIngr2SB_Port);
       pxlgw_sniffer.SnifferEgr2Sb_port.connect(frm_bffr_sb.PxlGwSinfferEgr2SB_Port);
+
+      this.vga_sb.frm_bffr  = this.sram_agent.drvr.frm_bffr;
+      vga_agent.mon.Mon2Sb_port.connect(vga_sb.Mon_rcvd_2Sb_port);
 
       ovm_report_info(get_name(),"END of connect ",OVM_LOW);
     endfunction

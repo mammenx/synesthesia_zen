@@ -104,6 +104,7 @@
       int unsigned  hcntr,vcntr;
       PKT_TYPE  hpkt,vpkt;
       pxl_rgb_t hpxl,hpxl_1d;
+      bit       isVblank,isHblank;
 
       ovm_report_info({get_name(),"[run]"},"Start of run ",OVM_LOW);
 
@@ -116,6 +117,8 @@
             forever
             begin
               @(negedge intf.hsync_n);  //wait for start of HSYNC
+              ovm_report_info({get_name(),"[run-hmon]"},$psprintf("Detected HSYNC"),OVM_LOW);
+
               hcntr = 0;  //reset counter
               hpkt  = new();
               hpkt.vga_type = VGA_LINE;
@@ -181,31 +184,31 @@
             end
           end
 
-          begin //frame monitor logic
-            forever
-            begin
-              @(negedge intf.vsync_n);  //wait for start of VSYNC
-              vcntr = 0;  //reset counter
-              vpkt  = new();
-              vpkt.vga_type = VGA_FRAME;
+          //  begin //frame monitor logic
+          //    forever
+          //    begin
+          //      @(negedge intf.vsync_n);  //wait for start of VSYNC
+          //      vcntr = 0;  //reset counter
+          //      vpkt  = new();
+          //      vpkt.vga_type = VGA_FRAME;
 
-              do
-              begin //count length of VSYNC
-                @(posedge intf.hsync_n);
-                vcntr++;
-              end
-              while(intf.vsync_n  ==  0);
+          //      do
+          //      begin //count length of VSYNC
+          //        @(posedge intf.hsync_n);
+          //        vcntr++;
+          //      end
+          //      while(intf.vsync_n  ==  0);
 
-              vpkt.sync = vcntr;
+          //      vpkt.sync = vcntr;
 
-              //Send captured pkt to SB
-              ovm_report_info({get_name(),"[run-vmon]"},$psprintf("Sending pkt to SB -\n%s", pkt.sprint()),OVM_LOW);
-              Mon2Sb_port.write(pkt);
+          //      //Send captured pkt to SB
+          //      ovm_report_info({get_name(),"[run-vmon]"},$psprintf("Sending pkt to SB -\n%s", pkt.sprint()),OVM_LOW);
+          //      Mon2Sb_port.write(pkt);
 
-              num_frames++;
-            end
+          //      num_frames++;
+          //    end
 
-          end
+          //  end
         join
       end
       else

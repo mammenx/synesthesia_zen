@@ -109,6 +109,7 @@ class syn_vcortex_vga_test extends syn_vcortex_base_test;
 
       #500;
 
+      vga_en_seq.vga_mode = 1;
       vga_en_seq.start(super.env.lb_agent.seqr);
 
       do

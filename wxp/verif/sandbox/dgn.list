@@ -32,6 +32,7 @@
 ../../dgn/rtl/altera/twiddle_ram.v
 ../../dgn/rtl/altera/win_ram.v
 ../../dgn/rtl/altera/hsi2rgb_ram.v
+../../dgn/rtl/altera/vga_testp_ram.v
 
 //Packages
 ../../dgn/rtl/pkg/syn_global_pkg.sv

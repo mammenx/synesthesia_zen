@@ -59,10 +59,13 @@
     `include  "syn_cortex_reg_map.sv"
     `include  "syn_vcortex_reg_map.sv"
 
+    bit vga_mode;
 
     /*  Constructor */
     function new(string name  = "syn_vga_enable_seq");
       super.new(name);
+
+      vga_mode  = 0;
     endfunction
 
     /*  Body of sequence  */
@@ -80,7 +83,7 @@
       pkt.lb_xtn= WRITE;
 
       $cast(pkt.addr[0],  {VCORTEX_BLK,VCORTEX_VGA_CODE,VCORTEX_VGA_CONTROL_REG_ADDR});
-      pkt.data[0] = 'd1;
+      pkt.data[0] = {vga_mode,1'b1};
 
       p_sequencer.ovm_report_info(get_name(),$psprintf("Generated pkt - \n%s", pkt.sprint()),OVM_LOW);
 

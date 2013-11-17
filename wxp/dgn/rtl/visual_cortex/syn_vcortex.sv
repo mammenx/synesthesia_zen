@@ -85,12 +85,13 @@ module syn_vcortex (
   logic [3:0]                 block_code_w;
   logic                       gpu_code_sel_c;
   logic                       vga_code_sel_c;
+  logic                       vga_rst_lc;
 
 //----------------------- Internal Interface Declarations -----------------
   sram_acc_intf               sram_bus_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
   syn_lb_intf                 gpu_lb_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
   syn_lb_intf                 vga_lb_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
-
+  syn_clk_rst_sync_intf       vga_cr_intf(cr_intf.clk_ir, vga_rst_lc);
 
 
 //----------------------- Start of Code -----------------------------------
@@ -113,6 +114,9 @@ module syn_vcortex (
   assign  lb_intf.wr_valid    = gpu_lb_intf.wr_valid  | vga_lb_intf.wr_valid;
   assign  lb_intf.rd_valid    = gpu_lb_intf.rd_valid  | vga_lb_intf.rd_valid;
   assign  lb_intf.rd_data     = gpu_lb_intf.rd_valid  ? gpu_lb_intf.rd_data : vga_lb_intf.rd_data;
+
+  //A write to VCORTEX_VGA_RESET_REG_ADDR generates a reset
+  assign  vga_rst_lc  = cr_intf.rst_sync_l  & ~((lb_intf.addr[11:0] ==  {VCORTEX_VGA_CODE,VCORTEX_VGA_RESET_REG_ADDR})  & lb_intf.wr_en);
 
   //always_ff@(posedge cr_intf.clk_ir, negedge cr_intf.rst_sync_l)
   //begin : seq_logic

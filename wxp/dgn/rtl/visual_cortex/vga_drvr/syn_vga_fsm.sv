@@ -110,6 +110,8 @@ module syn_vga_fsm (
 
   logic [P_RGB_BLANK_DELAY-1:0] rgb_blank_vec_f;
 
+  logic [9:0]                 testp_addr_f;
+
 //----------------------- Internal Wire Declarations ----------------------
   logic                       hcntr_en_c;
   logic                       hcntr_wrap_c;
@@ -127,6 +129,9 @@ module syn_vga_fsm (
 
   logic [P_16B_W-1:0]         ycbcr2rgb_ram_rd_data_w;
 
+  logic                       pxl_rd_en_c;
+
+  logic [11:0]                testp_ram_rd_data_w;
 
 //----------------------- FSM Declarations --------------------------------
 typedef enum  logic [3:0] {IDLE_S,  FP_S, SYNC_S, BP_S, VALID_S}  vga_fsm_t;
@@ -321,8 +326,11 @@ vga_fsm_t   vfsm_pstate,  vfsm_nstate;
   assign  valid_pxl_range_c   =   (hfsm_pstate  ==  VALID_S)  & (vfsm_pstate  ==  VALID_S);
 
 
+  /*  Generate pixel read enable pulse  */
+  assign  pxl_rd_en_c = vga_tck_gen_f & valid_pxl_range_c;
+
   /*  LBFFR Interface logic */
-  assign  lbffr_intf.ff_rd_en =   ~lbffr_intf.ff_empty  & vga_tck_gen_f & valid_pxl_range_c;
+  assign  lbffr_intf.ff_rd_en =   ~lbffr_intf.ff_empty  & pxl_rd_en_c & ~lb_intf.vga_mode;
 
 
   /*  Internal pipeline logic */
@@ -342,12 +350,21 @@ vga_fsm_t   vfsm_pstate,  vfsm_nstate;
       vga_intf.vsync_n        <=  1;
 
       rgb_blank_vec_f         <=  0;
+
+      testp_addr_f            <=  0;
     end
     else
     begin
       ycbcr2rgb_ram_raddr_f   <=  lbffr_intf.ff_rd_en ? lbffr_intf.ff_rd_data : ycbcr2rgb_ram_raddr_f;
 
-      pst_f                   <=  {pst_f[P_PST_W-2:0],lbffr_intf.ff_rd_en};
+      if(lb_intf.vga_mode)
+      begin
+        pst_f                 <=  {pst_f[P_PST_W-2:0],pxl_rd_en_c};
+      end
+      else
+      begin
+        pst_f                 <=  {pst_f[P_PST_W-2:0],lbffr_intf.ff_rd_en};
+      end
 
       hsync_del_f             <=  {hsync_del_f[P_RAM_ACC_DELAY-1:0],  (hfsm_pstate  ==  SYNC_S)};
       vga_intf.hsync_n        <=  ~hsync_del_f[P_RAM_ACC_DELAY];
@@ -372,9 +389,18 @@ vga_fsm_t   vfsm_pstate,  vfsm_nstate;
       end
       else if(pst_f[P_RAM_ACC_DELAY])
       begin
-        vga_intf.r            <=  ycbcr2rgb_ram_rd_data_w[11:8];
-        vga_intf.g            <=  ycbcr2rgb_ram_rd_data_w[7:4];
-        vga_intf.b            <=  ycbcr2rgb_ram_rd_data_w[3:0];
+        vga_intf.r            <=  lb_intf.vga_mode  ? testp_ram_rd_data_w[11:8] : ycbcr2rgb_ram_rd_data_w[11:8];
+        vga_intf.g            <=  lb_intf.vga_mode  ? testp_ram_rd_data_w[7:4]  : ycbcr2rgb_ram_rd_data_w[7:4];
+        vga_intf.b            <=  lb_intf.vga_mode  ? testp_ram_rd_data_w[3:0]  : ycbcr2rgb_ram_rd_data_w[3:0];
+      end
+
+      if(~lb_intf.vga_drvr_en | ~lb_intf.vga_mode | (testp_addr_f ==  P_VGA_HVALID_W))
+      begin
+        testp_addr_f          <=  0;
+      end
+      else
+      begin
+        testp_addr_f          <=  testp_addr_f  + pst_f[P_RAM_ACC_DELAY];
       end
     end
   end
@@ -393,5 +419,18 @@ vga_fsm_t   vfsm_pstate,  vfsm_nstate;
     .q_a                    (ycbcr2rgb_ram_rd_data_w),
     .q_b                    ()
   );
+
+  /*  Instantiation of test pattern RAM */
+  /*  The read delay of this RAM should be 1 CLK  */
+  /*  This RAM holds one line worth of RGB Pixels */
+  vga_testp_ram   vga_testp_ram_inst
+  (
+    .address      (testp_addr_f),
+    .clock        (cr_intf.clk_ir),
+    .data         ('d0),
+    .wren         (1'b0),
+    .q            (testp_ram_rd_data_w)
+  );
+
 
 endmodule // syn_vga_fsm

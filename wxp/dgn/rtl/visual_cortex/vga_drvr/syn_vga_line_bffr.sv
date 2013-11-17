@@ -116,9 +116,9 @@ module syn_vga_line_bffr (
     end
     else
     begin
-      sram_intf.vga_rd_en     <=  lb_intf.vga_drvr_en & ~bffr_afull_c;
+      sram_intf.vga_rd_en     <=  lb_intf.vga_drvr_en & ~bffr_afull_c & ~lb_intf.vga_mode;
 
-      if(wrap_sram_addr_c)
+      if(wrap_sram_addr_c | ~lb_intf.vga_drvr_en  | lb_intf.vga_mode)
       begin
         sram_intf.vga_addr    <=  0;
       end
@@ -139,7 +139,11 @@ module syn_vga_line_bffr (
     end
     else
     begin
-      if(fsm_intf.ff_rd_en)
+      if(~lb_intf.vga_drvr_en | lb_intf.vga_mode)
+      begin
+        bffr_rd_ms_sel_f      <=  1'b0;
+      end
+      else if(fsm_intf.ff_rd_en)
       begin
         bffr_rd_ms_sel_f      <=  ~bffr_rd_ms_sel_f;
       end
