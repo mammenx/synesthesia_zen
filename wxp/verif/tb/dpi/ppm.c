@@ -41,7 +41,11 @@
 */
 
 #include <stdio.h>
-#include <conio.h>
+#ifdef __linux__
+  #include <ncurses.h>
+#else
+  #include <conio.h>
+#endif
 #include <string.h>
 
 #include	"ppm.h"
