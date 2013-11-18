@@ -1,0 +1,67 @@
+=========================== Accellera Standard OVL V1.1 ===========================
+
+                                  RELEASE NOTES                       July 27, 2005
+
+===================================================================================
+These notes describe the changes made to the Accellera Standard Open Verification
+Library from version 1.0 to version 1.1.
+
+NEW FEATURES
+------------
+
+assert_never_unknown		New assertion checker type. Ensures that the value 
+				of a specified expression contains only 0 and 1 
+				bits when a qualifying expression is TRUE.
+
+$STD_OVL_DIR/docs/pdf		New documentation directory. Contains the PDF
+				versions of the LRM.
+
+$STD_OVL_DIR/docs/html		New documentation directory. Contains HTML
+				versions of the assertions data sheets.
+
+
+
+BUGS FIXED
+----------
+
+The following bugs (see the Mantis bug tracking system) were fixed.
+
+768				assert_frame 
+				SVA property was fixed.
+
+769				Conditional generates without labels.
+				Labels were added to conditional generates.
+
+772				assert_unknown
+				Dedicated checker (assert_never_unknown) was added
+				to improve unknown check support.
+
+792				assert_next - add labels to improve debug.
+				Labels were added.
+
+803				ovl_error_t task call in generate w/o "initial".
+                                Fixed.
+
+
+
+LRM CHANGES
+-----------
+
+All changes to the LRM made in version V1.1 are indicated by change bars in the
+margins. The following changes were made in addition to documenting new features, 
+non-compatible changes and bug fixes:
+
+Typos				Typos were corrected.
+
+Examples			Many examples were simplified and every example
+				now has a sample waveform.
+
+<action_on_new_start>		Checkers with <action_on_new_start> parameters
+				had their descriptions corrected.
+
+Clarifications			Some paragraphs were unclear and were rewritten.
+
+===================================================================================
+===================================================================================
+Copyright Accellera Organization, Inc. 2005                    All Rights Reserved. 
+===================================================================================

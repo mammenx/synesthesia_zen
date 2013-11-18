@@ -1,0 +1,5 @@
+#!/bin/csh -f
+while ($#argv)
+  echo $1
+  shift
+end

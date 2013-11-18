@@ -1,0 +1,232 @@
+================================ Accellera Standard ===============================
+                            Open Verification Library V1
+
+                                  RELEASE NOTES                     
+===================================================================================
+These notes describe the changes made to the Accellera Standard OVL V1. For
+BUGS FIXED, see the Mantis bug tracking system. Changes made to the LRM are
+indicated with change bars in the PDF version.
+
+===================================================================================
+V1.6                                                                 March 16, 2006
+===================================================================================
+LRM CHANGES
+-----------
+1300				assert_never_unknown_async added.
+
+1365				OVL_COVER_ALL/OVL_COVER_NONE descriptions
+				fixed (reversed).
+
+
+BUGS FIXED
+----------
+1314				vlog95/assert_handshake_logic.v
+				assert_cycle_sequence.vlib
+				assert_frame.vlib
+				assert_handshake.vlib 
+				Changed files from DOS to UNIX format.
+
+1359				assert_transition
+				Fixed typo in block name. (SVA)
+
+1372				assert_handshake
+				Modified ack max cycle check to fail properly when
+				req_drop is 1. (SVA & PSL)
+
+1373				Modified the checkers to compile without errors 
+				when neither OVL_ASSERT_ON nor OVL_COVER_ON are 
+				defined. (SVA)
+				
+1374				assert_no_transition
+				Modified checker to work properly with bit 
+				vectors (PSL)
+
+1375				assert_always_on_edge
+				Modified checker to check test_expr properly for
+				edge types OVL_NEGEDGE and OVL_ANYEDGE. (PSL)
+
+1376				assert_never
+				Fixed typo in assert_never_assume_vunit. (PSL)
+
+===================================================================================
+===================================================================================
+V1.5                                                              December 13, 2005
+===================================================================================
+NEW FEATURES
+------------
+PSL support			Added PSL support (OVL_PSL define).
+
+OVL_IGNORE			New property type.
+
+
+LRM CHANGES
+-----------
+947				Prepended "cover_" to the cover point names.
+
+
+BUGS FIXED
+----------
+896				assert_always_on_edge
+				Checker functionality fixed. (Verilog and SVA)
+
+1081				std_ovl_defines.h
+				Fixed header file to display correct OVL version.
+
+1082				std_ovl_task.h
+				Fixed the task ovl_init_msg_t to display the OVL 
+				version as part of OVL note.
+
+1093				assert_fifo_index
+				Modified checker to make it consistent with Verilog 
+				implementation. (SVA)
+
+1094				assert_never_unknown
+				Added qualifier input to the cover point 
+				test_expr_change. (Verilog and SVA)
+
+1095				assert_cycle_sequence
+				Fixed record of sequence started by cover point 
+				sequence_trigger for the OVL_TRIGGER_ON_MOST_PIPE 
+				condition. (Verilog)
+
+1096				assert_fifo_index
+				Fixed the checker so that both overflow and 
+				undeflow checks can never fire on the same clock 
+				edge at anytime. (Verilog)
+
+1097				assert_one_hot, assert_one_cold
+				Fixed the bugs in the cover properties 
+				all_one_hots_checked and all_one_colds_checked. 
+				(SVA)
+
+1098				assert_handshake
+				Added missing check for acknowldege without 
+				request condition. (SVA)
+
+1099				assert_handshake
+				Check for request signal deassert violation is 
+				fixed. (Verilog and SVA)
+
+1100				assert_handshake
+				State machine is corrected to return the checker 
+				to the monitoring state after a violation when 
+				acknowledge signal is low. (Verilog)
+
+
+NOTES
+-----
+
+1) PSL Implementation
+
+	The PSL properties are implemented inside PSL vunits with Verilog flavor. For 
+	each `OVL-PSL checker type, the following file:
+
+		<std_ovl>/psl11/vunits/<checker_type>.psl 
+
+	contains three vunits: for assert, assume, and cover (one vunit per checker 
+	type). To use a PSL version of a checker type, add the corresponding PSL 
+	file to the compilation file list. In addition, add the 'OVL_PSL' compiler 
+	directive to select the PSL version of the library. For example, to compile 
+	a design using the assert_next checker do the following:
+
+		<verilog_compiler> -y <path_to_std_ovl>
+			+libext+.v +libext+.vlib <testbench_and_design_source_files>
+			+define+OVL_ASSERT_ON +define+OVL_COVER_ON +define+OVL_PSL
+			+incdir+<path_to_std_ovl>
+			-pslfile <path_to_std_ovl>/psl11/vunits/assert_next.psl
+
+2) OVL_INIT_COUNT
+
+	An experimental feature in V1.5, is to display a single OVL initialization 
+	count message (rather than one per OVL instance). To enable this:
+	
+	a) Define the existing initialization macro (OVL_INIT_MSG) and a new one
+	   (OVL_INIT_COUNT); point to the location of the standard OVL:
+ 
+		+define+OVL_INIT_MSG
+		+define+OVL_INIT_COUNT=<testbench_module_name>.ovl_init_count
+		+incdir+<path_to_std_ovl>
+
+	b) Add the following to your testbench (to instantiate ovl_init_count):
+
+		`include "std_ovl_count.h"
+			       
+
+
+===================================================================================
+===================================================================================
+V1.1b                                                               August 25, 2005
+===================================================================================
+LRM CHANGES
+-----------
+Some typos were fixed in the LRM.
+
+
+
+===================================================================================
+===================================================================================
+V1.1a                                                               August 23, 2005
+===================================================================================
+BUGS FIXED
+----------
+863				assert_width 
+				Verilog functionality fixed.
+
+LRM CHANGES
+-----------
+assert_next			Waveforms were fixed (817).
+assert_no_transition		Description improved.
+assert_width			Waveform fixed (862).
+
+
+
+===================================================================================
+===================================================================================
+V1.1                                                                  July 27, 2005
+===================================================================================
+NEW FEATURES
+------------
+assert_never_unknown		New assertion checker type. Ensures that the value 
+				of a specified expression contains only 0 and 1 
+				bits when a qualifying expression is TRUE.
+$STD_OVL_DIR/docs/pdf		New documentation directory. Contains the PDF
+				versions of the LRM.
+$STD_OVL_DIR/docs/html		New documentation directory. Contains HTML
+				versions of the assertions data sheets.
+
+NON-COMPATIBLE CHANGES
+----------------------
+assert_implication		The typo in a port name was fixed 
+				(<antecendent_expr> => <antecedent_expr>).
+
+BUGS FIXED
+----------
+768				assert_frame 
+				SVA property was fixed.
+769				Conditional generates without labels.
+				Labels were added to conditional generates.
+772				assert_unknown
+				Dedicated checker (assert_never_unknown) was added
+				to improve unknown check support.
+792				assert_next - add labels to improve debug.
+				Labels were added.
+
+LRM CHANGES
+-----------
+Typos				Typos were corrected.
+Examples			Many examples were simplified and every example
+				now has a sample waveform.
+<action_on_new_start>		Checkers with <action_on_new_start> parameters
+				had their descriptions corrected.
+Clarifications			Some paragraphs were unclear and were rewritten.
+
+761				Examples for OVL_IGNORE_NEW_START, OVL_RESET_ON_NEW_START,
+				OVL_ERROR_ON_NEW_START were added to assert_change,
+				assert_unchange, assert_time and assert_frame
+				data sheets.
+
+
+===================================================================================
+===================================================================================
+Copyright Accellera Organization, Inc. 2005-2006               All Rights Reserved. 
+===================================================================================

@@ -1,0 +1,47 @@
+=========================== Accellera Standard OVL V1 =============================
+
+V1.1a                             RELEASE NOTES                     August 24, 2005
+
+===================================================================================
+These notes describe the changes made to the Accellera Standard Open Verification
+Library from version 1.1 to version 1.1a.
+
+NEW FEATURES
+------------
+
+none
+
+
+
+NON-COMPATIBLE CHANGES
+----------------------
+
+none
+
+
+BUGS FIXED
+----------
+
+The following bugs (see the Mantis bug tracking system) were fixed.
+
+863				assert_width 
+				Verilog functionality fixed.
+
+
+LRM CHANGES
+-----------
+
+All changes to the LRM made in version V1.1a are indicated by change bars in the
+margins. The following changes were made:
+
+assert_next			Waveforms were fixed (817).
+
+assert_no_transition		Description improved.
+
+assert_width			Waveform fixed (862).
+
+
+===================================================================================
+===================================================================================
+Copyright Accellera Organization, Inc. 2005                    All Rights Reserved. 
+===================================================================================

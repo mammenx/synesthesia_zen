@@ -1,0 +1,95 @@
+#!/bin/csh -f
+
+setenv OVL_TOP /home/ravsingh/qvl_to_ovl_lib/main/ovl_src
+echo "MAKE SURE ONLY NEEDED FILES ARE AVILABLE"
+mkdir std_ovl
+cd std_ovl
+mkdir vlog95 sva05 psl05 vhdl93 docs 
+mkdir psl05/vunits vhdl93/legacy vhdl93/syn_src 
+echo "Directory structures for OVL Kit"
+
+ls -al *
+
+cp $OVL_TOP/*.vlib $OVL_TOP/*.v $OVL_TOP/*.vhd $OVL_TOP/*.h .
+dos2unix *.*
+chmod 444 *.*
+echo "Top level files created, ran dos2unix and set permission 444"
+set file_numbers = `ls *.* |wc`
+echo "SANITY CHECK TOP LEVEL: file numbers are $file_numbers"
+
+ln -s ./sva05 sva31a
+ln -s ./psl05 psl11
+echo "Symbolic for sva and psl are created"
+
+cd vlog95
+cp $OVL_TOP/vlog95/*.v .
+dos2unix *.*
+chmod 444 *.*
+echo "Verilog version logic files created, ran dos2unix and set permission 444"
+set file_numbers = `ls *.* |wc`
+echo "SANITY CHECK VERILOG VERSION: file numbers are $file_numbers"
+
+cd ../sva05
+cp $OVL_TOP/sva05/*.sv .
+dos2unix *.*
+chmod 444 *.*
+echo "SVA version logic files created, ran dos2unix and set permission 444"
+set file_numbers = `ls *.* |wc`
+echo "SANITY CHECK SVA VERSION: file numbers are $file_numbers"
+
+cd ../psl05
+cp $OVL_TOP/psl05/*.v .
+dos2unix *.*
+chmod 444 *.*
+echo "PSL version logic files created, ran dos2unix and set permission 444"
+set file_numbers = `ls *.* |wc`
+echo "SANITY CHECK LOGIC FILES IN PSL VERSION: file numbers are $file_numbers"
+
+cd vunits
+cp $OVL_TOP/psl05/vunits/*.psl .
+dos2unix *.*
+chmod 444 *.*
+echo "PSL version vunits created, ran dos2unix and set permission 444"
+set file_numbers = `ls *.* |wc`
+echo "SANITY CHECK VUNITS IN PSL VERSION: file numbers are $file_numbers"
+
+cd ../../vhdl93
+cp $OVL_TOP/vhdl93/*.vhd .
+dos2unix *.*
+chmod 444 *.*
+echo "VHDL version logic files created, ran dos2unix and set permission 444"
+set file_numbers = `ls *.* |wc`
+echo "SANITY CHECK VHDL VERSION: file numbers are $file_numbers"
+
+cd legacy
+cp $OVL_TOP/vhdl93/legacy/*.vhd .
+dos2unix *.*
+chmod 444 *.*
+echo "VHDL version legacy files created, ran dos2unix and set permission 444"
+set file_numbers = `ls *.* |wc`
+echo "SANITY CHECK LEGACY FILES IN VHDL VERSION: file numbers are $file_numbers"
+
+cd ../syn_src
+cp $OVL_TOP/vhdl93/syn_src/*.vhd .
+dos2unix *.*
+chmod 444 *.*
+echo "VHDL version synthesizable version files created, ran dos2unix and set permission 444"
+set file_numbers = `ls *.* |wc`
+echo "SANITY CHECK SYNTH FILES IN VHDL VERSION: file numbers are $file_numbers"
+
+cd ../../docs
+
+cp $OVL_TOP/docs/release_notes.txt .
+dos2unix *.*
+chmod 444 *.*
+echo "Release Note copied, ran dos2unix and set permission 444"
+
+cp $OVL_TOP/docs/assert_quick_ref.pdf $OVL_TOP/docs/assert_timing_diagrams.pdf $OVL_TOP/docs/ovl_lrm.pdf $OVL_TOP/docs/ovl_quick_ref.pdf .
+chmod 444 *.*
+echo "PDFs of LRM, Quick Reference Guide and Timing Diagram docs copied and set permission 444"
+
+cd ..
+
+chmod 555 . vlog95 sva05 psl05 vhdl93 docs psl05/vunits vhdl93/legacy vhdl93/syn_src docs 
+
+echo "KIT CREATED" 

@@ -1,0 +1,132 @@
+#!/bin/csh -f
+
+ls *.vlib *.v *.vhd *.h > list
+set tmp = `cat list`
+
+foreach fn ($tmp)
+echo -n "--------------------------------"
+
+
+cat {$fn} |sed -e 's/2009/2010/g' > {$fn}.temp
+dos2unix {$fn}.temp
+rm -rf {$fn}
+mv {$fn}.temp {$fn}
+
+end
+
+cd vlog95
+
+ls *.v > list
+set tmp = `cat list`
+
+foreach fn ($tmp)
+echo -n "--------------------------------"
+
+
+cat {$fn} |sed -e 's/2009/2010/g' > {$fn}.temp
+dos2unix {$fn}.temp
+rm -rf {$fn}
+mv {$fn}.temp {$fn}
+
+end
+
+cd ../sva05
+
+ls *.sv > list
+set tmp = `cat list`
+
+foreach fn ($tmp)
+echo -n "--------------------------------"
+
+
+cat {$fn} |sed -e 's/2009/2010/g' > {$fn}.temp
+dos2unix {$fn}.temp
+rm -rf {$fn}
+mv {$fn}.temp {$fn}
+
+end
+
+cd ../psl05
+
+ls *.v > list
+set tmp = `cat list`
+
+foreach fn ($tmp)
+echo -n "--------------------------------"
+
+
+cat {$fn} |sed -e 's/2009/2010/g' > {$fn}.temp
+dos2unix {$fn}.temp
+rm -rf {$fn}
+mv {$fn}.temp {$fn}
+
+end
+
+cd vunits
+
+ls *.psl > list
+set tmp = `cat list`
+
+foreach fn ($tmp)
+echo -n "--------------------------------"
+
+
+cat {$fn} |sed -e 's/2009/2010/g' > {$fn}.temp
+dos2unix {$fn}.temp
+rm -rf {$fn}
+mv {$fn}.temp {$fn}
+
+end
+
+cd ../../vhdl93
+
+ls *.vhd > list
+set tmp = `cat list`
+
+foreach fn ($tmp)
+echo -n "--------------------------------"
+
+
+cat {$fn} |sed -e 's/2009/2010/g' > {$fn}.temp
+dos2unix {$fn}.temp
+rm -rf {$fn}
+mv {$fn}.temp {$fn}
+
+end
+
+cd legacy
+
+ls *.vhd > list
+set tmp = `cat list`
+
+foreach fn ($tmp)
+echo -n "--------------------------------"
+
+
+cat {$fn} |sed -e 's/2009/2010/g' > {$fn}.temp
+dos2unix {$fn}.temp
+rm -rf {$fn}
+mv {$fn}.temp {$fn}
+
+end
+
+cd ../syn_src
+
+ls *.vhd > list
+set tmp = `cat list`
+
+foreach fn ($tmp)
+echo -n "--------------------------------"
+
+
+cat {$fn} |sed -e 's/2009/2010/g' > {$fn}.temp
+dos2unix {$fn}.temp
+rm -rf {$fn}
+mv {$fn}.temp {$fn}
+
+end
+
+cd ../../
+
+
+
