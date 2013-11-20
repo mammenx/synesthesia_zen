@@ -51,6 +51,7 @@ class syn_sram_seqr #(type  PKT_TYPE  = syn_lb_seq_item)
   
     OVM_FILE  f;
 
+    ovm_analysis_port#(PKT_TYPE)  Seqr2Sb_port;
 
     /* Constructor  */
     function new (string name = "syn_sram_seqr", ovm_component parent);
@@ -69,6 +70,8 @@ class syn_sram_seqr #(type  PKT_TYPE  = syn_lb_seq_item)
       set_report_severity_action(OVM_WARNING, OVM_DISPLAY | OVM_LOG);
       set_report_severity_action(OVM_ERROR,  OVM_COUNT | OVM_DISPLAY | OVM_LOG);
       set_report_severity_action(OVM_FATAL,  OVM_EXIT | OVM_DISPLAY | OVM_LOG);
+
+      Seqr2Sb_port  = new("Seqr2Sb_port",this);
 
       ovm_report_info(get_name(),"Start of build ",OVM_LOW);
 

@@ -29,6 +29,9 @@
 //System Verilog DPI
 -dpiheader syn_dpi.h
 
+//OVL
++incdir+../std_ovl_v2p7/
+
 //OVM
 +incdir+../ovm-2.1.2/src/
 ../ovm-2.1.2/src/ovm_pkg.sv

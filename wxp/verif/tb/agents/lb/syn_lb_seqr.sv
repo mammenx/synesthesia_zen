@@ -51,7 +51,6 @@ class syn_lb_seqr #(type  PKT_TYPE  = syn_lb_seq_item)
   
     OVM_FILE  f;
 
-
     /* Constructor  */
     function new (string name = "syn_lb_seqr", ovm_component parent);
         super.new(name, parent);

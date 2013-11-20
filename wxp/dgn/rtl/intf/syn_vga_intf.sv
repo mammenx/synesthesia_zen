@@ -40,6 +40,7 @@
  --------------------------------------------------------------------------
 */
 
+
 interface syn_vga_intf  #(parameter WIDTH = 4) (input logic clk_ir, rst_il);
 
   //Logic signals

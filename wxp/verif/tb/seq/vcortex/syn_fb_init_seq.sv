@@ -124,6 +124,10 @@
 
       #1;
 
+      p_sequencer.Seqr2Sb_port.write(pkt);
+
+      #1;
+
     endtask : body_static
 
 
@@ -160,6 +164,10 @@
 
 
       finish_item(pkt);
+
+      #1;
+
+      p_sequencer.Seqr2Sb_port.write(pkt);
 
       #1;
 

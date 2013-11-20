@@ -13,6 +13,9 @@
 +incdir+../../dgn/rtl/fusiform_gyrus/
 +incdir+../../dgn/rtl/fusiform_gyrus/intf/
 
+//OVL
++incdir+../std_ovl_v2p7/
+
 //Compile Altera Components
 ../../dgn/rtl/altera/220model.v
 ../../dgn/rtl/altera/altera_mf.v

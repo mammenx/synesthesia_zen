@@ -50,6 +50,8 @@
 
     INTF_TYPE intf;
 
+    parameter P_VGA_HBP = 48; //number of clocks after hsync_n pulse when RGB data is expected to start
+
     ovm_analysis_port #(PKT_TYPE) Mon2Sb_port;
 
     OVM_FILE  f;
@@ -57,7 +59,7 @@
     PKT_TYPE  pkt;
 
     shortint  enable;
-    int unsigned  num_lines,num_frames;
+    int num_lines,num_frames;
 
     /*  Register with factory */
     `ovm_component_param_utils_begin(syn_vga_mon#(LINE_LENGTH,FRAME_LENGTH,PKT_TYPE,INTF_TYPE))
@@ -93,7 +95,7 @@
 
       enable  = 1;  //Enabled by default; disable from test case
       num_lines = 0;
-      num_frames  = 0;
+      num_frames  = -1;
 
       ovm_report_info(get_name(),"End of build ",OVM_LOW);
     endfunction : build
@@ -101,10 +103,8 @@
 
     /*  Run */
     task run();
-      int unsigned  hcntr,vcntr;
-      PKT_TYPE  hpkt,vpkt;
-      pxl_rgb_t hpxl,hpxl_1d;
-      bit       isVblank,isHblank;
+      int unsigned  hcntr;
+      PKT_TYPE  pkt;
 
       ovm_report_info({get_name(),"[run]"},"Start of run ",OVM_LOW);
 
@@ -113,68 +113,30 @@
       if(enable)
       begin
         fork
-          begin //Line monitor logic
+          begin
             forever
             begin
-              @(negedge intf.hsync_n);  //wait for start of HSYNC
+              ovm_report_info({get_name(),"[run-hmon]"},$psprintf("Waiting for HSYNC"),OVM_LOW);
+              @(posedge intf.hsync_n);  //wait for end of hsync
               ovm_report_info({get_name(),"[run-hmon]"},$psprintf("Detected HSYNC"),OVM_LOW);
+              repeat  (P_VGA_HBP) @(posedge intf.clk_ir); //wait for Back Porch
+              ovm_report_info({get_name(),"[run-hmon]"},$psprintf("Starting RGB data collection"),OVM_LOW);
 
-              hcntr = 0;  //reset counter
-              hpkt  = new();
-              hpkt.vga_type = VGA_LINE;
+              pkt = new($psprintf("VGA Line:%1d",num_lines));
+              pkt.pxl_arry  = new[LINE_LENGTH];
 
-              do
-              begin //count length of HSYNC
-                @(posedge intf.clk_ir);
-                hcntr++;
-              end
-              while(intf.hsync_n  ==  0);
-
-              hpkt.sync = hcntr;
-
-              /*  --------------------  */
-
-              hcntr = 0;
-              $cast(hpxl, {intf.r,intf.g,intf.b});
-              hpxl_1d = hpxl;
-
-              do
-              begin //count length of Back Porch
-                @(posedge intf.clk_ir);
-                hcntr++;
-
-                hpxl_1d = hpxl;
-                $cast(hpxl, {intf.r,intf.g,intf.b});
-              end
-              while(hpxl  ==  hpxl_1d);
-
-              hpkt.bp = hcntr;
-
-              /*  --------------------  */
-
-              hpkt.pxl_arry = new[LINE_LENGTH];
-
-              //foreach(hpkt.pxl_arry[i]) //get pixels
-              for(int i=0; i<hpkt.pxl_arry.size; i++) //get pixels
+              for(int i=0; i<pkt.pxl_arry.size; i++)
               begin
-                $cast(hpkt.pxl_arry[i], {intf.r,intf.g,intf.b});
                 @(posedge intf.clk_ir);
+                #1;
+
+                $cast(pkt.pxl_arry[i],  {intf.r,intf.g,intf.b});  //get pixels
+
+                //if(i>488)
+                //begin
+                //  ovm_report_info({get_name(),"[run-hmon]"},$psprintf("pxl[%1d]:0x%x",i,pkt.pxl_arry[i]),OVM_LOW);
+                //end
               end
-
-              /*  --------------------  */
-
-              hcntr = 0;  //reset counter
-
-              do
-              begin //count length of Front Porch
-                @(posedge intf.clk_ir);
-                hcntr++;
-              end
-              while(intf.hsync_n  ==  1);
-
-              hpkt.fp = hcntr;
-
-              /*  --------------------  */
 
               //Send captured pkt to SB
               ovm_report_info({get_name(),"[run-hmon]"},$psprintf("Sending pkt to SB -\n%s", pkt.sprint()),OVM_LOW);
@@ -184,31 +146,14 @@
             end
           end
 
-          //  begin //frame monitor logic
-          //    forever
-          //    begin
-          //      @(negedge intf.vsync_n);  //wait for start of VSYNC
-          //      vcntr = 0;  //reset counter
-          //      vpkt  = new();
-          //      vpkt.vga_type = VGA_FRAME;
-
-          //      do
-          //      begin //count length of VSYNC
-          //        @(posedge intf.hsync_n);
-          //        vcntr++;
-          //      end
-          //      while(intf.vsync_n  ==  0);
-
-          //      vpkt.sync = vcntr;
-
-          //      //Send captured pkt to SB
-          //      ovm_report_info({get_name(),"[run-vmon]"},$psprintf("Sending pkt to SB -\n%s", pkt.sprint()),OVM_LOW);
-          //      Mon2Sb_port.write(pkt);
-
-          //      num_frames++;
-          //    end
-
-          //  end
+          begin
+            forever
+            begin
+              ovm_report_info({get_name(),"[run-vmon]"},$psprintf("Waiting for VSYNC"),OVM_LOW);
+              @(posedge intf.vsync_n);  //wait for end of vsync
+              num_frames++;
+            end
+          end
         join
       end
       else

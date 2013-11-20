@@ -41,6 +41,7 @@
 */
 
 import  syn_gpu_pkg::*;
+import  syn_image_pkg::*;
 
 class syn_vcortex_vga_test extends syn_vcortex_base_test;
 
@@ -100,6 +101,8 @@ class syn_vcortex_vga_test extends syn_vcortex_base_test;
 
     /*  Run */
     virtual task run ();
+      pxl_hsi_t pxl_hsi;
+      pxl_rgb_t pxl_rgb;
 
       ovm_report_info(get_full_name(),"Start of run",OVM_LOW);
 
@@ -109,15 +112,38 @@ class syn_vcortex_vga_test extends syn_vcortex_base_test;
 
       #500;
 
-      vga_en_seq.vga_mode = 1;
+      //for(pxl_hsi.h=0;  pxl_hsi.h<=7;  pxl_hsi.h++)
+      //begin
+      //  for(pxl_hsi.s=0;  pxl_hsi.s<=3;  pxl_hsi.s++)
+      //  begin
+      //    for(pxl_hsi.i=0;  pxl_hsi.i<=7;  pxl_hsi.i++)
+      //    begin
+      //      pxl_rgb = convert_hsi2rgb(pxl_hsi);
+      //      ovm_report_info(get_full_name(),$psprintf("HSI:0x%x - RGB:0x%x",pxl_hsi,pxl_rgb),OVM_LOW);
+
+      //      if(pxl_hsi.i==7)  break;
+      //    end
+
+      //    if(pxl_hsi.s==3)  break;
+      //  end
+
+      //  if(pxl_hsi.h==7)  break;
+      //end
+
+      //ovm_report_info(get_name(),"Calling global_stop_request().....",OVM_LOW);
+      //global_stop_request();
+
+      vga_en_seq.vga_mode = 0;
       vga_en_seq.start(super.env.lb_agent.seqr);
 
       do
       begin
-        @(this.env.vga_agent.mon.num_lines);
+        //@(this.env.vga_agent.mon.num_lines);
+        @(this.env.vga_agent.mon.num_frames);
         ovm_report_info(get_full_name(),$psprintf("VGA Line:%1d",this.env.vga_agent.mon.num_lines),OVM_LOW);
       end
-      while(this.env.vga_agent.mon.num_lines  < 10);
+      //while(this.env.vga_agent.mon.num_lines  < 10);
+      while(this.env.vga_agent.mon.num_frames < 2);
 
       ovm_report_info(get_name(),"Calling global_stop_request().....",OVM_LOW);
       global_stop_request();

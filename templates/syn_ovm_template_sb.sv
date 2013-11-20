@@ -58,8 +58,8 @@
     SENT_PKT_TYPE rcvd_que[$];
 
     //Ports
-    ovm_analysis_imp_sent_pkt #(SENT_PKT_TYPE,<sb_name>)  Mon_sent_2Sb_port;
-    ovm_analysis_imp_rcvd_pkt #(RCVD_PKT_TYPE,<sb_name>)  Mon_rcvd_2Sb_port;
+    ovm_analysis_imp_sent_pkt #(SENT_PKT_TYPE,<sb_name>#(SENT_PKT_TYPE, RCVD_PKT_TYPE))  Mon_sent_2Sb_port;
+    ovm_analysis_imp_rcvd_pkt #(RCVD_PKT_TYPE,<sb_name>#(SENT_PKT_TYPE, RCVD_PKT_TYPE))  Mon_rcvd_2Sb_port;
 
     OVM_FILE  f;
 
