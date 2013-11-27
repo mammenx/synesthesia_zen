@@ -3,7 +3,7 @@
 #TEST_NAME=syn_vcortex_gpu_draw_bezier_test
 #TEST_NAME=syn_vcortex_gpu_fill_test
 #TEST_NAME=syn_vcortex_host_acc_test
-TEST_NAME=syn_vcortex_vga_test
+#TEST_NAME=syn_vcortex_vga_test
 
 #TEST_NAME=syn_acortex_base_test
 #TEST_NAME=syn_acortex_i2c_test
@@ -14,9 +14,12 @@ TEST_NAME=syn_vcortex_vga_test
 #TEST_NAME=syn_fgyrus_data_paths_test
 #TEST_NAME=syn_fgyrus_mem_acc_test
 
-TB_TOP=syn_vcortex_tb_top
+TEST_NAME=syn_sram_acc_base_test
+
+#TB_TOP=syn_vcortex_tb_top
 #TB_TOP=syn_acortex_tb_top
 #TB_TOP=syn_fgyrus_tb_top
+TB_TOP=syn_sram_acc_tb_top
 
 MSIM_DIR=/altera/modelsim_ase
 MSIM_INC_DIR=$(MSIM_DIR)/include

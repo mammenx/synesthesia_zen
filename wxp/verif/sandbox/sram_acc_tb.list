@@ -1,0 +1,29 @@
+//Sequence items
+`include  "syn_lb_seq_item.sv"
+
+//RAL
+
+//Agents
+`include  "syn_sram_drvr.sv"
+`include  "syn_sram_mon.sv"
+`include  "syn_sram_seqr.sv"
+`include  "syn_sram_agent.sv"
+
+`include  "syn_sram_acc_drvr.sv"
+`include  "syn_sram_acc_mon.sv"
+`include  "syn_sram_acc_seqr.sv"
+`include  "syn_sram_acc_agent.sv"
+
+//Sniffers
+
+//Scoreboards
+
+//Environments
+`include  "syn_sram_acc_env.sv"
+
+
+//Sequences
+
+
+//Tests
+`include  "syn_sram_acc_base_test.sv"

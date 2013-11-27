@@ -3,6 +3,7 @@
 +incdir+../../verif/tb/agents/vcortex/
 +incdir+../../verif/tb/agents/vcortex/sram_agent/
 +incdir+../../verif/tb/agents/vcortex/vga_agent/
++incdir+../../verif/tb/agents/vcortex/sram_acc_agent/
 +incdir+../../verif/tb/agents/acortex/
 +incdir+../../verif/tb/agents/acortex/codec/
 +incdir+../../verif/tb/agents/pcm_mem/
@@ -21,6 +22,7 @@
 +incdir+../../verif/tb/tests/vcortex/
 +incdir+../../verif/tb/tests/acortex/
 +incdir+../../verif/tb/tests/fgyrus/
++incdir+../../verif/tb/tests/sram_acc/
 +incdir+../../dgn/rtl/visual_cortex/
 +incdir+../../dgn/rtl/audio_cortex/
 +incdir+../../dgn/rtl/fusiform_gyrus/
@@ -40,6 +42,7 @@
 ../../verif/tb/env/interfaces/syn_lb_tb_intf.sv
 ../../verif/tb/env/interfaces/syn_pxl_xfr_tb_intf.sv
 ../../verif/tb/env/interfaces/syn_pcm_mem_intf.sv
+../../verif/tb/env/interfaces/syn_sram_acc_agent_intf.sv
 
 //Packages
 ../../verif/tb/env/syn_math_pkg.sv
@@ -52,3 +55,4 @@
 ../../verif/tb/top/syn_vcortex_tb_top.sv
 ../../verif/tb/top/syn_acortex_tb_top.sv
 ../../verif/tb/top/syn_fgyrus_tb_top.sv
+../../verif/tb/top/syn_sram_acc_tb_top.sv

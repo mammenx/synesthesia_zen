@@ -144,7 +144,6 @@
       end
     end
 
-
     /*  DUT */
   syn_vcortex   syn_vcortex_inst
   (
