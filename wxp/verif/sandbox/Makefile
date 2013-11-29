@@ -14,7 +14,8 @@
 #TEST_NAME=syn_fgyrus_data_paths_test
 #TEST_NAME=syn_fgyrus_mem_acc_test
 
-TEST_NAME=syn_sram_acc_base_test
+#TEST_NAME=syn_sram_acc_base_test
+TEST_NAME=syn_sram_acc_test
 
 #TB_TOP=syn_vcortex_tb_top
 #TB_TOP=syn_acortex_tb_top

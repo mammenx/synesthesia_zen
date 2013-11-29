@@ -60,7 +60,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/intf/syn_clk_rst_async_int
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/intf/mem_intf.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/intf/ff_intf.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/visual_cortex/syn_vcortex.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/visual_cortex/syn_sram_drvr.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/visual_cortex/syn_sram_mem_drvr.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/visual_cortex/vga_drvr/syn_vga_line_bffr.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/visual_cortex/vga_drvr/syn_vga_lb.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/visual_cortex/vga_drvr/syn_vga_fsm.sv

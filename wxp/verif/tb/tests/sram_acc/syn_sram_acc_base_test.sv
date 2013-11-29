@@ -47,19 +47,22 @@ class syn_sram_acc_base_test extends ovm_test;
 
     parameter       SRAM_DATA_W = 16;
     parameter       SRAM_ADDR_W = 18;
-    parameter type  SRAM_PKT_T  = syn_lb_seq_item#(SRAM_DATA_W,SRAM_ADDR_W);
+    parameter type  SRAM_SEQ_ITEM_T = syn_lb_seq_item#(SRAM_DATA_W,SRAM_ADDR_W);
     parameter type  SRAM_INTF_T = virtual syn_sram_mem_intf.TB;
+    parameter type  SRAM_SEQR_T     = syn_sram_seqr#(SRAM_SEQ_ITEM_T);
 
     parameter       VGA_AGENT_ADDR_W  = SRAM_ADDR_W;
     parameter       VGA_AGENT_DATA_W  = SRAM_DATA_W;
     parameter type  VGA_AGENT_PKT_T   = syn_lb_seq_item#(VGA_AGENT_DATA_W,VGA_AGENT_ADDR_W);
-    parameter type  VGA_AGENT_INTF_T  = virtual syn_sram_acc_agent_intf#(VGA_AGENT_DATA_W,VGA_AGENT_ADDR_W);
+    parameter type  VGA_AGENT_SEQR_T  = syn_sram_acc_seqr#(VGA_AGENT_PKT_T);
 
-    parameter       GPU_AGENT_ADDR_W  = SRAM_ADDR_W;
-    parameter       GPU_AGENT_DATA_W  = SRAM_DATA_W;
+    parameter       GPU_AGENT_ADDR_W  = SRAM_ADDR_W+1;
+    parameter       GPU_AGENT_DATA_W  = SRAM_DATA_W/2;
     parameter type  GPU_AGENT_PKT_T   = syn_lb_seq_item#(GPU_AGENT_DATA_W,GPU_AGENT_ADDR_W);
-    parameter type  GPU_AGENT_INTF_T  = virtual syn_sram_acc_agent_intf#(GPU_AGENT_DATA_W,GPU_AGENT_ADDR_W);
+    parameter type  GPU_AGENT_SEQR_T  = syn_sram_acc_seqr#(GPU_AGENT_PKT_T);
 
+
+    syn_fb_init_seq#(SRAM_SEQ_ITEM_T,SRAM_SEQR_T)   fb_init_seq;
 
     `ovm_component_utils(syn_sram_acc_base_test)
 
@@ -102,6 +105,7 @@ class syn_sram_acc_base_test extends ovm_test;
       printer.knobs.depth = -1;       //print all levels
 
 
+      fb_init_seq = syn_fb_init_seq#(SRAM_SEQ_ITEM_T,SRAM_SEQR_T)::type_id::create("fb_init_seq");
 
       ovm_report_info(get_full_name(),"End of build",OVM_LOW);
     endfunction : build
@@ -117,11 +121,11 @@ class syn_sram_acc_base_test extends ovm_test;
       this.env.sram_agent.mon.intf   = $root.syn_sram_acc_tb_top.sram_mem_intf;
       this.env.sram_agent.drvr.intf  = $root.syn_sram_acc_tb_top.sram_mem_intf;
 
-      this.env.vga_sram_agent.drvr.intf =  $root.syn_sram_acc_tb_top.vga_sram_acc_bus;
-      this.env.vga_sram_agent.mon.intf  =  $root.syn_sram_acc_tb_top.vga_sram_acc_bus;
+      this.env.vga_sram_agent.drvr.intf =  $root.syn_sram_acc_tb_top.vga_sram_acc_intf;
+      this.env.vga_sram_agent.mon.intf  =  $root.syn_sram_acc_tb_top.vga_sram_acc_intf;
 
-      this.env.gpu_sram_agent.drvr.intf =  $root.syn_sram_acc_tb_top.gpu_sram_acc_bus;
-      this.env.gpu_sram_agent.mon.intf  =  $root.syn_sram_acc_tb_top.gpu_sram_acc_bus;
+      this.env.gpu_sram_agent.drvr.intf =  $root.syn_sram_acc_tb_top.gpu_sram_acc_intf;
+      this.env.gpu_sram_agent.mon.intf  =  $root.syn_sram_acc_tb_top.gpu_sram_acc_intf;
 
       ovm_report_info(get_full_name(),"End of connect",OVM_LOW);
     endfunction : connect
@@ -151,6 +155,16 @@ class syn_sram_acc_base_test extends ovm_test;
 
       ovm_report_info(get_full_name(),"End of run",OVM_LOW);
     endtask : run 
+
+
+    virtual task  init_fb(input fb_init_mode_t  fb_init_mode=STATIC);
+      ovm_report_info({get_full_name(),"[init_fb]"},$psprintf("Start of init_fb with mode:%s",fb_init_mode.name),OVM_LOW);
+
+      fb_init_seq.init_mode = fb_init_mode;
+      fb_init_seq.start(this.env.sram_agent.seqr);
+
+      ovm_report_info({get_full_name(),"[init_fb]"},"End of init_fb",OVM_LOW);
+    endtask : init_fb
 
 
 

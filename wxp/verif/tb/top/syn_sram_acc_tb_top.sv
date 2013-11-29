@@ -67,8 +67,8 @@
     parameter type  VGA_AGENT_PKT_T   = syn_lb_seq_item#(VGA_AGENT_DATA_W,VGA_AGENT_ADDR_W);
     parameter type  VGA_AGENT_INTF_T  = virtual syn_sram_acc_agent_intf#(VGA_AGENT_DATA_W,VGA_AGENT_ADDR_W);
 
-    parameter       GPU_AGENT_ADDR_W  = SRAM_ADDR_W;
-    parameter       GPU_AGENT_DATA_W  = SRAM_DATA_W;
+    parameter       GPU_AGENT_ADDR_W  = SRAM_ADDR_W+1;
+    parameter       GPU_AGENT_DATA_W  = SRAM_DATA_W/2;
     parameter type  GPU_AGENT_PKT_T   = syn_lb_seq_item#(GPU_AGENT_DATA_W,GPU_AGENT_ADDR_W);
     parameter type  GPU_AGENT_INTF_T  = virtual syn_sram_acc_agent_intf#(GPU_AGENT_DATA_W,GPU_AGENT_ADDR_W);
 
@@ -83,27 +83,31 @@
     //Interfaces
     syn_sram_acc_agent_intf#(VGA_AGENT_DATA_W,VGA_AGENT_ADDR_W) vga_sram_acc_intf(
                                                                                   .clk_ir(sys_clk_50),
-                                                                                  .rst_il(sys_rst),
-                                                                                  .rdy(sram_acc_bus.vga_rdy),
-                                                                                  .rd_valid(sram_acc_bus.vga_rd_valid),
-                                                                                  .rd_data(sram_acc_bus.vga_rd_data),
-                                                                                  .rd_en(sram_acc_bus.vga_rd_en),
-                                                                                  .wr_en('d0),
-                                                                                  .wr_data('d0),
-                                                                                  .addr(sram_acc_bus.vga_addr)
-                                                                                  );
+                                                                                  .rst_il(sys_rst)
+                                                                                 );
+
+    assign  vga_sram_acc_intf.rdy       = sram_acc_bus.vga_rdy;
+    assign  vga_sram_acc_intf.rd_valid  = sram_acc_bus.vga_rd_valid;
+    assign  vga_sram_acc_intf.rd_data   = sram_acc_bus.vga_rd_data;
+    assign  sram_acc_bus.vga_rd_en      = vga_sram_acc_intf.rd_en;
+    //assign  sram_acc_bus.vga_wr_en      = vga_sram_acc_intf.wr_en;
+    //assign  sram_acc_bus.vga_wr_data    = vga_sram_acc_intf.wr_data;
+    assign  sram_acc_bus.vga_addr       = vga_sram_acc_intf.addr;
 
      syn_sram_acc_agent_intf#(GPU_AGENT_DATA_W,GPU_AGENT_ADDR_W) gpu_sram_acc_intf(
                                                                                   .clk_ir(sys_clk_50),
-                                                                                  .rst_il(sys_rst),
-                                                                                  .rdy(sram_acc_bus.gpu_rdy),
-                                                                                  .rd_valid(sram_acc_bus.gpu_rd_valid),
-                                                                                  .rd_data(sram_acc_bus.gpu_rd_data),
-                                                                                  .rd_en(sram_acc_bus.gpu_rd_en),
-                                                                                  .wr_en(sram_acc_bus.gpu_wr_en),
-                                                                                  .wr_data(sram_acc_bus.gpu_wr_data),
-                                                                                  .addr(sram_acc_bus.gpu_addr)
-                                                                                  );
+                                                                                  .rst_il(sys_rst)
+                                                                                 );
+
+    assign  gpu_sram_acc_intf.rdy       = sram_acc_bus.gpu_rdy;
+    assign  gpu_sram_acc_intf.rd_valid  = sram_acc_bus.gpu_rd_valid;
+    assign  gpu_sram_acc_intf.rd_data   = sram_acc_bus.gpu_rd_data;
+    assign  sram_acc_bus.gpu_rd_en      = gpu_sram_acc_intf.rd_en;
+    assign  sram_acc_bus.gpu_wr_en      = gpu_sram_acc_intf.wr_en;
+    assign  sram_acc_bus.gpu_wr_data    = gpu_sram_acc_intf.wr_data;
+    assign  sram_acc_bus.gpu_addr       = gpu_sram_acc_intf.addr;
+
+
 
     syn_sram_mem_intf                 sram_mem_intf(sys_clk_50,sys_rst);
 
@@ -140,16 +144,18 @@
 
 
     /*  DUT */
+    syn_sram_mem_drvr syn_sram_mem_drvr_inst
+    (
+      .cr_intf        (cr_intf.sync),
+
+      .sram_bus_intf  (sram_acc_bus.sram),
+
+      .sram_mem_intf  (sram_mem_intf.mp)
+    );
+
+
     sram_acc_intf#(SRAM_DATA_W,SRAM_ADDR_W,2)  sram_acc_bus(sys_clk_50,sys_rst);
-
-    syn_sram_drvr     syn_sram_drvr_inst;
-    //(
-    //  .cr_intf        (cr_intf.sync),
-
-    //  .sram_bus_intf  (sram_acc_bus.sram),
-
-    //  .sram_mem_intf  (sram_mem_intf.mp)
-    //);
+    //sram_acc_intf  sram_acc_bus(sys_clk_50,sys_rst);
 
 
     initial

@@ -43,9 +43,9 @@
 `ifndef __SYN_SRAM_ACC_AGENT
 `define __SYN_SRAM_ACC_AGENT
 
- class syn_sram_acc_agent #(parameter DATA_W      = 16,
-                      parameter ADDR_W      = 18,
-                      type  PKT_TYPE        = syn_lb_seq_item,
+ class syn_sram_acc_agent #(parameter int DATA_W      = 16,
+                      parameter int ADDR_W      = 18,
+                      type  PKT_TYPE        = syn_lb_seq_item#(DATA_W,ADDR_W),
                       type  DRVR_INTF_TYPE  = virtual syn_sram_acc_agent_intf,
                       type  MON_INTF_TYPE   = virtual syn_sram_acc_agent_intf
                     ) extends ovm_component;

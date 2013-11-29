@@ -40,8 +40,15 @@
  --------------------------------------------------------------------------
 */
 
-interface syn_sram_acc_agent_intf  #(DATA_W=16,ADDR_W=18) (input logic  clk_ir,rst_il,rdy,rd_valid, logic[DATA_W-1:0] rd_data,
-                                                           inout logic rd_en,wr_en,  logic[DATA_W-1:0] wr_data,  logic[ADDR_W-1:0] addr);
+interface syn_sram_acc_agent_intf  #(DATA_W=16,ADDR_W=18) (input logic  clk_ir,rst_il);
+
+  logic               rdy;
+  logic               rd_valid;
+  logic [DATA_W-1:0]  rd_data;
+  logic               rd_en;
+  logic               wr_en;
+  logic [DATA_W-1:0]  wr_data;
+  logic [ADDR_W-1:0]  addr;
 
   clocking  cb@(posedge  clk_ir);
     default input #2ns output #2ns;

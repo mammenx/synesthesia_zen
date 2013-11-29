@@ -17,6 +17,7 @@
 +incdir+../../verif/tb/seq/vcortex/
 +incdir+../../verif/tb/seq/acortex/
 +incdir+../../verif/tb/seq/fgyrus/
++incdir+../../verif/tb/seq/sram_acc/
 +incdir+../../verif/tb/sniffers/
 +incdir+../../verif/tb/tests/
 +incdir+../../verif/tb/tests/vcortex/

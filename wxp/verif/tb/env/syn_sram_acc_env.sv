@@ -58,8 +58,8 @@
     parameter type  VGA_AGENT_PKT_T   = syn_lb_seq_item#(VGA_AGENT_DATA_W,VGA_AGENT_ADDR_W);
     parameter type  VGA_AGENT_INTF_T  = virtual syn_sram_acc_agent_intf#(VGA_AGENT_DATA_W,VGA_AGENT_ADDR_W);
 
-    parameter       GPU_AGENT_ADDR_W  = SRAM_ADDR_W;
-    parameter       GPU_AGENT_DATA_W  = SRAM_DATA_W;
+    parameter       GPU_AGENT_ADDR_W  = SRAM_ADDR_W+1;
+    parameter       GPU_AGENT_DATA_W  = SRAM_DATA_W/2;
     parameter type  GPU_AGENT_PKT_T   = syn_lb_seq_item#(GPU_AGENT_DATA_W,GPU_AGENT_ADDR_W);
     parameter type  GPU_AGENT_INTF_T  = virtual syn_sram_acc_agent_intf#(GPU_AGENT_DATA_W,GPU_AGENT_ADDR_W);
 

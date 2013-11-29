@@ -159,7 +159,7 @@ module syn_vcortex (
 
   );
 
-  syn_sram_drvr   syn_sram_drvr_inst
+  syn_sram_mem_drvr syn_sram_mem_drvr_inst
   (
 
     .cr_intf        (cr_intf),

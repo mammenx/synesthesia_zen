@@ -88,7 +88,7 @@
 ../../dgn/rtl/visual_cortex/vga_drvr/syn_vga_line_bffr.sv
 ../../dgn/rtl/visual_cortex/vga_drvr/syn_vga_drvr.sv
 
-../../dgn/rtl/visual_cortex/syn_sram_drvr.sv
+../../dgn/rtl/visual_cortex/syn_sram_mem_drvr.sv
 ../../dgn/rtl/visual_cortex/syn_vcortex.sv
 
 //Acortex

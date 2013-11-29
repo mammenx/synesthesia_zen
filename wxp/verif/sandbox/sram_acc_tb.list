@@ -23,7 +23,10 @@
 
 
 //Sequences
+`include  "syn_fb_init_seq.sv"
+`include  "syn_sram_acc_seq.sv"
 
 
 //Tests
 `include  "syn_sram_acc_base_test.sv"
+`include  "syn_sram_acc_test.sv"
