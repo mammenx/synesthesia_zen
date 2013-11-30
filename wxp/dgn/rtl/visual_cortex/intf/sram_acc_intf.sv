@@ -168,4 +168,5 @@ interface sram_acc_intf  #(parameter  P_DATA_W=16, P_ADDR_W=18, P_LATENCY=2) (in
   assign  gpu_rd_data         =   gpu_rd_pipe_f[(P_LATENCY*2)-2]  ? sram_rd_data[P_DATA_W-1:P_GPU_DATA_W]
                                                                   : sram_rd_data[P_GPU_DATA_W-1:0]        ;
 
+
 endinterface  //  sram_acc_intf

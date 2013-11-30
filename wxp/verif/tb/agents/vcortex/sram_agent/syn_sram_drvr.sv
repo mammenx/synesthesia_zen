@@ -196,28 +196,23 @@
 
         if(!intf.SRAM_OE_N  &&  !intf.SRAM_CE_N) //read command
         begin
-          intf.tb_dq      = frm_bffr[intf.SRAM_ADDR];  //drive data to bus
-          intf.tb_dq_sel  = 1;
+          intf.SRAM_DI    = frm_bffr[intf.SRAM_ADDR];  //drive data to bus
           //  ovm_report_info({get_name(),"[talk_to_dut]"},$psprintf("READ - addr : 0x%x\tdata : 0x%x",intf.SRAM_ADDR,mem[intf.SRAM_ADDR]),OVM_LOW);
-        end
-        else
-        begin
-          intf.tb_dq_sel  = 0;  //release bus
         end
 
         if(!intf.SRAM_WE_N  &&  !intf.SRAM_CE_N)  //write command
         begin
           if(~intf.SRAM_LB_N)
           begin
-            frm_bffr[intf.SRAM_ADDR][(DATA_W/2)-1:0]  = intf.SRAM_DQ[(DATA_W/2)-1:0];  //sample low data from bus
+            frm_bffr[intf.SRAM_ADDR][(DATA_W/2)-1:0]  = intf.SRAM_DO[(DATA_W/2)-1:0];  //sample low data from bus
           end
 
           if(~intf.SRAM_UB_N)
           begin
-            frm_bffr[intf.SRAM_ADDR][DATA_W-1:(DATA_W/2)] = intf.SRAM_DQ[DATA_W-1:(DATA_W/2)]; //sample high data from bus
+            frm_bffr[intf.SRAM_ADDR][DATA_W-1:(DATA_W/2)] = intf.SRAM_DO[DATA_W-1:(DATA_W/2)]; //sample high data from bus
           end
 
-          //  ovm_report_info({get_name(),"[talk_to_dut]"},$psprintf("WRITE - addr : 0x%x\tmdata : 0x%x\tidata : 0x%x",intf.SRAM_ADDR,mem[intf.SRAM_ADDR],intf.SRAM_DQ),OVM_LOW);
+          //  ovm_report_info({get_name(),"[talk_to_dut]"},$psprintf("WRITE - addr : 0x%x\tmdata : 0x%x\tidata : 0x%x",intf.SRAM_ADDR,mem[intf.SRAM_ADDR],intf.SRAM_DO),OVM_LOW);
         end
       end
     endtask : talk_to_dut

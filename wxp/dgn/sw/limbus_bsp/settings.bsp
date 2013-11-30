@@ -2,10 +2,10 @@
 <sch:Settings xmlns:sch="http://www.altera.com/embeddedsw/bsp/schema">
         <BspType>chibios_v240</BspType>
         <BspVersion>default</BspVersion>
-        <BspGeneratedTimeStamp>10 Nov, 2013 9:04:59 PM</BspGeneratedTimeStamp>
-        <BspGeneratedUnixTimeStamp>1384097699965</BspGeneratedUnixTimeStamp>
+        <BspGeneratedTimeStamp>29 Nov, 2013 7:11:29 PM</BspGeneratedTimeStamp>
+        <BspGeneratedUnixTimeStamp>1385732489547</BspGeneratedUnixTimeStamp>
         <BspGeneratedLocation>G:\WorK\Synesthesia\github\synesthesia_zen\wxp\dgn\sw\limbus_bsp</BspGeneratedLocation>
-        <BspSettingsFile>.\settings.bsp</BspSettingsFile>
+        <BspSettingsFile>settings.bsp</BspSettingsFile>
         <SopcDesignFile>..\..\syn\limbus.sopcinfo</SopcDesignFile>
         <JdiFile>default</JdiFile>
         <Cpu>nios</Cpu>

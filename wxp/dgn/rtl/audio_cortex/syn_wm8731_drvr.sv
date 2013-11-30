@@ -122,7 +122,7 @@ enum  logic [2:0] {
                     LCHANNEL_S,
                     RCHANNEL_S,
                     WAIT_FOR_FS_S
-                  } fsm_pstate, next_state;
+                  } fsm_pstate, next_state  /* synthesis syn_encoding = "user" */;
 
 
 //----------------------- Start of Code -----------------------------------

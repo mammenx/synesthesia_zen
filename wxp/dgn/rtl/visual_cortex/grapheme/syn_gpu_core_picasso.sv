@@ -102,7 +102,7 @@ enum  logic [2:0] {
                     READ_P2,
                     READ_P3,
                     READ_P4
-                  } fsm_pstate, next_state;
+                  } fsm_pstate, next_state  /* synthesis syn_encoding = "user" */;
 
 //----------------------- Start of Code -----------------------------------
 

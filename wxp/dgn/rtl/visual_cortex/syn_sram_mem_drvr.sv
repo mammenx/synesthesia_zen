@@ -75,7 +75,6 @@ module syn_sram_mem_drvr (
 
 
 //----------------------- Internal Register Declarations ------------------
-  logic [15:0]                writedata_reg;
 
 
 //----------------------- Internal Wire Declarations ----------------------
@@ -91,7 +90,6 @@ module syn_sram_mem_drvr (
    if(~cr_intf.rst_sync_l)
    begin
     sram_bus_intf.sram_rd_data<=  0;
-    writedata_reg             <=  0;
 
     sram_mem_intf.SRAM_ADDR   <=  0;
     sram_mem_intf.SRAM_LB_N   <=  1'b1;
@@ -99,22 +97,20 @@ module syn_sram_mem_drvr (
     sram_mem_intf.SRAM_CE_N   <=  1'b1;
     sram_mem_intf.SRAM_OE_N   <=  1'b1;
     sram_mem_intf.SRAM_WE_N   <=  1'b1;
+    sram_mem_intf.SRAM_DO     <=  0;
    end
    else
    begin
-    sram_bus_intf.sram_rd_data  <=  sram_mem_intf.SRAM_OE_N ? sram_bus_intf.sram_rd_data  : sram_mem_intf.SRAM_DQ;
-    writedata_reg <= sram_bus_intf.sram_wr_data;
+    sram_bus_intf.sram_rd_data  <=  sram_mem_intf.SRAM_OE_N ? sram_bus_intf.sram_rd_data  : sram_mem_intf.SRAM_DI;
 
-    sram_mem_intf.SRAM_ADDR  <= sram_bus_intf.sram_addr;
-    sram_mem_intf.SRAM_LB_N  <= ~(sram_bus_intf.sram_be[0] & sram_bus_intf.sram_cs);
-    sram_mem_intf.SRAM_UB_N  <= ~(sram_bus_intf.sram_be[1] & sram_bus_intf.sram_cs);
-    sram_mem_intf.SRAM_CE_N  <= ~(sram_bus_intf.sram_cs);
-    sram_mem_intf.SRAM_OE_N  <= ~(sram_bus_intf.sram_rd_en  & sram_bus_intf.sram_cs);
-    sram_mem_intf.SRAM_WE_N  <= ~(sram_bus_intf.sram_wr_en  & sram_bus_intf.sram_cs);
+    sram_mem_intf.SRAM_DO     <= sram_bus_intf.sram_wr_en ? sram_bus_intf.sram_wr_data  : sram_mem_intf.SRAM_DO;
+    sram_mem_intf.SRAM_ADDR   <= sram_bus_intf.sram_addr;
+    sram_mem_intf.SRAM_LB_N   <= ~(sram_bus_intf.sram_be[0] & sram_bus_intf.sram_cs);
+    sram_mem_intf.SRAM_UB_N   <= ~(sram_bus_intf.sram_be[1] & sram_bus_intf.sram_cs);
+    sram_mem_intf.SRAM_CE_N   <= ~(sram_bus_intf.sram_cs);
+    sram_mem_intf.SRAM_OE_N   <= ~(sram_bus_intf.sram_rd_en  & sram_bus_intf.sram_cs);
+    sram_mem_intf.SRAM_WE_N   <= ~(sram_bus_intf.sram_wr_en  & sram_bus_intf.sram_cs);
    end
   end
-
-  //SRAM_DQ Tristate logic
-  assign sram_mem_intf.SRAM_DQ  = (~sram_mem_intf.SRAM_WE_N) ? writedata_reg : 16'hzzzz;
 
 endmodule // syn_sram_mem_drvr

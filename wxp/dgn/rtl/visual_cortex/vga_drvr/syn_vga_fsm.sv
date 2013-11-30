@@ -135,8 +135,8 @@ module syn_vga_fsm (
 
 //----------------------- FSM Declarations --------------------------------
 typedef enum  logic [3:0] {IDLE_S,  FP_S, SYNC_S, BP_S, VALID_S}  vga_fsm_t;
-vga_fsm_t   hfsm_pstate,  hfsm_nstate;
-vga_fsm_t   vfsm_pstate,  vfsm_nstate;
+vga_fsm_t   hfsm_pstate,  hfsm_nstate /* synthesis syn_encoding = "user" */;
+vga_fsm_t   vfsm_pstate,  vfsm_nstate /* synthesis syn_encoding = "user" */;
 
 
 

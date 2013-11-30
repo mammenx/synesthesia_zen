@@ -1,7 +1,7 @@
 <sld_project_info>
   <file_info>
-    <file checksum="0x00775643" device="EP2C20F484C7" path="syn_zen_fpga_top.sof" usercode="0xFFFFFFFF"/>
-    <file checksum="0x1D4D6107" device="EPCS16" path="syn_zen_fpga_top.pof" usercode="0x00000000"/>
+    <file checksum="0x0078E530" device="EP2C20F484C7" path="syn_zen_fpga_top.sof" usercode="0xFFFFFFFF"/>
+    <file checksum="0x1D629CA1" device="EPCS16" path="syn_zen_fpga_top.pof" usercode="0x00000000"/>
   </file_info>
   <hub_info ir_width="2" node_count="2"/>
   <node_info>

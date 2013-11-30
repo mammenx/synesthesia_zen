@@ -1,6 +1,7 @@
 //Block Code
 parameter VCORTEX_GPU_CODE      =    4'd0;
 parameter VCORTEX_VGA_CODE      =    4'd1;
+parameter VCORTEX_SRAM_DEBUG_CODE =  4'd2;
 
 //Grapheme register addresses
 parameter VCORTEX_GPU_CONTROL_REG_ADDR      = 8'd0;

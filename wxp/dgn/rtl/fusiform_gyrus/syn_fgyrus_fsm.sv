@@ -172,7 +172,7 @@ enum  logic [2:0] { IDLE_S  = 3'd0,
                     FFT_S,
                     CORDIC_S,
                     ABS_S
-                  } fsm_pstate, next_state;
+                  } fsm_pstate, next_state  /* synthesis syn_encoding = "user" */;
 
 
 //----------------------- Start of Code -----------------------------------

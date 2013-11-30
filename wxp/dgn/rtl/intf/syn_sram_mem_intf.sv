@@ -50,9 +50,10 @@ interface syn_sram_mem_intf (input  logic clk_ir, rst_il);
   logic         SRAM_OE_N;  // SRAM Output chipselect
   logic         SRAM_WE_N;  // SRAM Write chipselect
 
+  logic [15:0]  SRAM_DO;
+  logic [15:0]  SRAM_DI;
+
   //Wire Signals
-  // Bi-Directional
-  wire  [15:0]  SRAM_DQ;  // SRAM Data bus 16 Bits
 
   //Modports
   modport mp  (
@@ -63,15 +64,12 @@ interface syn_sram_mem_intf (input  logic clk_ir, rst_il);
                 output  SRAM_OE_N,
                 output  SRAM_WE_N,
 
-                inout   SRAM_DQ
+                output  SRAM_DO,
+                input   SRAM_DI
+
               );
 
   `ifdef  SIMULATION
-  //For TB
-  bit         tb_dq_sel;
-  bit [15:0]  tb_dq;
-
-  assign  SRAM_DQ = tb_dq_sel ? tb_dq : 16'dz;
 
   /*  Verif */
   modport TB  (
@@ -82,13 +80,12 @@ interface syn_sram_mem_intf (input  logic clk_ir, rst_il);
                 input   SRAM_OE_N,
                 input   SRAM_WE_N,
 
-                output  tb_dq_sel,
-                output  tb_dq,
+                input   SRAM_DO,
+                output  SRAM_DI
 
                 input   clk_ir,
-                input   rst_il,
+                input   rst_il
 
-                inout   SRAM_DQ
               );
     `endif
 

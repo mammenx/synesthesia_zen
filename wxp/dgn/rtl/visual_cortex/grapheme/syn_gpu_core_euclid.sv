@@ -141,13 +141,13 @@ module syn_gpu_core_euclid (
 enum  logic [1:0] { IDLE_S, 
                     INIT_VARS_S,
                     DRAW_LINE_S
-                  } lfsm_pstate, lfsm_nstate;
+                  } lfsm_pstate, lfsm_nstate  /* synthesis syn_encoding = "user" */;
 
 enum  logic [1:0] { BZ_IDLE_S, 
                     BZ_DRAW_BEZIER_S,
                     BZ_WAIT_FOR_LINE0_S,
                     BZ_WAIT_FOR_LINE1_S
-                  } bfsm_pstate, bfsm_nstate;
+                  } bfsm_pstate, bfsm_nstate  /* synthesis syn_encoding = "user" */;
 
 
 //----------------------- Start of Code -----------------------------------

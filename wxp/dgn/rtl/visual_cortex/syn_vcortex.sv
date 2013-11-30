@@ -88,9 +88,9 @@ module syn_vcortex (
   logic                       vga_rst_lc;
 
 //----------------------- Internal Interface Declarations -----------------
-  sram_acc_intf               sram_bus_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
-  syn_lb_intf                 gpu_lb_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
-  syn_lb_intf                 vga_lb_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
+  sram_acc_intf#(16,18,2)     sram_bus_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
+  syn_lb_intf#(32,8)          gpu_lb_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
+  syn_lb_intf#(32,8)          vga_lb_intf(cr_intf.clk_ir, cr_intf.rst_sync_l);
   syn_clk_rst_sync_intf       vga_cr_intf(cr_intf.clk_ir, vga_rst_lc);
 
 
@@ -168,6 +168,18 @@ module syn_vcortex (
 
     .sram_mem_intf  (sram_mem_intf)
 
+  );
+
+
+  /*  SRAM Debug capture RAM  */
+  ram_2xM4K_32bW_256D   sram_debug_ram_inst
+  (
+    .clock              (),
+    .data               (),
+    .rdaddress          (),
+    .wraddress          (),
+    .wren               (),
+    .q                  ()
   );
 
 

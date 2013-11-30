@@ -365,8 +365,10 @@ module syn_zen_fpga_top
   assign  AUD_DACDAT          = wm8731_intf.dac_dat;
   assign  AUD_DACLRCK         = wm8731_intf.dac_lrc;
 
-  assign  SRAM_DQ             = sram_mem_intf.SRAM_DQ;
+  //assign  SRAM_DQ             = sram_mem_intf.SRAM_DQ;
   //assign  sram_mem_intf.SRAM_DQ = SRAM_DQ;
+  assign  SRAM_DQ             = SRAM_WE_N ? 16'hzzzz  : sram_mem_intf.SRAM_DO;
+  assign  sram_mem_intf.SRAM_DI = SRAM_DQ;
   assign  SRAM_ADDR           = sram_mem_intf.SRAM_ADDR;
   assign  SRAM_LB_N           = sram_mem_intf.SRAM_LB_N;
   assign  SRAM_UB_N           = sram_mem_intf.SRAM_UB_N;

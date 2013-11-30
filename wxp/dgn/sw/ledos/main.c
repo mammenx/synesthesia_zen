@@ -81,6 +81,8 @@
 #include "sys/alt_stdio.h"
 #include "system.h"
 #include "ledos/ledos.h"
+#include "ch.h"
+
 
 int main()
 { 
@@ -95,11 +97,13 @@ int main()
   vga_disable();
 
   job.color.h =0; job.color.s =0; job.color.i =0;
+  job.ptr.x=0; job.ptr.y=0;
   job.action = WRITE;
 
   for(job.ptr.x=0; job.ptr.x<CANVAS_W; job.ptr.x++){
 	  for(job.ptr.y=0; job.ptr.y<CANVAS_H; job.ptr.y++){
 		  job.action = WRITE;
+
 		  gpu_hst_acc(job, 1);
 	  }
   }
@@ -107,7 +111,7 @@ int main()
   alt_putstr("FB Init Done\n");
 
 
-  line_job.color.h= 0;
+  line_job.color.h= 1;
   line_job.color.s= 3;
   line_job.color.i= 7;
   line_job.start.x = 10;
@@ -117,12 +121,37 @@ int main()
 
   gpu_draw_line(line_job, 1);
 
+  line_job.color.h= 3;
+  line_job.color.s= 3;
+  line_job.color.i= 7;
+  line_job.start.x = 10;
+  line_job.start.y = 400;
+  line_job.end.x = 400;
+  line_job.end.y = 10;
+
+  gpu_draw_line(line_job, 1);
+
   alt_putstr("Enabling VGA\n");
 
-  set_vga_mode(TEST_PATTERN);
+  set_vga_mode(NORMAL);
   vga_en();
 
   alt_printf("VGA Control Reg:0x%x\n",IORD_VCORTEX_VGA_CONTROL);
+
+  while(1){
+	  line_job.color.h= (line_job.color.h + 1) & 0x7;
+	  line_job.color.s= (line_job.color.s + 1) & 0x3;
+	  line_job.color.i= 0x7;
+	  line_job.start.x = (line_job.start.x + 1) & 0xff;
+	  line_job.start.y = (line_job.start.y + 1) & 0xff;
+	  line_job.end.x = (line_job.end.x + 1) & 0xff;
+	  line_job.end.y = (line_job.end.y + 1) & 0xff;
+
+	  gpu_draw_line(line_job, 1);
+
+	  chThdSleepMilliseconds(30);
+
+  }
 
 
   /* Event loop never exits. */
