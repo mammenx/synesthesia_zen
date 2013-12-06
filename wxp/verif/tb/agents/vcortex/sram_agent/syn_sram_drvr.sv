@@ -65,10 +65,15 @@
     /*  Image extension */
     string  img_ext;
 
+    bit snapshot_en;
+    int num_snaps;
+
     /*  Register with factory */
     `ovm_component_param_utils_begin(syn_sram_drvr#(DATA_W,ADDR_W,PKT_TYPE, INTF_TYPE))
       `ovm_field_int(enable,  OVM_ALL_ON);
       `ovm_field_string(img_ext,  OVM_ALL_ON);
+      `ovm_field_int(snapshot_en,  OVM_ALL_ON);
+      `ovm_field_int(num_snaps,  OVM_ALL_ON);
     `ovm_component_utils_end
 
 
@@ -79,6 +84,9 @@
       enable    = 1;  //by default enabled; disable from test case
       //img_ext   = ".raw";
       img_ext   = ".ppm";
+
+      snapshot_en = 0;
+      num_snaps = 16;
     endfunction : new
 
 
@@ -188,6 +196,8 @@
 
     /*  Task to interact with DUT */
     task  talk_to_dut();
+      int snapshot_num=0;
+
       forever
       begin
         @(intf.SRAM_ADDR, intf.SRAM_LB_N, intf.SRAM_UB_N, intf.SRAM_CE_N, intf.SRAM_OE_N, intf.SRAM_WE_N);
@@ -213,19 +223,28 @@
           end
 
           //  ovm_report_info({get_name(),"[talk_to_dut]"},$psprintf("WRITE - addr : 0x%x\tmdata : 0x%x\tidata : 0x%x",intf.SRAM_ADDR,mem[intf.SRAM_ADDR],intf.SRAM_DO),OVM_LOW);
+
+          if(snapshot_en  &&  (snapshot_num < num_snaps))
+          begin
+            dump_frm_bffr();  //record each update to frm_bffr
+            snapshot_num++;
+          end
         end
       end
     endtask : talk_to_dut
 
     /*  Overriding extract function to dump the frame buffer contents as a image file */
     virtual function void extract();
+      ovm_report_info({get_name(),"[extract]"},"Start of extract ...",OVM_LOW);
+      dump_frm_bffr();
+    endfunction : extract
+
+    function  void dump_frm_bffr  ();
       byte  unsigned  red[],green[],blue[];
       const int num_pxls  = P_CANVAS_W  * P_CANVAS_H;
       //pxl_ycbcr_t pxl_ycbcr;
       pxl_hsi_t   pxl_hsi;
       pxl_rgb_t   pxl_rgb;
-
-      ovm_report_info({get_name(),"[extract]"},"Start of extract ...",OVM_LOW);
 
       red   = new[num_pxls];
       green = new[num_pxls];
@@ -256,11 +275,11 @@
 
       if(img_ext  ==  ".ppm")
       begin
-        ovm_report_info({get_name(),"[extract]"},"Dumping ppm file ...",OVM_LOW);
+        ovm_report_info({get_name(),"[dump_frm_bffr]"},"Dumping ppm file ...",OVM_LOW);
 
         if(!syn_dump_ppm(
                           //{"frm_bffr",$psprintf("_%t_",$time),img_ext},
-                          {"frm_bffr",$psprintf("_%1t_",$time),img_ext},
+                          {"snaps/frm_bffr",$psprintf("_%1t_",$time),img_ext},
                           P_CANVAS_W,
                           P_CANVAS_H,
                           red,
@@ -269,16 +288,16 @@
                         )
           )
         begin
-          ovm_report_fatal({get_name(),"[extract]"},"ppm file dump failed !",OVM_LOW);
+          ovm_report_fatal({get_name(),"[dump_frm_bffr]"},"ppm file dump failed !",OVM_LOW);
         end
       end
       else if(img_ext  ==  ".raw")
       begin
-        ovm_report_info({get_name(),"[extract]"},"Dumping raw file ...",OVM_LOW);
+        ovm_report_info({get_name(),"[dump_frm_bffr]"},"Dumping raw file ...",OVM_LOW);
 
         if(!syn_dump_raw(
                           //{"frm_bffr",$psprintf("_%t_",$time),img_ext},
-                          {"frm_bffr",$psprintf("_%1t_",$time),img_ext},
+                          {"snaps/frm_bffr",$psprintf("_%1t_",$time),img_ext},
                           P_CANVAS_W,
                           P_CANVAS_H,
                           red,
@@ -287,15 +306,15 @@
                         )
           )
         begin
-          ovm_report_fatal({get_name(),"[extract]"},"raw file dump failed !",OVM_LOW);
+          ovm_report_fatal({get_name(),"[dump_frm_bffr]"},"raw file dump failed !",OVM_LOW);
         end
       end
       else
       begin
-        ovm_report_fatal({get_name(),"[extract]"},{"Unsupported file extension <",img_ext,">"},OVM_LOW);
+        ovm_report_fatal({get_name(),"[dump_frm_bffr]"},{"Unsupported file extension <",img_ext,">"},OVM_LOW);
       end
 
-    endfunction : extract
+    endfunction : dump_frm_bffr
 
   endclass  : syn_sram_drvr
 

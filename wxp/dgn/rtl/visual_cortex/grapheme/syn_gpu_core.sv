@@ -281,6 +281,16 @@ module syn_gpu_core (
 
   );
 
+`ifdef  USE_GPU_LF_CNTRLR
+  syn_gpu_lf_cntrlr     syn_gpu_lf_cntrlr_inst
+  (
+
+    .cr_intf            (cr_intf),
+
+    .ff_intf            (gpu_ff_intf.cntrlr)
+
+  );
+`else
   syn_gpu_ff_cntrlr     syn_gpu_ff_cntrlr_inst
   (
 
@@ -289,6 +299,7 @@ module syn_gpu_core (
     .ff_intf            (gpu_ff_intf.cntrlr)
 
   );
+`endif
 
   /*  Muxing Pixel GW interface between the engines selected  */
   always_comb

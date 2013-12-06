@@ -171,16 +171,4 @@ module syn_vcortex (
   );
 
 
-  /*  SRAM Debug capture RAM  */
-  ram_2xM4K_32bW_256D   sram_debug_ram_inst
-  (
-    .clock              (),
-    .data               (),
-    .rdaddress          (),
-    .wraddress          (),
-    .wren               (),
-    .q                  ()
-  );
-
-
 endmodule // syn_vcortex
