@@ -146,6 +146,11 @@ C_SRCS += ledos/cortex/vcortex/gpu/gpu.c
 C_SRCS += ledos/cortex/vcortex/vga/vga.c
 C_SRCS += ledos/graphics/graphics.c
 C_SRCS += main.c
+C_SRCS += ledos/cortex/acortex/i2c/i2c_drvr.c
+C_SRCS += ledos/cortex/acortex/cmux/cmux.c
+C_SRCS += ledos/cortex/acortex/wmdrvr/wmdrvr.c
+C_SRCS += ledos/cortex/acortex/acache/acache.c
+C_SRCS += ledos/cortex/fgyrus/fgyrus.c
 CXX_SRCS :=
 ASM_SRCS :=
 

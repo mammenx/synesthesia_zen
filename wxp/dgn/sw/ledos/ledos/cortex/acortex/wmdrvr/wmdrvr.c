@@ -21,17 +21,37 @@
 
 /*
  --------------------------------------------------------------------------
- -- Project Code      : synesthesia_zen
- -- Header Name       : cortex.h
+ -- Project Code      : synesthesia
+ -- File Name         : wmdrvr.c
  -- Author            : mammenx
- -- Description       :
+ -- Function          : 
  --------------------------------------------------------------------------
 */
 
-#ifndef CORTEX_H_
-#define CORTEX_H_
+#include "wmdrvr.h"
+#include "alt_types.h"
+#include "sys/alt_stdio.h"
 
-#include "acortex/acortex.h"
-#include "vcortex/vcortex.h"
+void disable_dac_drvr(){
+	IOWR_WMDRVR_CTRL(IORD_WMDRVR_CTRL & ~WMDRVR_DAC_EN_MSK);
+}
 
-#endif /* CORTEX_H_ */
+void enable_dac_drvr(){
+	IOWR_WMDRVR_CTRL((IORD_WMDRVR_CTRL & ~WMDRVR_DAC_EN_MSK) + WMDRVR_DAC_EN_MSK);
+}
+
+void disable_adc_drvr(){
+	IOWR_WMDRVR_CTRL(IORD_WMDRVR_CTRL & ~WMDRVR_ADC_EN_MSK);
+}
+
+void enable_adc_drvr(){
+	IOWR_WMDRVR_CTRL((IORD_WMDRVR_CTRL & ~WMDRVR_ADC_EN_MSK) + WMDRVR_ADC_EN_MSK);
+}
+
+void configure_wmdrvr_bps(BPS_T val){
+	IOWR_WMDRVR_CTRL(val & WMDRVR_BPS_MSK);
+}
+
+void update_wmdrvr_fs_div(FS_DIV_T val){
+	IOWR_WMDRVR_FS_DIV(val & WMDRVR_FS_DIV_VAL_MSK);
+}

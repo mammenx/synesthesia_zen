@@ -114,6 +114,9 @@ set_global_assignment -name VERILOG_FILE ../rtl/altera/syn_sys_pll.v
 set_global_assignment -name VERILOG_FILE ../rtl/altera/mclk_pll.v
 set_global_assignment -name VERILOG_FILE ../rtl/altera/vga_testp_ram.v
 
+# `defines
+set_global_assignment -name VERILOG_MACRO "ABC=1"
+
 # Search Directories
 set_global_assignment -name SEARCH_PATH ../rtl/cortex_top
 set_global_assignment -name SEARCH_PATH ../rtl/visual_cortex

@@ -21,17 +21,21 @@
 
 /*
  --------------------------------------------------------------------------
- -- Project Code      : synesthesia_zen
- -- Header Name       : cortex.h
+ -- Project Code      : synesthesia
+ -- File Name         : cmux.c
  -- Author            : mammenx
- -- Description       :
+ -- Function          : 
  --------------------------------------------------------------------------
 */
 
-#ifndef CORTEX_H_
-#define CORTEX_H_
+#include "cmux.h"
+#include "alt_types.h"
+#include "sys/alt_stdio.h"
 
-#include "acortex/acortex.h"
-#include "vcortex/vcortex.h"
+void configure_cmux_clk(CMUX_CLK_T clk){
+	IOWR_CMUX_CLK_SEL(clk & CMUX_CLK_SEL_MSK);
+}
 
-#endif /* CORTEX_H_ */
+CMUX_CLK_T read_cmux_clk(){
+	return (IORD_CMUX_CLK_SEL & CMUX_CLK_SEL_MSK);
+}
