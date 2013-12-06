@@ -62,8 +62,11 @@ module syn_gpu_ff_cntrlr (
   parameter   P_FF_SIZE       = 212;        //In KBytes
   parameter   P_FF_START_POSX = 0;
   parameter   P_FF_START_POSY = P_CANVAS_H; //Frame buffer extends to {P_CANVAS_W-1,P_CANVAS_H-1}
-  parameter   P_FF_END_POSX   = (((P_FF_SIZE*1024*8)/P_PXL_HSI_W)  % P_CANVAS_W)  - 4;
-  parameter   P_FF_END_POSY   = P_FF_START_POSY + ((P_FF_SIZE*1024*8)/(P_CANVAS_W*P_PXL_HSI_W));
+  //parameter   P_FF_END_POSX   = (((P_FF_SIZE*1024*8)/P_PXL_HSI_W)  % P_CANVAS_W)  - 4;
+  //parameter   P_FF_END_POSY   = P_FF_START_POSY + ((P_FF_SIZE*1024*8)/(P_CANVAS_W*P_PXL_HSI_W));
+  parameter   P_FF_END_POSX   = P_CANVAS_W  - 4;
+  parameter   P_FF_END_POSY   = P_FF_START_POSY + ((P_FF_SIZE*1024*8)/(P_CANVAS_W*P_PXL_HSI_W)) - 1;
+  localparam  P_OCC_CNTR_SIZE = $clog2(P_FF_SIZE*1024);
 
 
 //----------------------- Input Declarations ------------------------------
@@ -85,6 +88,7 @@ module syn_gpu_ff_cntrlr (
   logic                       rptr_zone_f;
   logic                       empty_f;
   logic                       full_f;
+  logic [P_OCC_CNTR_SIZE-1:0] occ_cntr_f;
 
 //----------------------- Internal Wire Declarations ----------------------
   logic                       valid_write_c;
@@ -95,6 +99,8 @@ module syn_gpu_ff_cntrlr (
   logic                       wrap_rptr_x_c;
   logic                       wrap_rptr_y_c;
   point_t                     rptr_nxt_c;
+  logic                       wptr_zone_nxt_c;
+  logic                       rptr_zone_nxt_c;
 
 
 //----------------------- Start of Code -----------------------------------
@@ -122,9 +128,11 @@ module syn_gpu_ff_cntrlr (
     begin
       wptr_f                  <=  wptr_nxt_c;
 
-      wptr_zone_f             <=  wptr_zone_f ^ wrap_wptr_y_c;
+      wptr_zone_f             <=  wptr_zone_nxt_c;
     end
   end
+
+  assign  wptr_zone_nxt_c = wptr_zone_f ^ wrap_wptr_y_c;
 
   //Check if rptr needs to be wrapped
   assign  wrap_rptr_x_c       = (rptr_f.x[P_X_W-1:0]  ==  P_FF_END_POSX)  ? valid_read_c  : 1'b0;
@@ -145,10 +153,11 @@ module syn_gpu_ff_cntrlr (
     begin
       rptr_f                  <=  rptr_nxt_c;
 
-      rptr_zone_f             <=  rptr_zone_f ^ wrap_rptr_y_c;
+      rptr_zone_f             <=  rptr_zone_nxt_c;
     end
   end
 
+  assign  rptr_zone_nxt_c = rptr_zone_f ^ wrap_rptr_y_c;
 
   always_ff@(posedge cr_intf.clk_ir, negedge cr_intf.rst_sync_l)
   begin : full_empty_logic
@@ -156,12 +165,22 @@ module syn_gpu_ff_cntrlr (
     begin
       full_f                  <=  0;
       empty_f                 <=  1;
+      occ_cntr_f              <=  0;
     end
     else
     begin
-      full_f                  <=  (wptr_nxt_c ==  rptr_nxt_c) ? wptr_zone_f ^ rptr_zone_f     : 1'b0;
+      full_f                  <=  (wptr_nxt_c ==  rptr_nxt_c) ? wptr_zone_nxt_c ^ rptr_zone_nxt_c : 1'b0;
 
-      empty_f                 <=  (wptr_nxt_c ==  rptr_nxt_c) ? ~(wptr_zone_f ^ rptr_zone_f)  : 1'b0;
+      empty_f                 <=  (wptr_nxt_c ==  rptr_nxt_c) ? ~(wptr_zone_nxt_c ^ rptr_zone_nxt_c)  : 1'b0;
+
+      case({valid_write_c,valid_read_c})
+
+        2'b00 : occ_cntr_f    <=  occ_cntr_f;
+        2'b01 : occ_cntr_f    <=  occ_cntr_f  - 'd4;
+        2'b10 : occ_cntr_f    <=  occ_cntr_f  + 'd4;
+        2'b11 : occ_cntr_f    <=  occ_cntr_f;
+
+      endcase
     end
   end
 

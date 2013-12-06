@@ -89,6 +89,9 @@ class syn_vcortex_gpu_fill_test extends syn_vcortex_base_test;
 
       ovm_report_info(get_full_name(),"Start of connect",OVM_LOW);
 
+      super.env.sram_agent.drvr.snapshot_en = 0;
+      super.env.sram_agent.drvr.num_snaps   = 16;
+
       ovm_report_info(get_full_name(),"End of connect",OVM_LOW);
     endfunction : connect
 
@@ -122,8 +125,8 @@ class syn_vcortex_gpu_fill_test extends syn_vcortex_base_test;
       gpu_fill_job_seq.job.line_color.h  = 1;
       gpu_fill_job_seq.job.line_color.s  = 3;
       gpu_fill_job_seq.job.line_color.i  = 15;
-      gpu_fill_job_seq.job.x0 = (P_CANVAS_W/3) + 2;
-      gpu_fill_job_seq.job.y0 = (P_CANVAS_H/3) + 2;
+      gpu_fill_job_seq.job.x0 = (P_CANVAS_W/3) + 25;
+      gpu_fill_job_seq.job.y0 = (P_CANVAS_H/3) + 25;
 
       //Draw polygon
       draw_poly(gpu_fill_job_seq.job.line_color);
@@ -147,6 +150,10 @@ class syn_vcortex_gpu_fill_test extends syn_vcortex_base_test;
         //    ovm_report_info(get_name(),$psprintf("Loop:%1d",i),OVM_LOW);
         //  end
         //end
+
+        begin
+          #3ms;
+        end
       join_any
 
       #100ns;
@@ -161,16 +168,16 @@ class syn_vcortex_gpu_fill_test extends syn_vcortex_base_test;
     function  void  draw_poly(pxl_hsi_t pxl);
       /*  square  */
 
-      for(int i=0, j=0; i<10; i++)  //horizontal1
+      for(int i=0, j=0; i<50; i++)  //horizontal1
         write_pxl(pxl,i+(P_CANVAS_W/3),j+(P_CANVAS_H/3));
 
-      for(int i=0, j=10; i<10; i++)  //horizontal2
+      for(int i=0, j=50; i<50; i++)  //horizontal2
         write_pxl(pxl,i+(P_CANVAS_W/3),j+(P_CANVAS_H/3));
 
-      for(int i=0, j=0; j<10; j++)  //vertical1
+      for(int i=0, j=0; j<50; j++)  //vertical1
         write_pxl(pxl,i+(P_CANVAS_W/3),j+(P_CANVAS_H/3));
 
-      for(int i=10, j=0; j<10; j++)  //vertical2
+      for(int i=50, j=0; j<50; j++)  //vertical2
         write_pxl(pxl,i+(P_CANVAS_W/3),j+(P_CANVAS_H/3));
 
     endfunction : draw_poly

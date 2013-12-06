@@ -81,7 +81,7 @@ interface syn_sram_mem_intf (input  logic clk_ir, rst_il);
                 input   SRAM_WE_N,
 
                 input   SRAM_DO,
-                output  SRAM_DI
+                output  SRAM_DI,
 
                 input   clk_ir,
                 input   rst_il

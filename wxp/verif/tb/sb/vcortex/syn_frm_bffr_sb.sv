@@ -58,20 +58,22 @@
 
   class syn_frm_bffr_sb #(type  LB_PKT_TYPE = syn_lb_seq_item#(32,16),
                           type  SRAM_PKT_TYPE = syn_lb_seq_item#(16,18),
-                          type  PXL_XFR_PKT_TYPE = syn_gpu_pxl_xfr_seq_item#(pxl_hsi_t)
+                          type  PXL_XFR_PKT_TYPE = syn_gpu_pxl_xfr_seq_item#(pxl_hsi_t),
+                          type  SRAM_DRVR_TYPE = syn_sram_drvr,
+                          parameter SRAM_DATA_W = 16
                         ) extends ovm_scoreboard;
 
     `include  "syn_vcortex_reg_map.sv"
 
     /*  Register with Factory */
-    `ovm_component_param_utils(syn_frm_bffr_sb#(LB_PKT_TYPE, SRAM_PKT_TYPE,PXL_XFR_PKT_TYPE))
+    `ovm_component_param_utils(syn_frm_bffr_sb#(LB_PKT_TYPE, SRAM_PKT_TYPE,PXL_XFR_PKT_TYPE,SRAM_DRVR_TYPE,SRAM_DATA_W))
 
 
     //Ports
-    ovm_analysis_imp_sram#(SRAM_PKT_TYPE,syn_frm_bffr_sb#(LB_PKT_TYPE,SRAM_PKT_TYPE,PXL_XFR_PKT_TYPE))  SramMon2SB_Port;
-    ovm_analysis_imp_lb#(LB_PKT_TYPE,syn_frm_bffr_sb#(LB_PKT_TYPE,SRAM_PKT_TYPE,PXL_XFR_PKT_TYPE))  LbMon2SB_Port;
-    ovm_analysis_imp_pxlgw_ingr#(PXL_XFR_PKT_TYPE,syn_frm_bffr_sb#(LB_PKT_TYPE,SRAM_PKT_TYPE,PXL_XFR_PKT_TYPE))  PxlGwSinfferIngr2SB_Port;
-    ovm_analysis_imp_pxlgw_egr#(PXL_XFR_PKT_TYPE,syn_frm_bffr_sb#(LB_PKT_TYPE,SRAM_PKT_TYPE,PXL_XFR_PKT_TYPE))   PxlGwSinfferEgr2SB_Port;
+    ovm_analysis_imp_sram#(SRAM_PKT_TYPE,syn_frm_bffr_sb#(LB_PKT_TYPE,SRAM_PKT_TYPE,PXL_XFR_PKT_TYPE,SRAM_DRVR_TYPE,SRAM_DATA_W))  SramMon2SB_Port;
+    ovm_analysis_imp_lb#(LB_PKT_TYPE,syn_frm_bffr_sb#(LB_PKT_TYPE,SRAM_PKT_TYPE,PXL_XFR_PKT_TYPE,SRAM_DRVR_TYPE,SRAM_DATA_W))  LbMon2SB_Port;
+    ovm_analysis_imp_pxlgw_ingr#(PXL_XFR_PKT_TYPE,syn_frm_bffr_sb#(LB_PKT_TYPE,SRAM_PKT_TYPE,PXL_XFR_PKT_TYPE,SRAM_DRVR_TYPE,SRAM_DATA_W))  PxlGwSinfferIngr2SB_Port;
+    ovm_analysis_imp_pxlgw_egr#(PXL_XFR_PKT_TYPE,syn_frm_bffr_sb#(LB_PKT_TYPE,SRAM_PKT_TYPE,PXL_XFR_PKT_TYPE,SRAM_DRVR_TYPE,SRAM_DATA_W))   PxlGwSinfferEgr2SB_Port;
 
     OVM_FILE  f;
 
@@ -113,6 +115,8 @@
     int gpu_ff_wptr,  gpu_ff_rptr;
     const int gpu_ff_size = (212  * 1024  * 8)  / (4  * 8); //number of pointers that can be stored
 
+
+    SRAM_DRVR_TYPE sram_drvr; //Needs to be connected to the sram_agent.drvr
 
     /*  Constructor */
     function new(string name = "syn_frm_bffr_sb", ovm_component parent);
@@ -500,13 +504,28 @@
       end
     endtask : process_draw_bezier_job
 
+
+    task  skip_xtn (input int num);
+      PXL_XFR_PKT_TYPE  xtn;
+
+      repeat(num)
+      begin
+        ovm_report_info({get_name(),"[skip_xtn]"},$psprintf("Waiting on pxlgw_ingr_xtns"),OVM_LOW);
+        while(!pxlgw_ingr_xtns.size())  #1;
+
+        xtn = pxlgw_ingr_xtns.pop_front();
+
+        putPixel(xtn);
+      end
+    endtask : skip_xtn
+
     /*  Task to process a fill job & derive the set of pixel reads/writes  */
     virtual task  process_fill_job;
       gpu_fill_job_t  job;
       PXL_XFR_PKT_TYPE  actual_xtn;
       PXL_XFR_PKT_TYPE  exptd_xtn;
       string  res;
-      point_t tmp_point;
+      point_t p0,p1,p2,p3,p4;
 
       ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Start of process_fill_job"),OVM_LOW);
 
@@ -518,32 +537,29 @@
         ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Processing job :\n%s",sprint_gpu_fill_job(job)),OVM_LOW);
 
         fill_job_q  = '{};  //clear queue
-        tmp_point.x = job.x0;
-        tmp_point.y = job.y0;
-        fill_job_q.push_back(tmp_point);  //initialize the job fifo
+        p0.x = job.x0;
+        p0.y = job.y0;
 
-        repeat(4) //Wait for DUT to issue reads/writes
-        begin
-          ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Waiting for sniffer ingress #skip"),OVM_LOW);
-          while(!pxlgw_ingr_xtns.size())  #1;
-        end
+        `ifdef  USE_GPU_LF_CNTRLR
+          fill_job_q.push_front(p0);  //initialize the job fifo
+        `else
+          fill_job_q.push_back(p0);  //initialize the job fifo
+        `endif
+
+        skip_xtn(4);  //DUT Initializes Buffer
 
         while(fill_job_q.size)
         begin
           /*  WRITE P0  */
-          tmp_point = fill_job_q.pop_front();
+          skip_xtn(4);  //DUT reads P0
+
+          p0 = fill_job_q.pop_front();
 
           exptd_xtn       = new();
           exptd_xtn.xtn   = PXL_WRITE;
           exptd_xtn.pxl   = job.fill_color;
-          exptd_xtn.posx  = tmp_point.x;
-          exptd_xtn.posy  = tmp_point.y;
-
-          repeat(4) //Wait for DUT to issue reads/writes
-          begin
-            ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Waiting for sniffer ingress #skip"),OVM_LOW);
-            while(!pxlgw_ingr_xtns.size())  #1;
-          end
+          exptd_xtn.posx  = p0.x;
+          exptd_xtn.posy  = p0.y;
 
           ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Waiting for sniffer ingress"),OVM_LOW);
           while(!pxlgw_ingr_xtns.size())  #1;
@@ -555,17 +571,29 @@
           res = actual_xtn.check(exptd_xtn);
 
           if(res  ==  "")
-            ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN Valid"),OVM_LOW);
+          begin
+            ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN [Write P0] Valid"),OVM_LOW);
+          end
           else
-            ovm_report_error({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN Invalid %s",res),OVM_LOW);
+          begin
+            ovm_report_error({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN [Write P0] Invalid %s",res),OVM_LOW);
+            #25ns;
+            global_stop_request();
+          end
 
           putPixel(exptd_xtn);
 
           /*  Read  P1  */
+          //skip_xtn(4);  //DUT reads P1
+
+          p1.x  = p0.x + 1;
+          p1.y  = p0.y;
+
           exptd_xtn       = new();
           exptd_xtn.xtn   = PXL_READ;
-          exptd_xtn.posx  = tmp_point.x + 1;
-          exptd_xtn.posy  = tmp_point.y;
+          exptd_xtn.pxl   = get_frm_bffr_pxl(p1);
+          exptd_xtn.posx  = p1.x;
+          exptd_xtn.posy  = p1.y;
 
           ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Waiting for sniffer ingress"),OVM_LOW);
           while(!pxlgw_ingr_xtns.size())  #1;
@@ -574,34 +602,48 @@
           actual_xtn  = pxlgw_ingr_xtns.pop_front();
           ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Received sniffer xtn :\n%s",actual_xtn.sprint()),OVM_LOW);
 
-          exptd_xtn.pxl = actual_xtn.pxl; //dont care for read
+          actual_xtn.pxl = exptd_xtn.pxl; //dont care for read
 
           res = actual_xtn.check(exptd_xtn);
 
           if(res  ==  "")
-            ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN Valid"),OVM_LOW);
+          begin
+            ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN [Read P1] Valid"),OVM_LOW);
+          end
           else
-            ovm_report_error({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN Invalid %s",res),OVM_LOW);
+          begin
+            ovm_report_error({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN [Read P1] Invalid %s",res),OVM_LOW);
+            #25ns;
+            global_stop_request();
+          end
 
           putPixel(exptd_xtn);
 
 
-          if(actual_xtn.pxl !=  job.line_color) //still within polygon
+          if((actual_xtn.pxl !=  job.line_color)  &&  (actual_xtn.pxl !=  job.fill_color)) //still within polygon
           begin
-            fill_job_q.push_back(tmp_point);
+            ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Adding P1[x:%1d][y:%1d] to fill_job_q",p1.x,p1.y),OVM_LOW);
 
-            repeat(4) //Wait for DUT to issue reads/writes
-            begin
-              ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Waiting for sniffer ingress #skip"),OVM_LOW);
-              while(!pxlgw_ingr_xtns.size())  #1;
-            end
+            `ifdef  USE_GPU_LF_CNTRLR
+              fill_job_q.push_front(p1);
+            `else
+              fill_job_q.push_back(p1);
+            `endif
+
+            skip_xtn(4);  //DUT writes P1 to FF
           end
 
           /*  Read  P2  */
+          //skip_xtn(4);  //DUT Reads P2
+
+          p2.x  = p0.x;
+          p2.y  = p0.y - 1;
+
           exptd_xtn       = new();
           exptd_xtn.xtn   = PXL_READ;
-          exptd_xtn.posx  = tmp_point.x;
-          exptd_xtn.posy  = tmp_point.y + 1;
+          exptd_xtn.pxl   = get_frm_bffr_pxl(p2);
+          exptd_xtn.posx  = p2.x;
+          exptd_xtn.posy  = p2.y;
 
           ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Waiting for sniffer ingress"),OVM_LOW);
           while(!pxlgw_ingr_xtns.size())  #1;
@@ -610,34 +652,49 @@
           actual_xtn  = pxlgw_ingr_xtns.pop_front();
           ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Received sniffer xtn :\n%s",actual_xtn.sprint()),OVM_LOW);
 
-          exptd_xtn.pxl = actual_xtn.pxl; //dont care for read
+          //exptd_xtn.pxl = actual_xtn.pxl; //dont care for read
+          actual_xtn.pxl = exptd_xtn.pxl; //dont care for read
 
           res = actual_xtn.check(exptd_xtn);
 
           if(res  ==  "")
-            ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN Valid"),OVM_LOW);
+          begin
+            ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN [Read P2] Valid"),OVM_LOW);
+          end
           else
-            ovm_report_error({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN Invalid %s",res),OVM_LOW);
+          begin
+            ovm_report_error({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN [Read P2] Invalid %s",res),OVM_LOW);
+            #25ns;
+            global_stop_request();
+          end
 
           putPixel(exptd_xtn);
 
 
-          if(actual_xtn.pxl !=  job.line_color) //still within polygon
+          if((actual_xtn.pxl !=  job.line_color)  &&  (actual_xtn.pxl !=  job.fill_color)) //still within polygon
           begin
-            fill_job_q.push_back(tmp_point);
+            ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Adding P2[x:%1d][y:%1d] to fill_job_q",p2.x,p2.y),OVM_LOW);
 
-            repeat(4) //Wait for DUT to issue reads/writes
-            begin
-              ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Waiting for sniffer ingress #skip"),OVM_LOW);
-              while(!pxlgw_ingr_xtns.size())  #1;
-            end
+            `ifdef  USE_GPU_LF_CNTRLR
+              fill_job_q.push_front(p2);
+            `else
+              fill_job_q.push_back(p2);
+            `endif
+
+            skip_xtn(4);  //DUT writes P2
           end
 
           /*  Read  P3  */
+          //skip_xtn(4);  //DUT Reads P3
+
+          p3.x  = p0.x - 1;
+          p3.y  = p0.y;
+
           exptd_xtn       = new();
           exptd_xtn.xtn   = PXL_READ;
-          exptd_xtn.posx  = tmp_point.x - 1;
-          exptd_xtn.posy  = tmp_point.y;
+          exptd_xtn.pxl   = get_frm_bffr_pxl(p3);
+          exptd_xtn.posx  = p3.x;
+          exptd_xtn.posy  = p3.y;
 
           ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Waiting for sniffer ingress"),OVM_LOW);
           while(!pxlgw_ingr_xtns.size())  #1;
@@ -646,34 +703,49 @@
           actual_xtn  = pxlgw_ingr_xtns.pop_front();
           ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Received sniffer xtn :\n%s",actual_xtn.sprint()),OVM_LOW);
 
-          exptd_xtn.pxl = actual_xtn.pxl; //dont care for read
+          //exptd_xtn.pxl = actual_xtn.pxl; //dont care for read
+          actual_xtn.pxl = exptd_xtn.pxl; //dont care for read
 
           res = actual_xtn.check(exptd_xtn);
 
           if(res  ==  "")
-            ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN Valid"),OVM_LOW);
+          begin
+            ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN [Read P3] Valid"),OVM_LOW);
+          end
           else
-            ovm_report_error({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN Invalid %s",res),OVM_LOW);
+          begin
+            ovm_report_error({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN [Read P3] Invalid %s",res),OVM_LOW);
+            #25ns;
+            global_stop_request();
+          end
 
           putPixel(exptd_xtn);
 
 
-          if(actual_xtn.pxl !=  job.line_color) //still within polygon
+          if((actual_xtn.pxl !=  job.line_color)  &&  (actual_xtn.pxl !=  job.fill_color)) //still within polygon
           begin
-            fill_job_q.push_back(tmp_point);
+            ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Adding P3[x:%1d][y:%1d] to fill_job_q",p3.x,p3.y),OVM_LOW);
 
-            repeat(4) //Wait for DUT to issue reads/writes
-            begin
-              ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Waiting for sniffer ingress #skip"),OVM_LOW);
-              while(!pxlgw_ingr_xtns.size())  #1;
-            end
+            `ifdef  USE_GPU_LF_CNTRLR
+              fill_job_q.push_front(p3);
+            `else
+              fill_job_q.push_back(p3);
+            `endif
+
+            skip_xtn(4);  //DUT Writes P3
           end
 
           /*  Read  P4  */
+          //skip_xtn(4);  //DUT Reads P4
+
+          p4.x  = p0.x;
+          p4.y  = p0.y + 1;
+
           exptd_xtn       = new();
           exptd_xtn.xtn   = PXL_READ;
-          exptd_xtn.posx  = tmp_point.x;
-          exptd_xtn.posy  = tmp_point.y - 1;
+          exptd_xtn.pxl   = get_frm_bffr_pxl(p4);
+          exptd_xtn.posx  = p4.x;
+          exptd_xtn.posy  = p4.y;
 
           ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Waiting for sniffer ingress"),OVM_LOW);
           while(!pxlgw_ingr_xtns.size())  #1;
@@ -682,27 +754,36 @@
           actual_xtn  = pxlgw_ingr_xtns.pop_front();
           ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Received sniffer xtn :\n%s",actual_xtn.sprint()),OVM_LOW);
 
-          exptd_xtn.pxl = actual_xtn.pxl; //dont care for read
+          //exptd_xtn.pxl = actual_xtn.pxl; //dont care for read
+          actual_xtn.pxl = exptd_xtn.pxl; //dont care for read
 
           res = actual_xtn.check(exptd_xtn);
 
           if(res  ==  "")
-            ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN Valid"),OVM_LOW);
+          begin
+            ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN [Read P4] Valid"),OVM_LOW);
+          end
           else
-            ovm_report_error({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN Invalid %s",res),OVM_LOW);
+          begin
+            ovm_report_error({get_name(),"[process_fill_job]"},$psprintf("PxlGw XTN [Read P4] Invalid %s",res),OVM_LOW);
+            #25ns;
+            global_stop_request();
+          end
 
           putPixel(exptd_xtn);
 
 
-          if(actual_xtn.pxl !=  job.line_color) //still within polygon
+          if((actual_xtn.pxl !=  job.line_color)  &&  (actual_xtn.pxl !=  job.fill_color)) //still within polygon
           begin
-            fill_job_q.push_back(tmp_point);
+            ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Adding P4[x:%1d][y:%1d] to fill_job_q",p4.x,p4.y),OVM_LOW);
 
-            repeat(4) //Wait for DUT to issue reads/writes
-            begin
-              ovm_report_info({get_name(),"[process_fill_job]"},$psprintf("Waiting for sniffer ingress #skip"),OVM_LOW);
-              while(!pxlgw_ingr_xtns.size())  #1;
-            end
+            `ifdef  USE_GPU_LF_CNTRLR
+              fill_job_q.push_front(p4);
+            `else
+              fill_job_q.push_back(p4);
+            `endif
+
+            skip_xtn(4);  //DUT Writes P4
           end
         end
 
@@ -831,6 +912,7 @@
           actual_pkt  = sram_rd_xtns.pop_front();
           exptd_pkt   = frm_bffr_pending_xtns.pop_front();
 
+          /*
           //Process, compare, check ...
           if(exptd_pkt.check(actual_pkt))
           begin
@@ -840,6 +922,7 @@
           begin
             ovm_report_error({get_name(),"[check_sram_reads]"},"SRAM Read is invalid",OVM_LOW);
           end
+        */
         end
       end
 
@@ -932,6 +1015,19 @@
 
       return  res;
     endfunction : get_nxt_rptr
+
+    function  pxl_hsi_t get_frm_bffr_pxl(point_t p);
+      pxl_hsi_t res;
+      int frm_bffr_addr = ((p.y*P_CANVAS_W)  + p.x) / 2;
+      bit ms_n_ls = p.x % 2;
+
+      if(ms_n_ls)
+        $cast(res,  sram_drvr.frm_bffr[frm_bffr_addr][SRAM_DATA_W-1:P_PXL_HSI_W]);
+      else
+        $cast(res,  sram_drvr.frm_bffr[frm_bffr_addr][P_PXL_HSI_W-1:0]);
+
+      return res;
+    endfunction : get_frm_bffr_pxl
 
     /*  Report  */
     virtual function void report();

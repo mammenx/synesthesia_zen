@@ -101,9 +101,6 @@
       //  if(intf.SRAM_ADDR.size  !=  ADDR_W)
       //     ovm_report_fatal({get_name(),"[run]"},$psprintf("sram_addr_w(%d) does not match ADDR_W(%d) !!!",intf.SRAM_ADDR.size,ADDR_W),OVM_LOW);
 
-      //  if(intf.SRAM_DQ.size !=  DATA_W)
-      //     ovm_report_fatal({get_name(),"[run]"},$psprintf("sram_data_w(%d) does not match DATA_W(%d) !!!",intf.SRAM_DQ.size,DATA_W),OVM_LOW);
-
 
       ovm_report_info({get_name(),"[run]"},"Start of run ",OVM_LOW);
 
@@ -129,7 +126,7 @@
 
                 pkt.lb_xtn  = READ;
                 pkt.addr[0] = intf.SRAM_ADDR;
-                pkt.data[0] = intf.SRAM_DQ;
+                pkt.data[0] = intf.SRAM_DI;
 
                 //Send captured pkt to SB
                 ovm_report_info({get_name(),"[run]"},$psprintf("Sending pkt to SB -\n%s", pkt.sprint()),OVM_LOW);
@@ -148,12 +145,12 @@
 
                 if(~intf.SRAM_LB_N)
                 begin
-                  pkt.data[0][(DATA_W/2)-1:0] = intf.SRAM_DQ[(DATA_W/2)-1:0];
+                  pkt.data[0][(DATA_W/2)-1:0] = intf.SRAM_DO[(DATA_W/2)-1:0];
                 end
 
                 if(~intf.SRAM_UB_N)
                 begin
-                  pkt.data[0][DATA_W-1:(DATA_W/2)] = intf.SRAM_DQ[DATA_W-1:(DATA_W/2)];
+                  pkt.data[0][DATA_W-1:(DATA_W/2)] = intf.SRAM_DO[DATA_W-1:(DATA_W/2)];
                 end
 
                 //Send captured pkt to SB

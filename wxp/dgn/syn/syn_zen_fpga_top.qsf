@@ -126,6 +126,9 @@ set_global_assignment -name SEARCH_PATH ../rtl/altera
 set_global_assignment -name SEARCH_PATH ./limbus/synthesis
 set_global_assignment -name SEARCH_PATH ./limbus/synthesis/submodules
 
+# `defines
+set_global_assignment -name VERILOG_MACRO "USE_GPU_LF_CNTRLR=1"
+
 
 # Pin Assignments
 set_location_assignment PIN_L22 -to SW[0]

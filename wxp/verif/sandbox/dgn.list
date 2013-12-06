@@ -76,6 +76,7 @@
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu_core_euclid.sv
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu_core_picasso.sv
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu_ff_cntrlr.sv
+../../dgn/rtl/visual_cortex/grapheme/syn_gpu_lf_cntrlr.sv
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu_core.sv
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu_pxl_gw.sv
 ../../dgn/rtl/visual_cortex/grapheme/syn_gpu_div.sv

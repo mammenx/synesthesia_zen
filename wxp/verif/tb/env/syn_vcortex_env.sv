@@ -59,6 +59,7 @@
     parameter       SRAM_ADDR_W = 18;
     parameter type  SRAM_PKT_T  = syn_lb_seq_item#(SRAM_DATA_W,SRAM_ADDR_W);
     parameter type  SRAM_INTF_T = virtual syn_sram_mem_intf.TB;
+    parameter type  SRAM_DRVR_T = syn_sram_drvr#(SRAM_DATA_W,SRAM_ADDR_W,SRAM_PKT_T,SRAM_INTF_T);
 
     parameter type  PXLGW_SNIFF_PKT_T = syn_gpu_pxl_xfr_seq_item#(syn_gpu_pkg::pxl_hsi_t);
     parameter type  PXLGW_SNIFF_INTF_T= virtual syn_pxl_xfr_tb_intf#(syn_gpu_pkg::pxl_hsi_t,syn_gpu_pkg::P_X_W,syn_gpu_pkg::P_Y_W);
@@ -76,7 +77,7 @@
     //Declare agents, scoreboards
     syn_lb_agent#(LB_DATA_W,LB_ADDR_W,LB_PKT_T,LB_DRVR_INTF_T,LB_MON_INTF_T)  lb_agent;
     syn_sram_agent#(SRAM_DATA_W,SRAM_ADDR_W,SRAM_PKT_T,SRAM_INTF_T)   sram_agent;
-    syn_frm_bffr_sb#(LB_PKT_T,SRAM_PKT_T,PXLGW_SNIFF_PKT_T)           frm_bffr_sb;
+    syn_frm_bffr_sb#(LB_PKT_T,SRAM_PKT_T,PXLGW_SNIFF_PKT_T,SRAM_DRVR_T,SRAM_DATA_W)  frm_bffr_sb;
     syn_gpu_pxlgw_sniffer#(PXLGW_SNIFF_PKT_T,PXLGW_SNIFF_INTF_T) pxlgw_sniffer;
     syn_vga_agent#(VGA_W,VGA_H,VGA_PKT_TYPE,VGA_INTF_TYPE)   vga_agent;
     syn_vga_sb#(SRAM_DATA_W,VGA_PKT_TYPE,SRAM_PKT_T)         vga_sb;
@@ -107,7 +108,7 @@
 
       lb_agent    = syn_lb_agent#(LB_DATA_W,LB_ADDR_W,LB_PKT_T,LB_DRVR_INTF_T,LB_MON_INTF_T)::type_id::create("lb_agent",  this);
       sram_agent  = syn_sram_agent#(SRAM_DATA_W,SRAM_ADDR_W,SRAM_PKT_T,SRAM_INTF_T)::type_id::create("sram_agent",  this);
-      frm_bffr_sb = syn_frm_bffr_sb#(LB_PKT_T,SRAM_PKT_T,PXLGW_SNIFF_PKT_T)::type_id::create("frm_bffr_sb", this);
+      frm_bffr_sb = syn_frm_bffr_sb#(LB_PKT_T,SRAM_PKT_T,PXLGW_SNIFF_PKT_T,SRAM_DRVR_T,SRAM_DATA_W)::type_id::create("frm_bffr_sb", this);
       pxlgw_sniffer  = syn_gpu_pxlgw_sniffer#(PXLGW_SNIFF_PKT_T,PXLGW_SNIFF_INTF_T)::type_id::create("pxlgw_sniffer",this);
       vga_agent   = syn_vga_agent#(VGA_W,VGA_H,VGA_PKT_TYPE,VGA_INTF_TYPE)::type_id::create("vga_agent",  this);
       vga_sb      = syn_vga_sb#(SRAM_DATA_W,VGA_PKT_TYPE,SRAM_PKT_T)::type_id::create("vga_sb",  this);
@@ -134,6 +135,8 @@
       sram_agent.seqr.Seqr2Sb_port.connect(vga_sb.Seqr_sent_2Sb_port);
       //this.vga_sb.frm_bffr  = this.frm_bffr;
       //this.sram_agent.drvr.frm_bffr = this.frm_bffr;
+
+      this.frm_bffr_sb.sram_drvr  = this.sram_agent.drvr;
 
       ovm_report_info(get_name(),"END of connect ",OVM_LOW);
     endfunction
