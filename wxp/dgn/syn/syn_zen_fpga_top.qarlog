@@ -1,7 +1,7 @@
 Quartus II Archive log --	G:/WorK/Synesthesia/github/synesthesia_zen/wxp/dgn/syn/syn_zen_fpga_top.qarlog
 
 Archive:	G:/WorK/Synesthesia/github/synesthesia_zen/wxp/dgn/syn/syn_zen_fpga_top.qar
-Date:		Sat Nov 30 18:11:05 2013
+Date:		Fri Dec 06 20:52:26 2013
 Quartus II 32-bit		11.1 Build 259 01/25/2012 SP 2.11 SJ Web Edition
 
 	=========== Files Selected: ===========
@@ -73,6 +73,7 @@ G:/WorK/Synesthesia/github/synesthesia_zen/wxp/dgn/rtl/visual_cortex/grapheme/sy
 G:/WorK/Synesthesia/github/synesthesia_zen/wxp/dgn/rtl/visual_cortex/grapheme/syn_gpu_core_picasso.sv
 G:/WorK/Synesthesia/github/synesthesia_zen/wxp/dgn/rtl/visual_cortex/grapheme/syn_gpu_div.sv
 G:/WorK/Synesthesia/github/synesthesia_zen/wxp/dgn/rtl/visual_cortex/grapheme/syn_gpu_ff_cntrlr.sv
+G:/WorK/Synesthesia/github/synesthesia_zen/wxp/dgn/rtl/visual_cortex/grapheme/syn_gpu_lf_cntrlr.sv
 G:/WorK/Synesthesia/github/synesthesia_zen/wxp/dgn/rtl/visual_cortex/grapheme/syn_gpu_mul.sv
 G:/WorK/Synesthesia/github/synesthesia_zen/wxp/dgn/rtl/visual_cortex/grapheme/syn_gpu_pxl_gw.sv
 G:/WorK/Synesthesia/github/synesthesia_zen/wxp/dgn/rtl/visual_cortex/grapheme/syn_gpu_rand.sv
@@ -141,7 +142,7 @@ G:/WorK/Synesthesia/github/synesthesia_zen/wxp/dgn/syn/syn_zen_fpga_top.qpf
 G:/WorK/Synesthesia/github/synesthesia_zen/wxp/dgn/syn/syn_zen_fpga_top.qsf
 G:/WorK/Synesthesia/github/synesthesia_zen/wxp/dgn/syn/syn_zen_fpga_top.sdc
 c:/altera/11.1sp2/quartus/bin/assignment_defaults.qdf
-	======= Total: 136 files to archive =======
+	======= Total: 137 files to archive =======
 
 	================ Status: ===============
 All files archived successfully.
