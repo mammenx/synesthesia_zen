@@ -33,7 +33,9 @@
 #include "sys/alt_stdio.h"
 
 void configure_cmux_clk(CMUX_CLK_T clk){
+	IOWR_CMUX_CLK_SEL(0x0); //disable clocks
 	IOWR_CMUX_CLK_SEL(clk & CMUX_CLK_SEL_MSK);
+	IOWR_CMUX_CLK_SEL((clk & CMUX_CLK_SEL_MSK) | CMUX_CLK_EN_MSK); //enable clocks
 }
 
 CMUX_CLK_T read_cmux_clk(){

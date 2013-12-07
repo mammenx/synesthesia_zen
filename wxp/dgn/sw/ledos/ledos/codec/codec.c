@@ -146,6 +146,7 @@ I2C_RES codec_init(BPS_T bps, CODEC_FS_T fs){
 	//Keep WMDRVR in sync
 	configure_wmdrvr_bps(bps);
 	update_wmdrvr_fs_div(fs2div_lookup[fs]);
+	configure_cmux_clk(fs2mclk_lookup[fs]);
 
 	//Debug ...
 	//codec_dump_regs();

@@ -41,6 +41,7 @@
 
 //Field Masks
 #define	CMUX_CLK_SEL_MSK	0x3
+#define	CMUX_CLK_EN_MSK		0x80000000
 
 //Read CMUX fields
 #define	IORD_CMUX_CLK_SEL			\

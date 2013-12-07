@@ -299,6 +299,15 @@ static const FS_DIV_T fs2div_lookup[]	=	{
 		[FS_96KHZ]	=	FS_DIV_96KHZ
 };
 
+static const CMUX_CLK_T fs2mclk_lookup[]	=	{
+		[FS_8KHZ]	=	MCLK_12,
+		[FS_32KHZ]	=	MCLK_12,
+		[FS_44KHZ]	=	MCLK_11,
+		[FS_48KHZ]	=	MCLK_12,
+		[FS_88KHZ]	=	MCLK_12,
+		[FS_96KHZ]	=	MCLK_12
+};
+
 static const SR_SEL fs2sr_lookup[]	=	{
 		[FS_8KHZ]	=	FS_8KHZ_SR,
 		[FS_32KHZ]	=	FS_32KHZ_SR,
