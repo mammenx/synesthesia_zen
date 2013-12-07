@@ -86,73 +86,37 @@
 
 int main()
 { 
-  GPU_HST_ACC_JOB_T job,rd_job;
-  GPU_DRAW_LINE_JOB_T line_job;
-
   alt_putstr("Hello from Nios II!\n");
 
-  alt_printf("GPU STATUS REG:0x%x\n",IORD_VCORTEX_GPU_STATUS);
+  if(codec_init(BPS_32,FS_44KHZ) != I2C_OK) {
+	alt_printf("I2C Error\n");
+  }
+  else {
+	alt_printf("Codec Reset Success!\n");
+  }
 
-
-  vga_disable();
-
-  job.color.h =0; job.color.s =0; job.color.i =0;
-  job.ptr.x=0; job.ptr.y=0;
-  job.action = WRITE;
-
-  for(job.ptr.x=0; job.ptr.x<CANVAS_W; job.ptr.x++){
-	  for(job.ptr.y=0; job.ptr.y<CANVAS_H; job.ptr.y++){
-		  job.action = WRITE;
-
-		  gpu_hst_acc(job, 1);
+  while(1) {
+	  if(codec_play() != I2C_OK) {
+		alt_printf("I2C Error\n");
 	  }
+	  else {
+		alt_printf("Codec play success!\n");
+	  }
+
+	  chThdSleepMilliseconds(5000);
+
+	  if(codec_stop() != I2C_OK) {
+		alt_printf("I2C Error\n");
+	  }
+	  else {
+		alt_printf("Codec stop success!\n");
+	  }
+
+	  chThdSleepMilliseconds(5000);
   }
 
-  alt_putstr("FB Init Done\n");
 
-
-  line_job.color.h= 1;
-  line_job.color.s= 3;
-  line_job.color.i= 7;
-  line_job.start.x = 10;
-  line_job.start.y = 10;
-  line_job.end.x = 400;
-  line_job.end.y = 400;
-
-  gpu_draw_line(line_job, 1);
-
-  line_job.color.h= 3;
-  line_job.color.s= 3;
-  line_job.color.i= 7;
-  line_job.start.x = 10;
-  line_job.start.y = 400;
-  line_job.end.x = 400;
-  line_job.end.y = 10;
-
-  gpu_draw_line(line_job, 1);
-
-  alt_putstr("Enabling VGA\n");
-
-  set_vga_mode(VGA_NORMAL);
-  vga_en();
-
-  alt_printf("VGA Control Reg:0x%x\n",IORD_VCORTEX_VGA_CONTROL);
-
-  while(1){
-	  line_job.color.h= (line_job.color.h + 1) & 0x7;
-	  line_job.color.s= (line_job.color.s + 1) & 0x3;
-	  line_job.color.i= 0x7;
-	  line_job.start.x = (line_job.start.x + 1) & 0xff;
-	  line_job.start.y = (line_job.start.y + 1) & 0xff;
-	  line_job.end.x = (line_job.end.x + 1) & 0xff;
-	  line_job.end.y = (line_job.end.y + 1) & 0xff;
-
-	  gpu_draw_line(line_job, 1);
-
-	  chThdSleepMilliseconds(30);
-
-  }
-
+  codec_dump_regs();
 
   /* Event loop never exits. */
   while (1);

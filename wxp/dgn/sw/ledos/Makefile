@@ -151,6 +151,7 @@ C_SRCS += ledos/cortex/acortex/cmux/cmux.c
 C_SRCS += ledos/cortex/acortex/wmdrvr/wmdrvr.c
 C_SRCS += ledos/cortex/acortex/acache/acache.c
 C_SRCS += ledos/cortex/fgyrus/fgyrus.c
+C_SRCS += ledos/codec/codec.c
 CXX_SRCS :=
 ASM_SRCS :=
 

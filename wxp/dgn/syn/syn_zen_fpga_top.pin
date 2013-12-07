@@ -71,7 +71,7 @@ Pin Name/Usage               : Location  : Dir.   : I/O Standard      : Voltage 
 GND                          : A1        : gnd    :                   :         :           :                
 VCCIO3                       : A2        : power  :                   : 3.3V    : 3         :                
 I2C_SCLK                     : A3        : output : 3.3-V LVTTL       :         : 3         : Y              
-AUD_BCLK                     : A4        : bidir  : 3.3-V LVTTL       :         : 3         : Y              
+AUD_BCLK                     : A4        : output : 3.3-V LVTTL       :         : 3         : Y              
 AUD_DACLRCK                  : A5        : output : 3.3-V LVTTL       :         : 3         : Y              
 AUD_ADCLRCK                  : A6        : output : 3.3-V LVTTL       :         : 3         : Y              
 VGA_R[2]                     : A7        : output : 3.3-V LVTTL       :         : 3         : Y              

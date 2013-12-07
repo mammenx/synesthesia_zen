@@ -460,7 +460,6 @@ sub gen_top {
   if($sel_codec ==  1)  {
     print FILE"\n";
     print FILE"   inout                       I2C_SDAT;\n";
-    print FILE"   inout                       AUD_BCLK;\n";
   }
   print FILE  "\n";
   if($sel_gpio_1  ==  1)  {
@@ -535,6 +534,7 @@ sub gen_top {
     print FILE"   output                      AUD_DACLRCK;\n";
     print FILE"   output                      AUD_DACDAT;\n";
     print FILE"   output                      AUD_XCK;\n";
+    print FILE"   output                      AUD_BCLK;\n";
   }
   if($sel_sdcard  ==  1)  {
     print FILE"\n";

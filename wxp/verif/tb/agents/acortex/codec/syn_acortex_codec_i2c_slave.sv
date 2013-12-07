@@ -114,16 +114,17 @@
 
       if(enable)
       begin
-        intf.sda_o      <= 1;
-        intf.sda_tb_en  <= 0;
+        intf.sda_i      <= 1;
 
         @(posedge intf.rst_il);
 
         forever
         begin
+          intf.sda_i      <= 1;
+
           ovm_report_info({get_name(),"[run]"},"\n\n\nWaiting for <Start> ...",OVM_LOW);
 
-          @(negedge intf.sda);
+          @(negedge intf.sda_o  iff !intf.release_sda);
           @(negedge intf.scl);
 
           ovm_report_info({get_name(),"[run]"},"<Start> detected ...",OVM_LOW);
@@ -135,7 +136,7 @@
             @(posedge intf.scl);
             #1;
 
-            addr  = (addr <<  1)  + intf.sda; //sample address bits
+            addr  = (addr <<  1)  + intf.sda_o; //sample address bits
           end
 
           ovm_report_info({get_name(),"[run]"},$psprintf("Got address : 0x%x",addr),OVM_LOW);
@@ -143,33 +144,29 @@
           @(posedge intf.scl);
           #1;
 
-          rd_n_wr = intf.sda;   //sample RD/nWR bit
+          rd_n_wr = intf.sda_o;   //sample RD/nWR bit
 
           ovm_report_info({get_name(),"[run]"},$psprintf("Got Read/nWr : 0x%x",rd_n_wr),OVM_LOW);
 
-          @(posedge intf.scl)
+          @(posedge intf.scl  iff intf.release_sda)
           #2;
 
           if({addr,rd_n_wr}  ==  dev_addr)  //Device address
           begin
             ovm_report_info({get_name(),"[run]"},$psprintf("Driving ACK"),OVM_LOW);
-            intf.sda_o      <=  0;
-            intf.sda_tb_en  <=  1;
+            intf.sda_i      <=  0;
 
             @(negedge intf.scl);
-            intf.sda_tb_en  <=  0;
           end
           else
           begin
             ovm_report_error({get_name(),"[run]"},$psprintf("Driving NACK"),OVM_LOW);
-            intf.sda_o      <=  1;
-            intf.sda_tb_en  <=  1;
+            intf.sda_i      <=  1;
 
             @(negedge intf.scl);
-            intf.sda_tb_en  <=  0;
 
             @(posedge intf.scl);
-            @(posedge intf.sda);
+            @(posedge intf.sda_o);
             ovm_report_info({get_name(),"[run]"},$psprintf("<STOP> detected ...\n\n\n"),OVM_LOW);
 
             continue;
@@ -184,24 +181,22 @@
               @(posedge intf.scl);
               #1;
 
-              data  = (data <<  1)  + intf.sda;
+              data  = (data <<  1)  + intf.sda_o;
             end
 
-            @(posedge intf.scl);
+            @(posedge intf.scl  iff intf.release_sda);
             #2;
 
             ovm_report_info({get_name(),"[run]"},$psprintf("Driving ACK"),OVM_LOW);
-            intf.sda_o      <=  0;
-            intf.sda_tb_en  <=  1;
+            intf.sda_i      <=  0;
 
             @(negedge intf.scl);
-            intf.sda_tb_en  <=  0;
           end
 
           ovm_report_info({get_name(),"[run]"},$psprintf("Got data : 0x%x",data),OVM_LOW);
 
           @(posedge intf.scl);
-          @(posedge intf.sda);
+          @(posedge intf.sda_o);
           ovm_report_info({get_name(),"[run]"},$psprintf("<STOP> detected ..."),OVM_LOW);
 
           if(update_reg_map_en)
