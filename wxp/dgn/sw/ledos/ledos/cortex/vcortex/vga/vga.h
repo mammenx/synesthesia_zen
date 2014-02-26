@@ -59,8 +59,8 @@
 		IOWR_32DIRECT(CORTEX_MM_SLAVE_BASE, VCORTEX_VGA_CONTROL_REG_ADDR, data)
 
 typedef enum {
-	NORMAL=0,
-	TEST_PATTERN=2 //since its bit 1
+	VGA_NORMAL=0,
+	VGA_TEST_PATTERN=2 //since its bit 1
 }VGA_MODE_T;
 
 void vga_en();

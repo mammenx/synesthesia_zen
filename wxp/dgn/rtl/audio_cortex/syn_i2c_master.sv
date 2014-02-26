@@ -296,7 +296,7 @@ enum  logic [2:0] {
      //Slave must pull down SDO pin low during ack phase for
      //correct ack, else nack
      nack_detected_f          <=  nack_detected_f ? ~i2c_start_c  //clear NACK flag
-                                                  : (fsm_pstate ==  ACK_S)  & wm8731_intf.scl  & i2c_prd_by_2_tick_c & wm8731_intf.sda;
+                                                  : (fsm_pstate ==  ACK_S)  & wm8731_intf.scl  & i2c_prd_by_2_tick_c & wm8731_intf.sda_i;
    end
  end
 
@@ -396,7 +396,7 @@ enum  logic [2:0] {
     end
   end
 
-  //Tristate the I2C data line
-  assign  wm8731_intf.sda = release_sda_f ? 1'bz  : sda_f;
+  assign  wm8731_intf.release_sda = release_sda_f;
+  assign  wm8731_intf.sda_o       = sda_f;
 
 endmodule // syn_i2c_master

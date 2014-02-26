@@ -52,12 +52,16 @@ interface syn_wm8731_intf  (input logic rst_il);
   logic   dac_lrc;
 
   logic   scl;
-  wire    sda;
+  logic   sda_o;
+  logic   sda_i;
+  logic   release_sda;
 
   //Modports
   modport i2c     (
                     output  scl,
-                    inout   sda
+                    output  sda_o,
+                    input   sda_i,
+                    output  release_sda
                   );
 
 
@@ -75,18 +79,18 @@ interface syn_wm8731_intf  (input logic rst_il);
                   );
 
   `ifdef  SIMULATION
-    logic sda_o;
-    logic sda_tb_en;
+    wire  sda;
 
     modport TB_I2C  (
                       input   rst_il,
                       input   scl,
-                      inout   sda,
-                      output  sda_o,
-                      output  sda_tb_en
+                      input   sda_o,
+                      output  sda_i,
+                      input   release_sda,
+                      inout   sda
                     );
 
-    assign  sda = sda_tb_en ? sda_o : 'bz;
+    assign  sda = release_sda ? sda_i : sda_o;
 
     modport TB_DAC  (
                       input   rst_il,

@@ -31,6 +31,7 @@
 #ifndef LEDOS_H_
 #define LEDOS_H_
 
+#include "codec/codec.h"
 #include "cortex/cortex.h"
 #include "graphics/graphics.h"
 

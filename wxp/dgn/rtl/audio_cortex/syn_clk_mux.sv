@@ -125,7 +125,7 @@ module syn_clk_mux (
 
       case(lb_intf.cmux_addr)
 
-        ACORTEX_CMUX_CLK_SEL_REG_ADDR : lb_intf.cmux_rd_data  <=  {{P_LB_DATA_W-P_CLK_SEL_W{1'b0}},  clk_sel_f};
+        ACORTEX_CMUX_CLK_SEL_REG_ADDR : lb_intf.cmux_rd_data  <=  {clk_mux_en_f,{P_LB_DATA_W-P_CLK_SEL_W-1{1'b0}},  clk_sel_f};
 
         default  : lb_intf.cmux_rd_data <=  'hdead;
       endcase

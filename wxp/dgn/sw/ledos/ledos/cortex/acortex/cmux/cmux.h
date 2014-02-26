@@ -21,17 +21,43 @@
 
 /*
  --------------------------------------------------------------------------
- -- Project Code      : synesthesia_zen
- -- Header Name       : cortex.h
+ -- Project Code      : synesthesia
+ -- File Name         : cmux.h
  -- Author            : mammenx
- -- Description       :
+ -- Function          : 
  --------------------------------------------------------------------------
 */
 
-#ifndef CORTEX_H_
-#define CORTEX_H_
+#ifndef CMUX_H_
+#define CMUX_H_
 
-#include "acortex/acortex.h"
-#include "vcortex/vcortex.h"
+#include <io.h>
+#include "system.h"
 
-#endif /* CORTEX_H_ */
+#define CMUX_BASE_ADDR	0x01000
+
+//CMUX Register addresses
+#define	CMUX_CLK_SEL_ADDR	0x01000
+
+//Field Masks
+#define	CMUX_CLK_SEL_MSK	0x3
+#define	CMUX_CLK_EN_MSK		0x80000000
+
+//Read CMUX fields
+#define	IORD_CMUX_CLK_SEL			\
+		IORD_32DIRECT(CORTEX_MM_SLAVE_BASE, CMUX_CLK_SEL_ADDR)
+
+//Write CMUX fields
+#define	IOWR_CMUX_CLK_SEL(data)		\
+		IOWR_32DIRECT(CORTEX_MM_SLAVE_BASE, CMUX_CLK_SEL_ADDR, data)
+
+typedef enum {
+	MCLK_18	=	0,	//18MHz
+	MCLK_12	=	1,	//12MHz
+	MCLK_11	=	2,	//11MHz
+} CMUX_CLK_T;
+
+void configure_cmux_clk(CMUX_CLK_T clk);
+CMUX_CLK_T read_cmux_clk();
+
+#endif /* CMUX_H_ */

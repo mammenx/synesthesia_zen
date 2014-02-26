@@ -354,8 +354,8 @@ module syn_zen_fpga_top
 
   //Assign to FPGA Pins
   assign  I2C_SCLK            = wm8731_intf.scl;
-  assign  I2C_SDAT            = wm8731_intf.sda;
-  //assign  wm8731_intf.sda     = I2C_SDAT;
+  assign  I2C_SDAT            = wm8731_intf.release_sda ? 1'bz      : wm8731_intf.sda_o;
+  assign  wm8731_intf.sda_i   = wm8731_intf.release_sda ? I2C_SDAT  : 1'b1;
 
   assign  AUD_XCK             = wm8731_intf.mclk;
 

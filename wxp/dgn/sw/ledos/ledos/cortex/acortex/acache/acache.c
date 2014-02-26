@@ -21,17 +21,30 @@
 
 /*
  --------------------------------------------------------------------------
- -- Project Code      : synesthesia_zen
- -- Header Name       : cortex.h
+ -- Project Code      : synesthesia
+ -- File Name         : acache.c
  -- Author            : mammenx
- -- Description       :
+ -- Function          : 
  --------------------------------------------------------------------------
 */
 
-#ifndef CORTEX_H_
-#define CORTEX_H_
+#include "acache.h"
+#include "alt_types.h"
+#include "sys/alt_stdio.h"
 
-#include "acortex/acortex.h"
-#include "vcortex/vcortex.h"
+void update_acache_mode(ACACHE_MODE_T mode){
+	IOWR_ACACHE_CTRL(mode & ACACHE_MODE_MSK);
+}
 
-#endif /* CORTEX_H_ */
+void reset_acache(){
+	IOWR_ACACHE_HST_RST(0x0);
+}
+
+void dump_acache_cap_data(alt_u32* bffr){
+	alt_u16 i;
+
+	for(i=0; i<ACACHE_CAP_NO_SAMPLES; i++){
+		IOWR_ACACHE_CAP_NO(i & ACACHE_CAP_ADDR_MSK);
+		bffr[i] = IORD_ACACHE_CAP_DATA;
+	}
+}

@@ -21,17 +21,19 @@
 
 /*
  --------------------------------------------------------------------------
- -- Project Code      : synesthesia_zen
- -- Header Name       : cortex.h
+ -- Project Code      : synesthesia
+ -- File Name         : acortex.h
  -- Author            : mammenx
- -- Description       :
+ -- Function          : 
  --------------------------------------------------------------------------
 */
 
-#ifndef CORTEX_H_
-#define CORTEX_H_
+#ifndef ACORTEX_H_
+#define ACORTEX_H_
 
-#include "acortex/acortex.h"
-#include "vcortex/vcortex.h"
+#include "acache/acache.h"
+#include "cmux/cmux.h"
+#include "i2c/i2c_drvr.h"
+#include "wmdrvr/wmdrvr.h"
 
-#endif /* CORTEX_H_ */
+#endif /* ACORTEX_H_ */
