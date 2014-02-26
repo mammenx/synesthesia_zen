@@ -98,67 +98,25 @@ module syn_audio_cache (
   acache_mode_t               acache_mode_f;
   logic                       start_cap_f;
   logic                       cap_done_f;
+  logic [P_PCM_RAM_ADDR_W:0]  cap_addr_f;
 
-  logic [P_PCM_RAM_ADDR_W-1:0]  ingr_addr_f;
-  logic [P_PCM_RAM_ADDR_W-1:0]  egr_addr_f;
-  logic                         cap_lpcm_n_rpcm_f;
-  logic                         bffr_sel_1_n_2_f;
-  logic                         ingr_addr_inc_en_f;
-  logic                         egr_data_rdy_f;
-
-  logic [P_RAM_RD_DELAY-1:0]    lpcm_rd_del_f;
-  logic [P_RAM_RD_DELAY-1:0]    rpcm_rd_del_f;
+  logic [P_PCM_RAM_ADDR_W-1:0]  addr_f;
+  logic                         addr_inc_en_f;
 
 //----------------------- Internal Wire Declarations ----------------------
-  logic                         host_rst_l_c;
-  logic                         local_rst_l_c;
+  logic                       host_rst_l_c;
+  logic                       local_rst_l_c;
 
-  logic                         switch_bffrs_c;
+  logic                       switch_bffrs_c;
 
-  logic [P_PCM_RAM_ADDR_W-1:0]  pbffr_lchnnl_1a_addr_c;
-  logic [P_PCM_RAM_DATA_W-1:0]  pbffr_lchnnl_1a_wdata_c;
-  logic                         pbffr_lchnnl_1a_wren_c;
-  logic [P_PCM_RAM_DATA_W-1:0]  pbffr_lchnnl_1a_rdata_w;
-
-  logic [P_PCM_RAM_ADDR_W-1:0]  pbffr_lchnnl_1b_addr_c;
-  logic [P_PCM_RAM_DATA_W-1:0]  pbffr_lchnnl_1b_wdata_c;
-  logic                         pbffr_lchnnl_1b_wren_c;
-  logic [P_PCM_RAM_DATA_W-1:0]  pbffr_lchnnl_1b_rdata_w;
-
-  logic [P_PCM_RAM_ADDR_W-1:0]  pbffr_rchnnl_1a_addr_c;
-  logic [P_PCM_RAM_DATA_W-1:0]  pbffr_rchnnl_1a_wdata_c;
-  logic                         pbffr_rchnnl_1a_wren_c;
-  logic [P_PCM_RAM_DATA_W-1:0]  pbffr_rchnnl_1a_rdata_w;
-
-  logic [P_PCM_RAM_ADDR_W-1:0]  pbffr_rchnnl_1b_addr_c;
-  logic [P_PCM_RAM_DATA_W-1:0]  pbffr_rchnnl_1b_wdata_c;
-  logic                         pbffr_rchnnl_1b_wren_c;
-  logic [P_PCM_RAM_DATA_W-1:0]  pbffr_rchnnl_1b_rdata_w;
-
-  logic [P_PCM_RAM_ADDR_W-1:0]  pbffr_lchnnl_2a_addr_c;
-  logic [P_PCM_RAM_DATA_W-1:0]  pbffr_lchnnl_2a_wdata_c;
-  logic                         pbffr_lchnnl_2a_wren_c;
-  logic [P_PCM_RAM_DATA_W-1:0]  pbffr_lchnnl_2a_rdata_w;
-
-  logic [P_PCM_RAM_ADDR_W-1:0]  pbffr_lchnnl_2b_addr_c;
-  logic [P_PCM_RAM_DATA_W-1:0]  pbffr_lchnnl_2b_wdata_c;
-  logic                         pbffr_lchnnl_2b_wren_c;
-  logic [P_PCM_RAM_DATA_W-1:0]  pbffr_lchnnl_2b_rdata_w;
-
-  logic [P_PCM_RAM_ADDR_W-1:0]  pbffr_rchnnl_2a_addr_c;
-  logic [P_PCM_RAM_DATA_W-1:0]  pbffr_rchnnl_2a_wdata_c;
-  logic                         pbffr_rchnnl_2a_wren_c;
-  logic [P_PCM_RAM_DATA_W-1:0]  pbffr_rchnnl_2a_rdata_w;
-
-  logic [P_PCM_RAM_ADDR_W-1:0]  pbffr_rchnnl_2b_addr_c;
-  logic [P_PCM_RAM_DATA_W-1:0]  pbffr_rchnnl_2b_wdata_c;
-  logic                         pbffr_rchnnl_2b_wren_c;
-  logic [P_PCM_RAM_DATA_W-1:0]  pbffr_rchnnl_2b_rdata_w;
-
-  logic [P_PCM_RAM_DATA_W-1:0]  cap_rdata_c;
+  logic                         adc_cap_wr_en_c;
+  logic [P_PCM_RAM_DATA_W-1:0]  adc_lcap_rdata_w;
+  logic [P_PCM_RAM_DATA_W-1:0]  adc_rcap_rdata_w;
 
 //----------------------- Internal Interface Declarations -----------------
-
+  syn_clk_rst_sync_intf       local_cr_intf(cr_intf.clk_ir,local_rst_l_c);
+  mem_intf#(P_PCM_RAM_DATA_W,P_PCM_RAM_ADDR_W)  pcm_lmem_intf(cr_intf.clk_ir,local_rst_l_c);
+  mem_intf#(P_PCM_RAM_DATA_W,P_PCM_RAM_ADDR_W)  pcm_rmem_intf(cr_intf.clk_ir,local_rst_l_c);
 
 
 //----------------------- Start of Code -----------------------------------
@@ -175,6 +133,7 @@ module syn_audio_cache (
       acache_mode_f           <=  NORMAL;
       start_cap_f             <=  0;
       cap_done_f              <=  0;
+      cap_addr_f              <=  0;
     end
     else
     begin
@@ -184,11 +143,15 @@ module syn_audio_cache (
                                                                                           : acache_mode_f;
 
         start_cap_f           <=  (lb_intf.acache_addr  ==  ACORTEX_ACACHE_CTRL_REG_ADDR) ? lb_intf.acache_wr_data[0] : 1'b0;
+
+        cap_addr_f            <=  (lb_intf.acache_addr  ==  ACORTEX_ACACHE_CAP_NO_ADDR)   ? lb_intf.acache_wr_data[P_PCM_RAM_ADDR_W:0]
+                                                                                          : cap_addr_f;
       end
       else
       begin
         acache_mode_f         <=  acache_mode_f;
         start_cap_f           <=  1'b0;
+        cap_addr_f            <=  cap_addr_f;
       end
 
       lb_intf.acache_wr_valid <=  lb_intf.acache_wr_en;
@@ -215,9 +178,10 @@ module syn_audio_cache (
 
         ACORTEX_ACACHE_STATUS_REG_ADDR: lb_intf.acache_rd_data  <=  {{P_LB_DATA_W-1{1'b0}},  cap_done_f};
 
-        ACORTEX_ACACHE_CAP_NO_ADDR    : lb_intf.acache_rd_data  <=  {{P_LB_DATA_W-P_PCM_RAM_ADDR_W-1{1'b0}},  cap_lpcm_n_rpcm_f,  egr_addr_f};
+        ACORTEX_ACACHE_CAP_NO_ADDR    : lb_intf.acache_rd_data  <=  {{P_LB_DATA_W-P_PCM_RAM_ADDR_W-1{1'b0}},  cap_addr_f};
 
-        ACORTEX_ACACHE_CAP_DATA_ADDR  : lb_intf.acache_rd_data  <=  cap_rdata_c;
+        ACORTEX_ACACHE_CAP_DATA_ADDR  : lb_intf.acache_rd_data  <=  cap_addr_f[P_PCM_RAM_ADDR_W]  ?
+                                                                      adc_rcap_rdata_w  : adc_lcap_rdata_w;
 
         default  : lb_intf.acache_rd_data <=  'hdeadbabe;
       endcase
@@ -232,262 +196,114 @@ module syn_audio_cache (
   //combined reset logic
   assign  local_rst_l_c = cr_intf.rst_sync_l  & host_rst_l_c;
 
-  /*  Address logic */
+
+  /*
+    * Address logic
+  */
   always_ff@(posedge cr_intf.clk_ir, negedge local_rst_l_c)
   begin : addr_logic
     if(~local_rst_l_c)
     begin
-      ingr_addr_f             <=  0;
-      egr_addr_f              <=  0;
-      cap_lpcm_n_rpcm_f       <=  0;
-
-      bffr_sel_1_n_2_f        <=  1'b1;  //Start with 1
-      ingr_addr_inc_en_f      <=  1'b1;
-      egr_data_rdy_f          <=  0;
-
-      fgyrus_pcm_data_rdy_oh  <=  0;
+      addr_f                  <=  0;
+      addr_inc_en_f           <=  1;
 
       wmdrvr_egr_intf.pcm_data_valid  <=  0;
     end
     else
     begin
-      ingr_addr_f             <=  start_cap_f ? 'd0 : ingr_addr_f + (wmdrvr_ingr_intf.pcm_data_valid  & ingr_addr_inc_en_f);
+      addr_f                <=  addr_f  + (wmdrvr_ingr_intf.pcm_data_valid  & addr_inc_en_f);
 
       if(acache_mode_f  ==  NORMAL)
       begin
-        egr_addr_f            <=  egr_addr_f  + (wmdrvr_egr_intf.ack  & egr_data_rdy_f);
+        addr_inc_en_f       <=  1;
+
+        wmdrvr_egr_intf.pcm_data_valid  <=  wmdrvr_egr_intf.pcm_data_valid  | switch_bffrs_c;
       end
-      else  //CAPTURE
+      else  //Capture
       begin
-        if(lb_intf.acache_wr_en & (lb_intf.acache_addr  ==  ACORTEX_ACACHE_CAP_NO_ADDR))
+        wmdrvr_egr_intf.pcm_data_valid  <=  0;
+
+        if(start_cap_f)
         begin
-          egr_addr_f          <=  lb_intf.acache_wr_data[P_PCM_RAM_ADDR_W-1:0];
-          cap_lpcm_n_rpcm_f   <=  lb_intf.acache_wr_data[P_PCM_RAM_ADDR_W];
-        end
-      end
-
-
-      bffr_sel_1_n_2_f        <=  switch_bffrs_c  ? ~bffr_sel_1_n_2_f : bffr_sel_1_n_2_f;
-
-      if(acache_mode_f  ==  NORMAL)
-      begin
-        ingr_addr_inc_en_f    <=  1'b1;
-      end
-      else  //CAPTURE
-      begin
-        if(~ingr_addr_inc_en_f)
-        begin
-          ingr_addr_inc_en_f  <=  start_cap_f;
+          addr_inc_en_f       <=  1;
         end
         else
         begin
-          ingr_addr_inc_en_f  <=  ~switch_bffrs_c;
+          addr_inc_en_f       <=  addr_inc_en_f & ~switch_bffrs_c;
         end
       end
-
-      if(acache_mode_f  ==  NORMAL)
-      begin
-        egr_data_rdy_f        <=  egr_data_rdy_f  | switch_bffrs_c;
-      end
-      else  //CAPTURE
-      begin
-        egr_data_rdy_f        <=  0;
-      end
-
-      fgyrus_pcm_data_rdy_oh  <=  (acache_mode_f  ==  NORMAL) ? switch_bffrs_c  : 1'b0;
-
-      if(acache_mode_f  ==  NORMAL)
-      begin
-        wmdrvr_egr_intf.pcm_data_valid  <=  wmdrvr_egr_intf.pcm_data_valid  | switch_bffrs_c;
-      end
-      else  //CAPTURE
-      begin
-        wmdrvr_egr_intf.pcm_data_valid  <=  0;
-      end
     end
   end
 
-  //Check when to switch buffers
-  assign switch_bffrs_c = (ingr_addr_f  ==  {P_PCM_RAM_ADDR_W{1'b1}}) ? wmdrvr_ingr_intf.pcm_data_valid : 1'b0;
+  assign  switch_bffrs_c  = (&addr_f) & wmdrvr_ingr_intf.pcm_data_valid;
 
-  //Mux Port A signals
-  always_comb
-  begin : port_a_mux_logic
-    if(bffr_sel_1_n_2_f)
-    begin
-      //Buffer 1 is used by ingress & buffer 2 by egress
-      pbffr_lchnnl_1a_addr_c          =   ingr_addr_f;
-      pbffr_lchnnl_1a_wdata_c         =   wmdrvr_ingr_intf.pcm_data.lchnnl;
-      pbffr_lchnnl_1a_wren_c          =   wmdrvr_ingr_intf.pcm_data_valid;
+  assign  wmdrvr_ingr_intf.ack  = wmdrvr_ingr_intf.pcm_data_valid;
 
-      pbffr_rchnnl_1a_addr_c          =   ingr_addr_f;
-      pbffr_rchnnl_1a_wdata_c         =   wmdrvr_ingr_intf.pcm_data.rchnnl;
-      pbffr_rchnnl_1a_wren_c          =   wmdrvr_ingr_intf.pcm_data_valid;
+  assign  pcm_lmem_intf.addr    = addr_f[P_PCM_RAM_ADDR_W-1:0];
+  assign  pcm_lmem_intf.wdata   = wmdrvr_ingr_intf.pcm_data.lchnnl;
+  assign  pcm_lmem_intf.wren    = wmdrvr_ingr_intf.pcm_data_valid & addr_inc_en_f;
+  assign  pcm_lmem_intf.rden    = wmdrvr_egr_intf.ack;
 
-      wmdrvr_ingr_intf.ack            =   wmdrvr_ingr_intf.pcm_data_valid;
+  assign  pcm_rmem_intf.addr    = addr_f[P_PCM_RAM_ADDR_W-1:0];
+  assign  pcm_rmem_intf.wdata   = wmdrvr_ingr_intf.pcm_data.rchnnl;
+  assign  pcm_rmem_intf.wren    = wmdrvr_ingr_intf.pcm_data_valid & addr_inc_en_f;
+  assign  pcm_rmem_intf.rden    = wmdrvr_egr_intf.ack;
 
-      pbffr_lchnnl_2a_addr_c          =   egr_addr_f;
-      pbffr_lchnnl_2a_wdata_c         =   0;
-      pbffr_lchnnl_2a_wren_c          =   0;
+  assign  wmdrvr_egr_intf.pcm_data.lchnnl = pcm_lmem_intf.rdata;
+  assign  wmdrvr_egr_intf.pcm_data.rchnnl = pcm_rmem_intf.rdata;
 
-      pbffr_rchnnl_2a_addr_c          =   egr_addr_f;
-      pbffr_rchnnl_2a_wdata_c         =   0;
-      pbffr_rchnnl_2a_wren_c          =   0;
-
-      wmdrvr_egr_intf.pcm_data.lchnnl =   pbffr_lchnnl_2a_rdata_w;
-      wmdrvr_egr_intf.pcm_data.rchnnl =   pbffr_rchnnl_2a_rdata_w;
-
-      cap_rdata_c                     =   cap_lpcm_n_rpcm_f ? pbffr_lchnnl_2a_rdata_w : pbffr_rchnnl_2a_rdata_w;
-    end
-    else
-    begin
-      //Buffer 2 is used by ingress & buffer 1 by egress
-      pbffr_lchnnl_2a_addr_c          =   ingr_addr_f;
-      pbffr_lchnnl_2a_wdata_c         =   wmdrvr_ingr_intf.pcm_data.lchnnl;
-      pbffr_lchnnl_2a_wren_c          =   wmdrvr_ingr_intf.pcm_data_valid;
-
-      pbffr_rchnnl_2a_addr_c          =   ingr_addr_f;
-      pbffr_rchnnl_2a_wdata_c         =   wmdrvr_ingr_intf.pcm_data.rchnnl;
-      pbffr_rchnnl_2a_wren_c          =   wmdrvr_ingr_intf.pcm_data_valid;
-
-      wmdrvr_ingr_intf.ack            =   wmdrvr_ingr_intf.pcm_data_valid;
-
-      pbffr_lchnnl_1a_addr_c          =   egr_addr_f;
-      pbffr_lchnnl_1a_wdata_c         =   0;
-      pbffr_lchnnl_1a_wren_c          =   0;
-
-      pbffr_rchnnl_1a_addr_c          =   egr_addr_f;
-      pbffr_rchnnl_1a_wdata_c         =   0;
-      pbffr_rchnnl_1a_wren_c          =   0;
-
-      wmdrvr_egr_intf.pcm_data.lchnnl =   pbffr_lchnnl_1a_rdata_w;
-      wmdrvr_egr_intf.pcm_data.rchnnl =   pbffr_rchnnl_1a_rdata_w;
-
-      cap_rdata_c                     =   cap_lpcm_n_rpcm_f ? pbffr_lchnnl_1a_rdata_w : pbffr_rchnnl_1a_rdata_w;
-    end
-  end
-
-  //Mux Port B signals
-  always_comb
-  begin : port_b_mux_logic
-    pbffr_lchnnl_1b_addr_c            =   fgyrus_lchnnl_mem_intf.addr;
-    pbffr_lchnnl_1b_wdata_c           =   fgyrus_lchnnl_mem_intf.wdata;
-    pbffr_lchnnl_1b_wren_c            =   fgyrus_lchnnl_mem_intf.wren;
-
-    pbffr_lchnnl_2b_addr_c            =   fgyrus_lchnnl_mem_intf.addr;
-    pbffr_lchnnl_2b_wdata_c           =   fgyrus_lchnnl_mem_intf.wdata;
-    pbffr_lchnnl_2b_wren_c            =   fgyrus_lchnnl_mem_intf.wren;
-
-    pbffr_rchnnl_1b_addr_c            =   fgyrus_rchnnl_mem_intf.addr;
-    pbffr_rchnnl_1b_wdata_c           =   fgyrus_rchnnl_mem_intf.wdata;
-    pbffr_rchnnl_1b_wren_c            =   fgyrus_rchnnl_mem_intf.wren;
-
-    pbffr_rchnnl_2b_addr_c            =   fgyrus_rchnnl_mem_intf.addr;
-    pbffr_rchnnl_2b_wdata_c           =   fgyrus_rchnnl_mem_intf.wdata;
-    pbffr_rchnnl_2b_wren_c            =   fgyrus_rchnnl_mem_intf.wren;
-
-    if(~bffr_sel_1_n_2_f)
-    begin
-      //Buffer 1 is used by fgyrus
-      fgyrus_lchnnl_mem_intf.rdata    =   pbffr_lchnnl_1b_rdata_w;
-      fgyrus_rchnnl_mem_intf.rdata    =   pbffr_rchnnl_1b_rdata_w;
-    end
-    else
-    begin
-      //Buffer 2 is used by fgyrus
-      fgyrus_lchnnl_mem_intf.rdata    =   pbffr_lchnnl_2b_rdata_w;
-      fgyrus_rchnnl_mem_intf.rdata    =   pbffr_rchnnl_2b_rdata_w;
-    end
-
-    fgyrus_lchnnl_mem_intf.rd_valid   =   lpcm_rd_del_f[P_RAM_RD_DELAY-1];
-    fgyrus_rchnnl_mem_intf.rd_valid   =   rpcm_rd_del_f[P_RAM_RD_DELAY-1];
-  end
-
-
-  /*  Read Valid Logic  */
-  always_ff@(posedge fgyrus_cr_intf.clk_ir, negedge fgyrus_cr_intf.rst_sync_l)
-  begin : rd_valid_logic
-    if(~fgyrus_cr_intf.rst_sync_l)
-    begin
-      lpcm_rd_del_f           <=  0;
-      rpcm_rd_del_f           <=  0;
-    end
-    else
-    begin
-      lpcm_rd_del_f           <=  {lpcm_rd_del_f[P_RAM_RD_DELAY-2],fgyrus_lchnnl_mem_intf.rden};
-      rpcm_rd_del_f           <=  {rpcm_rd_del_f[P_RAM_RD_DELAY-2],fgyrus_lchnnl_mem_intf.rden};
-    end
-  end
-
-
-  /*  Instantiate PCM Buffer set 1  */
-  pcm_sample_ram  pcm_bffr_lchnnl_1_inst
+  /*
+    * Instantiate PCM Sample RAM
+  */
+  syn_pcm_sample_ram  pcm_sample_ram_inst
   (
-    .aclr_a       (~cr_intf.rst_sync_l),
-    .clock_a      (cr_intf.clk_ir),
-    .address_a    (pbffr_lchnnl_1a_addr_c),
-    .data_a       (pbffr_lchnnl_1a_wdata_c),
-    .wren_a       (pbffr_lchnnl_1a_wren_c),
-    .q_a          (pbffr_lchnnl_1a_rdata_w),
 
-    .aclr_b       (~fgyrus_cr_intf.rst_sync_l),
-    .clock_b      (fgyrus_cr_intf.clk_ir),
-    .address_b    (pbffr_lchnnl_1b_addr_c),
-    .data_b       (pbffr_lchnnl_1b_wdata_c),
-    .wren_b       (pbffr_lchnnl_1b_wren_c),
-    .q_b          (pbffr_lchnnl_1b_rdata_w)
+    .acortex_cr_intf  (local_cr_intf.sync),
+    .acortex_lmem_intf(pcm_lmem_intf.slave),
+    .acortex_rmem_intf(pcm_rmem_intf.slave),
+
+    .fgyrus_cr_intf   (fgyrus_cr_intf),
+    .fgyrus_lmem_intf (fgyrus_lchnnl_mem_intf),
+    .fgyrus_rmem_intf (fgyrus_rchnnl_mem_intf)
+
   );
 
-  pcm_sample_ram  pcm_bffr_rchnnl_1_inst
+  dd_sync   fgyrus_pcm_data_rdy_sync_inst
   (
-    .aclr_a       (~cr_intf.rst_sync_l),
-    .clock_a      (cr_intf.clk_ir),
-    .address_a    (pbffr_rchnnl_1a_addr_c),
-    .data_a       (pbffr_rchnnl_1a_wdata_c),
-    .wren_a       (pbffr_rchnnl_1a_wren_c),
-    .q_a          (pbffr_rchnnl_1a_rdata_w),
+    .clk_ir     (fgyrus_cr_intf.clk_ir),
+    .rst_il     (fgyrus_cr_intf.rst_sync_l),
 
-    .aclr_b       (~fgyrus_cr_intf.rst_sync_l),
-    .clock_b      (fgyrus_cr_intf.clk_ir),
-    .address_b    (pbffr_rchnnl_1b_addr_c),
-    .data_b       (pbffr_rchnnl_1b_wdata_c),
-    .wren_b       (pbffr_rchnnl_1b_wren_c),
-    .q_b          (pbffr_rchnnl_1b_rdata_w)
+    .signal_id  (switch_bffrs_c),
+
+    .signal_od  (fgyrus_pcm_data_rdy_oh)
   );
 
-  /*  Instantiate PCM Buffer set 2  */
-  pcm_sample_ram  pcm_bffr_lchnnl_2_inst
-  (
-    .aclr_a       (~cr_intf.rst_sync_l),
-    .clock_a      (cr_intf.clk_ir),
-    .address_a    (pbffr_lchnnl_2a_addr_c),
-    .data_a       (pbffr_lchnnl_2a_wdata_c),
-    .wren_a       (pbffr_lchnnl_2a_wren_c),
-    .q_a          (pbffr_lchnnl_2a_rdata_w),
 
-    .aclr_b       (~fgyrus_cr_intf.rst_sync_l),
-    .clock_b      (fgyrus_cr_intf.clk_ir),
-    .address_b    (pbffr_lchnnl_2b_addr_c),
-    .data_b       (pbffr_lchnnl_2b_wdata_c),
-    .wren_b       (pbffr_lchnnl_2b_wren_c),
-    .q_b          (pbffr_lchnnl_2b_rdata_w)
+  assign  adc_cap_wr_en_c = (acache_mode_f  ==  CAPTURE)  ? wmdrvr_ingr_intf.pcm_data_valid & addr_inc_en_f
+                                                          : 1'b0;
+
+  ram_1xM4K_32bW_128D adc_lcap_ram_inst
+  (
+    .aclr         (~local_rst_l_c),
+    .clock        (cr_intf.clk_ir),
+    .data         (wmdrvr_ingr_intf.pcm_data.lchnnl),
+    .rdaddress    (cap_addr_f[P_PCM_RAM_ADDR_W-1:0]),
+    .wraddress    (addr_f),
+    .wren         (adc_cap_wr_en_c),
+    .q            (adc_lcap_rdata_w)
   );
 
-  pcm_sample_ram  pcm_bffr_rchnnl_2_inst
+  ram_1xM4K_32bW_128D adc_rcap_ram_inst
   (
-    .aclr_a       (~cr_intf.rst_sync_l),
-    .clock_a      (cr_intf.clk_ir),
-    .address_a    (pbffr_rchnnl_2a_addr_c),
-    .data_a       (pbffr_rchnnl_2a_wdata_c),
-    .wren_a       (pbffr_rchnnl_2a_wren_c),
-    .q_a          (pbffr_rchnnl_2a_rdata_w),
-
-    .aclr_b       (~fgyrus_cr_intf.rst_sync_l),
-    .clock_b      (fgyrus_cr_intf.clk_ir),
-    .address_b    (pbffr_rchnnl_2b_addr_c),
-    .data_b       (pbffr_rchnnl_2b_wdata_c),
-    .wren_b       (pbffr_rchnnl_2b_wren_c),
-    .q_b          (pbffr_rchnnl_2b_rdata_w)
+    .aclr         (~local_rst_l_c),
+    .clock        (cr_intf.clk_ir),
+    .data         (wmdrvr_ingr_intf.pcm_data.rchnnl),
+    .rdaddress    (cap_addr_f[P_PCM_RAM_ADDR_W-1:0]),
+    .wraddress    (addr_f),
+    .wren         (adc_cap_wr_en_c),
+    .q            (adc_rcap_rdata_w)
   );
+
+
 
 endmodule // syn_audio_cache

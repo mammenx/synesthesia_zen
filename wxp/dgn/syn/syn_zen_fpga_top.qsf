@@ -41,7 +41,7 @@ set_global_assignment -name DEVICE EP2C20F484C7
 set_global_assignment -name TOP_LEVEL_ENTITY syn_zen_fpga_top
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION "11.1 SP2"
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "14:38:56  NOVEMBER 04, 2013"
-set_global_assignment -name LAST_QUARTUS_VERSION "11.1 SP2.11"
+set_global_assignment -name LAST_QUARTUS_VERSION "11.1 SP2"
 
 # Design Files
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/fpga_top/syn_zen_fpga_top.sv
@@ -71,6 +71,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/visual_cortex/grapheme/syn
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/visual_cortex/grapheme/syn_gpu_pxl_gw.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/visual_cortex/grapheme/syn_gpu_mul.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/visual_cortex/grapheme/syn_gpu_ff_cntrlr.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/visual_cortex/grapheme/syn_gpu_lf_cntrlr.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/visual_cortex/grapheme/syn_gpu_div.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/visual_cortex/grapheme/syn_gpu_core_picasso.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/visual_cortex/grapheme/syn_gpu_core_euclid.sv
@@ -89,6 +90,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/fusiform_gyrus/intf/syn_bu
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/audio_cortex/syn_wm8731_drvr.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/audio_cortex/syn_i2c_master.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/audio_cortex/syn_clk_mux.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/audio_cortex/syn_pcm_sample_ram.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/audio_cortex/syn_audio_cache.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/audio_cortex/syn_acortex_lb.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/audio_cortex/syn_acortex.sv
@@ -101,7 +103,7 @@ set_global_assignment -name VERILOG_FILE ../rtl/altera/twiddle_ram.v
 set_global_assignment -name VERILOG_FILE ../rtl/altera/ram_4xM4K_8bW_16bW_dualport.v
 set_global_assignment -name VERILOG_FILE ../rtl/altera/ram_2xM4K_32bW_256D.v
 set_global_assignment -name VERILOG_FILE ../rtl/altera/ram_1xM4K_16bW_dualport.v
-set_global_assignment -name VERILOG_FILE ../rtl/altera/pcm_sample_ram.v
+#set_global_assignment -name VERILOG_FILE ../rtl/altera/pcm_sample_ram.v
 set_global_assignment -name VERILOG_FILE ../rtl/altera/mult_16x16_unsigned.v
 set_global_assignment -name VERILOG_FILE ../rtl/altera/mul_8x8_unsigned.v
 set_global_assignment -name VERILOG_FILE ../rtl/altera/ff_64x512_fwft.v
@@ -414,7 +416,7 @@ set_instance_assignment -name TSU_REQUIREMENT "10 ns" -from * -to *
 set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to *
 set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to I2C_SCLK
 set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to I2C_SDAT
-set_parameter -name CYCLONEII_SAFE_WRITE VERIFIED_SAFE
+#set_parameter -name CYCLONEII_SAFE_WRITE VERIFIED_SAFE
 
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 

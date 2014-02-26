@@ -154,7 +154,6 @@ module syn_zen_fpga_top
    inout   [15:0]              SRAM_DQ;
 
    inout                       I2C_SDAT;
-   inout                       AUD_BCLK;
 
 
 //----------------------- Output Declarations -----------------------------
@@ -199,6 +198,7 @@ module syn_zen_fpga_top
    output                      AUD_DACLRCK;
    output                      AUD_DACDAT;
    output                      AUD_XCK;
+   output                      AUD_BCLK;
 
    output                      SD_CLK;
    output                      SD_DAT3;

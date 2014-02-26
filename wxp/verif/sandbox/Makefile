@@ -1,13 +1,13 @@
 #TEST_NAME=syn_vcortex_base_test
 #TEST_NAME=syn_vcortex_gpu_draw_line_test
 #TEST_NAME=syn_vcortex_gpu_draw_bezier_test
-TEST_NAME=syn_vcortex_gpu_fill_test
+#TEST_NAME=syn_vcortex_gpu_fill_test
 #TEST_NAME=syn_vcortex_host_acc_test
 #TEST_NAME=syn_vcortex_vga_test
 
 #TEST_NAME=syn_acortex_base_test
 #TEST_NAME=syn_acortex_i2c_test
-#TEST_NAME=syn_acortex_pcm_test
+TEST_NAME=syn_acortex_pcm_test
 #TEST_NAME=syn_acortex_adc_cap_test
 
 #TEST_NAME=syn_fgyrus_base_test
@@ -17,8 +17,8 @@ TEST_NAME=syn_vcortex_gpu_fill_test
 #TEST_NAME=syn_sram_acc_base_test
 #TEST_NAME=syn_sram_acc_test
 
-TB_TOP=syn_vcortex_tb_top
-#TB_TOP=syn_acortex_tb_top
+#TB_TOP=syn_vcortex_tb_top
+TB_TOP=syn_acortex_tb_top
 #TB_TOP=syn_fgyrus_tb_top
 #TB_TOP=syn_sram_acc_tb_top
 
@@ -82,3 +82,6 @@ sim:
 gif:
 	echo Generating gif animation
 	convert -delay 100 -size 640x480 $(PPM_FILES) -loop 0 frm_bffr.gif
+
+gui:
+	vsim vsim.wlf

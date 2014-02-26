@@ -27,8 +27,9 @@
 ../../dgn/rtl/altera/mul_8x8_unsigned.v
 ../../dgn/rtl/altera/mult_16x16_unsigned.v
 ../../dgn/rtl/altera/ram_1xM4K_16bW_dualport.v
+../../dgn/rtl/altera/ram_1xM4K_32bW_128D_dualclock.v
+../../dgn/rtl/altera/ram_1xM4K_32bW_128D.v
 ../../dgn/rtl/altera/ram_4xM4K_8bW_16bW_dualport.v
-../../dgn/rtl/altera/pcm_sample_ram.v
 ../../dgn/rtl/altera/complex_mult.v
 ../../dgn/rtl/altera/cordic_ram.v
 ../../dgn/rtl/altera/ram_2xM4K_32bW_256D.v
@@ -98,6 +99,7 @@
 ../../dgn/rtl/audio_cortex/syn_clk_mux.sv
 ../../dgn/rtl/audio_cortex/syn_i2c_master.sv
 ../../dgn/rtl/audio_cortex/syn_wm8731_drvr.sv
+../../dgn/rtl/audio_cortex/syn_pcm_sample_ram.sv
 ../../dgn/rtl/audio_cortex/syn_audio_cache.sv
 ../../dgn/rtl/audio_cortex/syn_acortex.sv
 
