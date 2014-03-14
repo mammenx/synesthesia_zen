@@ -1,0 +1,4 @@
+`include  "acortex_tb.list"
+`include  "fgyrus_tb.list"
+`include  "sram_acc_tb.list"
+`include  "vcortex_tb.list"
