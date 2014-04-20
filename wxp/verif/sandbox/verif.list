@@ -24,6 +24,7 @@
 +incdir+../../verif/tb/tests/acortex/
 +incdir+../../verif/tb/tests/fgyrus/
 +incdir+../../verif/tb/tests/sram_acc/
++incdir+../../verif/tb/tests/cortex/
 +incdir+../../dgn/rtl/visual_cortex/
 +incdir+../../dgn/rtl/audio_cortex/
 +incdir+../../dgn/rtl/fusiform_gyrus/
@@ -57,3 +58,4 @@
 ../../verif/tb/top/syn_acortex_tb_top.sv
 ../../verif/tb/top/syn_fgyrus_tb_top.sv
 ../../verif/tb/top/syn_sram_acc_tb_top.sv
+../../verif/tb/top/syn_cortex_tb_top.sv

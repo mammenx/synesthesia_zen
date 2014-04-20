@@ -52,6 +52,8 @@
 
   `timescale  1ns/100ps
 
+  `include  "assert_change.vlib"
+
   module syn_cortex_tb_top();
 
     parameter LB_DATA_W = 32;
@@ -59,9 +61,21 @@
     parameter FGYRUS_LB_ADDR_W = 12;
     parameter PCM_MEM_DATA_W  = 32;
     parameter PCM_MEM_ADDR_W  = 7;
-
+    parameter P_VGA_HVALID_W        = 640;
+    parameter P_VGA_HFP_W           = 16;
+    parameter P_VGA_HSYNC_W         = 96;
+    parameter P_VGA_HBP_W           = 48;
+    localparam  P_VGA_HTOTAL_W      = P_VGA_HVALID_W  + P_VGA_HFP_W + P_VGA_HSYNC_W + P_VGA_HBP_W;
+    parameter P_VGA_VVALID_W        = 480;
+    parameter P_VGA_VFP_W           = 10;
+    parameter P_VGA_VSYNC_W         = 2;
+    parameter P_VGA_VBP_W           = 33;
+    localparam  P_VGA_VTOTAL_W      = P_VGA_VVALID_W  + P_VGA_VFP_W + P_VGA_VSYNC_W + P_VGA_VBP_W;
+    parameter VGA_RES_W             = 4;
+ 
 
     `include  "cortex_tb.list"
+    `include  "syn_cortex_reg_map.sv"
 
 
     //Clock Reset signals
@@ -172,7 +186,7 @@
 
     .fft_cache_cr_intf  (cr_100MHz_intf.sync),
 
-    .cortex_lb_intf     (cortex_lb_intf.salve),
+    .cortex_lb_intf     (cortex_lb_intf.slave),
 
     .fft_cache_lb_intf  (fgyrus_lb_intf.slave),
 
@@ -182,9 +196,91 @@
 
     .sram_mem_intf      (sram_mem_intf.mp),
 
-    .vga_intf           ()
+    .vga_intf           (vga_intf.mp)
 
   );
+
+    bit hsync_n_1d,vsync_n_1d;
+
+    always@(posedge vga_intf.clk_ir,negedge vga_intf.rst_il)
+    begin
+      if(~vga_intf.rst_il)
+      begin
+        hsync_n_1d  <=  1;
+        vsync_n_1d  <=  1;
+      end
+      else
+      begin
+        hsync_n_1d  <=  vga_intf.hsync_n;
+        vsync_n_1d  <=  (~vga_intf.hsync_n  & hsync_n_1d) ? vga_intf.vsync_n  : vsync_n_1d;
+      end
+    end
+
+    /*  HSYNC Assertions  */
+    assert_change
+      #(  `OVL_ERROR,           //severity_level
+          1,                    //width
+          P_VGA_HVALID_W,       //num_cks
+          `OVL_ERROR_ON_NEW_START,  //action_on_new_start
+          `OVL_ASSERT,          //property_type
+          "assert_hsync_low_err", //msg
+          `OVL_COVER_NONE       //coverage_level
+      )
+    assert_hsync_low
+      (   vga_intf.clk_ir,  //clk
+          vga_intf.rst_il,  //reset_n
+          (~vga_intf.hsync_n & hsync_n_1d),  //start_event: negedge of hsync_n
+          vga_intf.hsync_n   //test_expr:  monitor hsync_n
+      );
+
+    assert_change
+      #(  `OVL_ERROR,           //severity_level
+          1,                    //width
+          (P_VGA_HBP_W+P_VGA_HVALID_W+P_VGA_HFP_W),       //num_cks
+          `OVL_ERROR_ON_NEW_START,  //action_on_new_start
+          `OVL_ASSERT,          //property_type
+          "assert_hsync_high_err", //msg
+          `OVL_COVER_NONE       //coverage_level
+      )
+    assert_hsync_high
+      (   vga_intf.clk_ir,  //clk
+          vga_intf.rst_il,  //reset_n
+          (vga_intf.hsync_n & ~hsync_n_1d),  //start_event: posedge of hsync_n
+          vga_intf.hsync_n   //test_expr:  monitor hsync_n
+      );
+
+    /*  VSYNC Assertions  */
+    assert_change
+      #(  `OVL_ERROR,           //severity_level
+          1,                    //width
+          P_VGA_VSYNC_W,       //num_cks
+          `OVL_ERROR_ON_NEW_START,  //action_on_new_start
+          `OVL_ASSERT,          //property_type
+          "assert_vsync_low_err", //msg
+          `OVL_COVER_NONE       //coverage_level
+      )
+    assert_vsync_low
+      (   (~vga_intf.hsync_n & hsync_n_1d),  //clk
+          vga_intf.rst_il,  //reset_n
+          (~vga_intf.vsync_n & vsync_n_1d),  //start_event: negedge of vsync_n
+          vga_intf.vsync_n   //test_expr:  monitor vsync_n
+      );
+
+    assert_change
+      #(  `OVL_ERROR,           //severity_level
+          1,                    //width
+          (P_VGA_VBP_W+P_VGA_VVALID_W+P_VGA_VFP_W),       //num_cks
+          `OVL_ERROR_ON_NEW_START,  //action_on_new_start
+          `OVL_ASSERT,          //property_type
+          "assert_vsync_high_err", //msg
+          `OVL_COVER_NONE       //coverage_level
+      )
+    assert_vsync_high
+      (   (~vga_intf.hsync_n & hsync_n_1d),  //clk
+          vga_intf.rst_il,  //reset_n
+          (vga_intf.vsync_n & ~vsync_n_1d),  //start_event: posedge of vsync_n
+          vga_intf.vsync_n   //test_expr:  monitor vsync_n
+      );
 
 
 

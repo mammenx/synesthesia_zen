@@ -100,6 +100,27 @@ module syn_cortex (
   syn_lb_intf#(32,12)         acortex_lb_intf(cortex_cr_intf.clk_ir,cortex_cr_intf.rst_sync_l);
   syn_lb_intf#(32,12)         vcortex_lb_intf(cortex_cr_intf.clk_ir,cortex_cr_intf.rst_sync_l);
 
+  `ifdef  SIMULATION
+    syn_lb_tb_intf#(32,12)
+          acortex_lb_tb_intf(
+              cortex_cr_intf.clk_ir,
+              cortex_cr_intf.rst_sync_l,
+              acortex_lb_intf.wr_valid,
+              acortex_lb_intf.rd_valid,
+              acortex_lb_intf.rd_data
+           );
+
+    syn_lb_tb_intf#(32,12)
+          vcortex_lb_tb_intf(
+              cortex_cr_intf.clk_ir,
+              cortex_cr_intf.rst_sync_l,
+              vcortex_lb_intf.wr_valid,
+              vcortex_lb_intf.rd_valid,
+              vcortex_lb_intf.rd_data
+           );
+
+  `endif
+
 //----------------------- FSM Declarations --------------------------------
 
 
