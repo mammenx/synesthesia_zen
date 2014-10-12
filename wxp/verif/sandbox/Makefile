@@ -26,7 +26,7 @@ TEST_NAME=syn_cortex_adc_cap_test
 #TB_TOP=syn_sram_acc_tb_top
 TB_TOP=syn_cortex_tb_top
 
-MSIM_DIR=/altera/modelsim_ase
+MSIM_DIR=/altera/modelsim/6.5e/modelsim_ase
 MSIM_INC_DIR=$(MSIM_DIR)/include
 MSIM_WIN32_DIR=$(MSIM_DIR)/linuxaloem
 
